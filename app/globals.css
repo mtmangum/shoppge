@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --ut-orange: #BF5700;
+  }
+
+  body {
+    @apply text-gray-900 antialiased;
+  }
+
+  /* Consistent focus ring using UT orange */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ut-orange ring-offset-1;
+  }
+}
