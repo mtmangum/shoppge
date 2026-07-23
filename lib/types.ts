@@ -172,3 +172,27 @@ export const updateJobSchema = z.object({
 })
 
 export type UpdateJobInput = z.infer<typeof updateJobSchema>
+
+export const createUserSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Must be a valid email'),
+  role: z.enum(['requestor', 'machinist', 'admin']).default('requestor'),
+  department: z.string().optional(),
+  phone: z.string().optional(),
+  room: z.string().optional(),
+  password: z.string().min(8, 'Password must be at least 8 characters').optional(),
+})
+
+export type CreateUserInput = z.infer<typeof createUserSchema>
+
+export const updateUserSchema = z.object({
+  name: z.string().min(1).optional(),
+  role: z.enum(['requestor', 'machinist', 'admin']).optional(),
+  department: z.string().optional(),
+  phone: z.string().optional(),
+  room: z.string().optional(),
+  isActive: z.boolean().optional(),
+  password: z.string().min(8, 'Password must be at least 8 characters').optional(),
+})
+
+export type UpdateUserInput = z.infer<typeof updateUserSchema>

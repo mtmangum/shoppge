@@ -20,7 +20,7 @@ Shop job tracker, replacing the existing Drupal 7 site at `shop.pge.utexas.edu`.
 | Job detail page (view, status changes, machinist assignment, materials, notes, status history) | Done |
 | File uploads to S3/MinIO (upload, presigned download, delete) | Done |
 | Email notifications | Not started |
-| Admin dashboard | Not started |
+| Admin dashboard (analytics, user management) | Done |
 
 ## Getting started
 

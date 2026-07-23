@@ -20,6 +20,15 @@ Dates are in `YYYY-MM-DD`.
 - `schema.sql` restored to the repo (was referenced by `docker-compose.yml` but
   missing) — includes the canonical `job_stats_view` / `open_jobs_view` definitions
   and the `set_updated_at` trigger.
+- Admin dashboard at `/admin`: shop-wide stats, per-machinist workload (open/urgent/
+  completed counts), an overdue-or-urgent jobs list (priority = urgent or > 14 days
+  in queue), and a cross-job recent-activity feed sourced from `job_status_history`.
+- User management at `/admin/users`: create users, change role, activate/deactivate
+  (deactivated users are blocked at login), and set/reset a user's password —
+  notably this is how the users imported from the live Drupal site (whose password
+  hashes couldn't be migrated) can be given a working login. `POST /api/users` and
+  `PATCH /api/users/[id]`, both `requireAdmin()`-gated; an admin can't deactivate or
+  demote their own account.
 
 ### Fixed
 - The "Attach Drawing" file input on the new-job form (`app/jobs/new/page.tsx`) was
