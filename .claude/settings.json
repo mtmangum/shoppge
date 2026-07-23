@@ -7,7 +7,7 @@
           {
             "type": "command",
             "if": "Bash(git push*)",
-            "command": "bash /Users/mattmangum/Projects/pge-shop/.claude/hooks/check-changelog-before-push.sh",
+            "command": "bash .claude/hooks/check-changelog-before-push.sh",
             "timeout": 15,
             "statusMessage": "Checking CHANGELOG.md before push..."
           }

@@ -30,6 +30,9 @@ Dates are in `YYYY-MM-DD`.
 ### Changed
 - Homepage copy condensed from a full hero into a compact sign-in bar to make room
   for the recent-jobs preview.
+- Header now includes an inline sign-in form (email/password + submit) for
+  unauthenticated visitors, so they can log in without navigating to `/login`
+  first. Hidden once a session exists.
 
 ## [0.1.0] - 2026-07-22
 - Initial Next.js rewrite of the PGE Instrumentation/Machine Shop job tracker
