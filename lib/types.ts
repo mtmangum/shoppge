@@ -197,3 +197,24 @@ export const updateUserSchema = z.object({
 })
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>
+
+export type AccessRequestStatus = 'pending' | 'approved' | 'rejected'
+
+export const createAccessRequestSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Must be a valid email'),
+  department: z.string().optional(),
+  phone: z.string().optional(),
+  reason: z.string().max(2000).optional(),
+})
+
+export type CreateAccessRequestInput = z.infer<typeof createAccessRequestSchema>
+
+export const reviewAccessRequestSchema = z.object({
+  decision: z.enum(['approved', 'rejected']),
+  role: z.enum(['requestor', 'machinist', 'admin']).optional(),
+  password: z.string().min(8, 'Password must be at least 8 characters').optional(),
+  reviewNote: z.string().optional(),
+})
+
+export type ReviewAccessRequestInput = z.infer<typeof reviewAccessRequestSchema>

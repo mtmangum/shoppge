@@ -39,6 +39,16 @@ Dates are in `YYYY-MM-DD`.
   horizontally, nothing is removed, just deprioritized on narrow screens.
 
 ### Added
+- Self-service account requests: a public `/request-access` form (linked from
+  `/login` and the homepage sign-in card) collects name, email, department,
+  phone, and reason into a new `access_requests` table (pending/approved/
+  rejected). Admins review a "Pending Access Requests" queue at the top of
+  `/admin/users` — approve (choosing a role, optionally setting a password)
+  creates the real `users` row, reject just closes it out with no account
+  created. Guards against duplicate pending requests for the same email and
+  against requesting an email that already has an account.
+  `POST /api/access-requests` (public) and `GET`/`PATCH /api/access-requests/
+  [id]` (admin-only).
 - Global activity log at `/admin/activity`: paginated (50/page), filterable by
   job #, changed-by user, new status, and date range, all via `searchParams` on
   a plain `GET` form (no client JS). Linked from the Navbar and from the

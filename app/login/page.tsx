@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -65,6 +66,13 @@ export default function LoginPage() {
         >
           {submitting ? 'Signing in…' : 'Sign In'}
         </button>
+
+        <p className="text-center text-sm text-gray-500">
+          Need an account?{' '}
+          <Link href="/request-access" className="text-[#BF5700] hover:underline">
+            Request access
+          </Link>
+        </p>
       </form>
     </div>
   )

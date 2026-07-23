@@ -28,6 +28,12 @@ CREATE TYPE user_role AS ENUM (
   'admin'
 );
 
+CREATE TYPE access_request_status AS ENUM (
+  'pending',
+  'approved',
+  'rejected'
+);
+
 -- ============================================================
 -- Users
 -- ============================================================
@@ -48,6 +54,25 @@ CREATE TABLE users (
 
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_eid   ON users(eid) WHERE eid IS NOT NULL;
+
+-- ============================================================
+-- Access Requests (self-service "request an account" queue)
+-- ============================================================
+CREATE TABLE access_requests (
+  id              SERIAL PRIMARY KEY,
+  name            VARCHAR(255) NOT NULL,
+  email           VARCHAR(255) NOT NULL,
+  department      VARCHAR(100),
+  phone           VARCHAR(30),
+  reason          TEXT,
+  status          access_request_status NOT NULL DEFAULT 'pending',
+  reviewed_by_id  INTEGER REFERENCES users(id),
+  reviewed_at     TIMESTAMPTZ,
+  review_note     TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_access_requests_status ON access_requests(status);
 
 -- ============================================================
 -- Jobs

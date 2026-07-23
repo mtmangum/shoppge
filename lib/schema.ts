@@ -11,6 +11,7 @@ import { relations } from 'drizzle-orm'
 export const jobStatusEnum   = pgEnum('job_status',   ['pending', 'inprogress', 'completed', 'cancelled'])
 export const jobPriorityEnum = pgEnum('job_priority', ['normal', 'urgent'])
 export const userRoleEnum    = pgEnum('user_role',    ['requestor', 'machinist', 'admin'])
+export const accessRequestStatusEnum = pgEnum('access_request_status', ['pending', 'approved', 'rejected'])
 
 // ============================================================
 // Users
@@ -29,6 +30,27 @@ export const users = pgTable('users', {
   createdAt:    timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt:    timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 })
+
+// ============================================================
+// Access Requests (self-service "request an account" queue)
+// ============================================================
+export const accessRequests = pgTable('access_requests', {
+  id:            serial('id').primaryKey(),
+  name:          varchar('name', { length: 255 }).notNull(),
+  email:         varchar('email', { length: 255 }).notNull(),
+  department:    varchar('department', { length: 100 }),
+  phone:         varchar('phone', { length: 30 }),
+  reason:        text('reason'),
+  status:        accessRequestStatusEnum('status').notNull().default('pending'),
+  reviewedById:  integer('reviewed_by_id').references(() => users.id),
+  reviewedAt:    timestamp('reviewed_at', { withTimezone: true }),
+  reviewNote:    text('review_note'),
+  createdAt:     timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const accessRequestsRelations = relations(accessRequests, ({ one }) => ({
+  reviewedBy: one(users, { fields: [accessRequests.reviewedById], references: [users.id] }),
+}))
 
 // ============================================================
 // Jobs
