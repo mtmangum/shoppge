@@ -169,7 +169,10 @@ export default async function AdminDashboardPage() {
       </div>
 
       <section className="bg-white rounded-lg border shadow-sm">
-        <h3 className="font-semibold text-gray-700 px-6 pt-4 pb-2 border-b">Recent Activity</h3>
+        <div className="flex items-center justify-between px-6 pt-4 pb-2 border-b">
+          <h3 className="font-semibold text-gray-700">Recent Activity</h3>
+          <Link href="/admin/activity" className="text-sm text-[#BF5700] hover:underline">View full log →</Link>
+        </div>
         {activity.length === 0 ? (
           <p className="text-sm text-gray-400 italic px-6 py-4">No status changes yet.</p>
         ) : (

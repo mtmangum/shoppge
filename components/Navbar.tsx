@@ -19,6 +19,7 @@ export function Navbar({ user }: NavbarProps) {
     { href: '/jobs/new',   label: 'Submit Job',      roles: ['requestor', 'machinist', 'admin'] },
     { href: '/admin',      label: 'Admin',           roles: ['admin'] },
     { href: '/admin/users', label: 'Users',          roles: ['admin'] },
+    { href: '/admin/activity', label: 'Activity',    roles: ['admin'] },
   ].filter(l => l.roles.includes(role))
 
   return (

@@ -8,6 +8,11 @@ Dates are in `YYYY-MM-DD`.
 ## [Unreleased]
 
 ### Added
+- Global activity log at `/admin/activity`: paginated (50/page), filterable by
+  job #, changed-by user, new status, and date range, all via `searchParams` on
+  a plain `GET` form (no client JS). Linked from the Navbar and from the
+  dashboard's "Recent Activity" card ("View full log →"), which stays as the
+  last-20 snapshot.
 - Landing page at `/` for unauthenticated visitors, with a compact sign-in bar and a
   public preview of the 10 most recent jobs (job #, description, status, priority,
   days in queue — no requestor/machinist names, to limit exposure to non-identifying
