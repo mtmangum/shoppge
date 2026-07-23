@@ -1,0 +1,29 @@
+name: Feature request
+description: Suggest an idea or improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: What are you trying to do that's currently hard, slow, or impossible?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would you like to happen? Rough ideas are fine.
+    validations:
+      required: false
+  - type: dropdown
+    id: role
+    attributes:
+      label: Who is this for?
+      options:
+        - requestor
+        - machinist
+        - admin
+        - everyone
+    validations:
+      required: false
