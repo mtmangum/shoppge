@@ -5,12 +5,15 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { createJobSchema, type CreateJobSchema } from '@/lib/types'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import Link from 'next/link'
 import { Plus, Trash2 } from 'lucide-react'
 
 export default function NewJobPage() {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [file, setFile] = useState<File | null>(null)
+  const [createdJobId, setCreatedJobId] = useState<number | null>(null)
 
   const { register, control, handleSubmit, formState: { errors } } = useForm<CreateJobSchema>({
     resolver: zodResolver(createJobSchema),
@@ -34,6 +37,20 @@ export default function NewJobPage() {
       })
       if (!res.ok) throw new Error(await res.text())
       const { id } = await res.json()
+
+      if (file) {
+        const uploadForm = new FormData()
+        uploadForm.append('file', file)
+        const uploadRes = await fetch(`/api/jobs/${id}/attachments`, { method: 'POST', body: uploadForm })
+        if (!uploadRes.ok) {
+          const { error: uploadError } = await uploadRes.json().catch(() => ({ error: 'Attachment upload failed' }))
+          setError(`Job #${id} was created, but the attachment failed to upload: ${uploadError ?? 'unknown error'}.`)
+          setCreatedJobId(id)
+          setSubmitting(false)
+          return
+        }
+      }
+
       router.push(`/jobs/${id}`)
     } catch (e: any) {
       setError(e.message)
@@ -149,9 +166,10 @@ export default function NewJobPage() {
             <input
               type="file"
               accept=".pdf"
+              onChange={e => setFile(e.target.files?.[0] ?? null)}
               className="text-sm text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded file:border file:text-sm file:cursor-pointer"
             />
-            <p className="text-xs text-gray-400 mt-1">Upload after submission from the job detail page.</p>
+            <p className="text-xs text-gray-400 mt-1">Optional. You can also add more from the job page after submitting.</p>
           </div>
         </section>
 
@@ -189,7 +207,17 @@ export default function NewJobPage() {
         </section>
 
         {error && (
-          <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded p-3">{error}</p>
+          <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded p-3">
+            {error}
+            {createdJobId && (
+              <>
+                {' '}
+                <Link href={`/jobs/${createdJobId}`} className="underline font-medium">
+                  Go to Job #{createdJobId}
+                </Link>
+              </>
+            )}
+          </p>
         )}
 
         <div className="flex gap-3">

@@ -13,6 +13,7 @@ interface JobActionsProps {
   materialsOrdered: boolean
   machinistNotes: string
   machinists: Array<{ id: number; name: string }>
+  isAdmin: boolean
 }
 
 const STATUS_OPTIONS: JobStatus[] = ['pending', 'inprogress', 'completed', 'cancelled']
@@ -26,8 +27,12 @@ export function JobActions({
   materialsOrdered,
   machinistNotes,
   machinists,
+  isAdmin,
 }: JobActionsProps) {
   const router = useRouter()
+
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const [statusValue, setStatusValue] = useState<JobStatus>(status)
   const [statusNote, setStatusNote] = useState('')
@@ -105,6 +110,28 @@ export function JobActions({
       router.refresh()
     } finally {
       setMaterialsSaving(false)
+    }
+  }
+
+  async function handleDelete() {
+    const confirmed = window.confirm(
+      `Delete job #${jobId} permanently? This removes its items, attachments, and status history. This cannot be undone.`
+    )
+    if (!confirmed) return
+
+    setDeleting(true)
+    setDeleteError(null)
+    try {
+      const res = await fetch(`/api/jobs/${jobId}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const { error } = await res.json().catch(() => ({ error: 'Delete failed' }))
+        throw new Error(error ?? 'Delete failed')
+      }
+      router.push('/jobs')
+      router.refresh()
+    } catch (e: any) {
+      setDeleteError(e.message)
+      setDeleting(false)
     }
   }
 
@@ -219,6 +246,22 @@ export function JobActions({
           {notesSaving ? 'Saving…' : notesSaved ? 'Saved' : 'Save Notes'}
         </button>
       </form>
+
+      {/* Admin: destructive actions */}
+      {isAdmin && (
+        <div className="space-y-2 border-t pt-4">
+          <label className="block text-xs font-medium text-red-600">Danger Zone</label>
+          {deleteError && <p className="text-red-500 text-xs">{deleteError}</p>}
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="px-3 py-1.5 rounded-md border border-red-300 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+          >
+            {deleting ? 'Deleting…' : 'Delete Job'}
+          </button>
+        </div>
+      )}
     </section>
   )
 }

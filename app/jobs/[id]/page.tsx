@@ -207,6 +207,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
               materialsOrdered={job.materialsOrdered}
               machinistNotes={job.machinistNotes ?? ''}
               machinists={machinists}
+              isAdmin={role === 'admin'}
             />
           )}
 
