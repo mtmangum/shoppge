@@ -17,6 +17,14 @@ Dates are in `YYYY-MM-DD`.
   for name, email, department, phone, and room (role/status/password already
   had their own controls). `PATCH /api/users/[id]` gained `email` to its
   editable fields to support it.
+- Delete action on `/admin/users`: `DELETE /api/users/[id]`, gated by
+  `requireAdmin()`. Since `jobs.requestor_id` (and machinist/completed-by/
+  attachment-uploader/status-history-actor) all reference `users.id` without
+  cascade, a user with any of those is refused with a count-by-category
+  message ("linked to N job(s), N attachment(s), N status-history entries —
+  deactivate instead") rather than surfacing a raw FK violation. Only
+  never-used accounts can actually be hard-deleted; an admin can't delete
+  their own account.
 - Landing page at `/` for unauthenticated visitors, with a compact sign-in bar and a
   public preview of the 10 most recent jobs (job #, description, status, priority,
   days in queue — no requestor/machinist names, to limit exposure to non-identifying

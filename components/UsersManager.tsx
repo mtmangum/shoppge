@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { UserRole } from '@/lib/types'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus, Pencil, Trash2 } from 'lucide-react'
 
 interface ManagedUser {
   id: number
@@ -48,7 +48,7 @@ export function UsersManager({ users, currentUserId }: { users: ManagedUser[]; c
               <th className="px-4 py-3 text-left font-medium">Department</th>
               <th className="px-4 py-3 text-left font-medium">Status</th>
               <th className="px-4 py-3 text-left font-medium">Password</th>
-              <th className="px-4 py-3 text-left font-medium">Edit</th>
+              <th className="px-4 py-3 text-left font-medium">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -147,6 +147,8 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
   const [editRoom, setEditRoom] = useState(user.room ?? '')
   const [editSaving, setEditSaving] = useState(false)
   const [editError, setEditError] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const [displayName, setDisplayName] = useState(user.name)
   const [displayEmail, setDisplayEmail] = useState(user.email)
   const [displayDepartment, setDisplayDepartment] = useState(user.department)
@@ -218,6 +220,27 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
     }
   }
 
+  async function handleDelete() {
+    const confirmed = window.confirm(
+      `Delete ${displayName} (${displayEmail}) permanently? This cannot be undone.`
+    )
+    if (!confirmed) return
+
+    setDeleting(true)
+    setDeleteError(null)
+    try {
+      const res = await fetch(`/api/users/${user.id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const { error } = await res.json().catch(() => ({ error: 'Delete failed' }))
+        throw new Error(error ?? 'Delete failed')
+      }
+      router.refresh()
+    } catch (e: any) {
+      setDeleteError(e.message)
+      setDeleting(false)
+    }
+  }
+
   async function handleSetPassword(e: React.FormEvent) {
     e.preventDefault()
     setPasswordSaving(true)
@@ -237,7 +260,7 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
 
   return (
     <>
-    <tr className={rowBg}>
+    <tr className={rowBg} style={deleting ? { opacity: 0.5 } : undefined}>
       <td className="px-4 py-3">{displayName}{isSelf && <span className="text-gray-400 text-xs ml-1">(you)</span>}</td>
       <td className="px-4 py-3">{displayEmail}</td>
       <td className="px-4 py-3">
@@ -290,13 +313,25 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
         {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
       </td>
       <td className="px-4 py-3">
-        <button
-          onClick={() => setEditing(v => !v)}
-          className="text-gray-400 hover:text-[#BF5700]"
-          aria-label={`Edit ${displayName}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setEditing(v => !v)}
+            className="text-gray-400 hover:text-[#BF5700]"
+            aria-label={`Edit ${displayName}`}
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={isSelf || deleting}
+            className="text-gray-400 hover:text-red-600 disabled:opacity-30 disabled:hover:text-gray-400"
+            aria-label={`Delete ${displayName}`}
+            title={isSelf ? "You can't delete your own account" : 'Delete user'}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+        {deleteError && <p className="text-red-500 text-xs mt-1 max-w-xs">{deleteError}</p>}
       </td>
     </tr>
     {editing && (
