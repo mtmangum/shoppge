@@ -4,6 +4,7 @@ import { db } from '@/lib/db'
 import { users, accessRequests } from '@/lib/schema'
 import { asc, desc, eq } from 'drizzle-orm'
 import { UsersManager } from '@/components/UsersManager'
+import { UsersHeader } from '@/components/UsersHeader'
 import { AccessRequestsQueue } from '@/components/AccessRequestsQueue'
 
 export default async function AdminUsersPage() {
@@ -42,7 +43,7 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Users</h2>
+      <UsersHeader />
       <AccessRequestsQueue
         requests={pendingRequests.map(r => ({ ...r, createdAt: r.createdAt.toISOString() }))}
       />

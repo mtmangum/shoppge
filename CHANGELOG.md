@@ -106,6 +106,11 @@ Dates are in `YYYY-MM-DD`.
   for the recent-jobs preview.
 - Homepage sign-in card now has an inline email/password form in place of the
   "Sign In" link, so visitors can log in without navigating to `/login` first.
+- `/admin/users`: moved "+ New User" up next to the "Users" heading (was its
+  own row) to use the empty space there, and dropped the standalone Password
+  column — resetting a password now lives as a field in the same pencil-icon
+  edit form as name/email/department/phone/room, rather than its own
+  show/hide control.
 
 ## [0.1.0] - 2026-07-22
 - Initial Next.js rewrite of the PGE Instrumentation/Machine Shop job tracker
