@@ -13,6 +13,10 @@ Dates are in `YYYY-MM-DD`.
   a plain `GET` form (no client JS). Linked from the Navbar and from the
   dashboard's "Recent Activity" card ("View full log →"), which stays as the
   last-20 snapshot.
+- Edit action on `/admin/users`: a pencil icon per row expands an inline form
+  for name, email, department, phone, and room (role/status/password already
+  had their own controls). `PATCH /api/users/[id]` gained `email` to its
+  editable fields to support it.
 - Landing page at `/` for unauthenticated visitors, with a compact sign-in bar and a
   public preview of the 10 most recent jobs (job #, description, status, priority,
   days in queue — no requestor/machinist names, to limit exposure to non-identifying

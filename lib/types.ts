@@ -187,6 +187,7 @@ export type CreateUserInput = z.infer<typeof createUserSchema>
 
 export const updateUserSchema = z.object({
   name: z.string().min(1).optional(),
+  email: z.string().email('Must be a valid email').optional(),
   role: z.enum(['requestor', 'machinist', 'admin']).optional(),
   department: z.string().optional(),
   phone: z.string().optional(),

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { UserRole } from '@/lib/types'
-import { Plus } from 'lucide-react'
+import { Plus, Pencil } from 'lucide-react'
 
 interface ManagedUser {
   id: number
@@ -48,6 +48,7 @@ export function UsersManager({ users, currentUserId }: { users: ManagedUser[]; c
               <th className="px-4 py-3 text-left font-medium">Department</th>
               <th className="px-4 py-3 text-left font-medium">Status</th>
               <th className="px-4 py-3 text-left font-medium">Password</th>
+              <th className="px-4 py-3 text-left font-medium">Edit</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -138,6 +139,18 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
   const [passwordSaving, setPasswordSaving] = useState(false)
   const [passwordSaved, setPasswordSaved] = useState(false)
 
+  const [editing, setEditing] = useState(false)
+  const [editName, setEditName] = useState(user.name)
+  const [editEmail, setEditEmail] = useState(user.email)
+  const [editDepartment, setEditDepartment] = useState(user.department ?? '')
+  const [editPhone, setEditPhone] = useState(user.phone ?? '')
+  const [editRoom, setEditRoom] = useState(user.room ?? '')
+  const [editSaving, setEditSaving] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
+  const [displayName, setDisplayName] = useState(user.name)
+  const [displayEmail, setDisplayEmail] = useState(user.email)
+  const [displayDepartment, setDisplayDepartment] = useState(user.department)
+
   async function patchUser(body: Record<string, unknown>) {
     const res = await fetch(`/api/users/${user.id}`, {
       method: 'PATCH',
@@ -181,6 +194,30 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
     }
   }
 
+  async function handleEditSave(e: React.FormEvent) {
+    e.preventDefault()
+    setEditSaving(true)
+    setEditError(null)
+    try {
+      await patchUser({
+        name: editName,
+        email: editEmail,
+        department: editDepartment,
+        phone: editPhone,
+        room: editRoom,
+      })
+      setDisplayName(editName)
+      setDisplayEmail(editEmail)
+      setDisplayDepartment(editDepartment || null)
+      setEditing(false)
+      router.refresh()
+    } catch (e: any) {
+      setEditError(e.message)
+    } finally {
+      setEditSaving(false)
+    }
+  }
+
   async function handleSetPassword(e: React.FormEvent) {
     e.preventDefault()
     setPasswordSaving(true)
@@ -199,9 +236,10 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
   }
 
   return (
+    <>
     <tr className={rowBg}>
-      <td className="px-4 py-3">{user.name}{isSelf && <span className="text-gray-400 text-xs ml-1">(you)</span>}</td>
-      <td className="px-4 py-3">{user.email}</td>
+      <td className="px-4 py-3">{displayName}{isSelf && <span className="text-gray-400 text-xs ml-1">(you)</span>}</td>
+      <td className="px-4 py-3">{displayEmail}</td>
       <td className="px-4 py-3">
         <select
           value={role}
@@ -212,7 +250,7 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
           {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
         </select>
       </td>
-      <td className="px-4 py-3">{user.department || '—'}</td>
+      <td className="px-4 py-3">{displayDepartment || '—'}</td>
       <td className="px-4 py-3">
         <label className="flex items-center gap-2">
           <input
@@ -251,6 +289,53 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
         )}
         {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
       </td>
+      <td className="px-4 py-3">
+        <button
+          onClick={() => setEditing(v => !v)}
+          className="text-gray-400 hover:text-[#BF5700]"
+          aria-label={`Edit ${displayName}`}
+        >
+          <Pencil className="h-4 w-4" />
+        </button>
+      </td>
     </tr>
+    {editing && (
+      <tr className={rowBg}>
+        <td colSpan={7} className="px-4 py-4 border-t-0">
+          <form onSubmit={handleEditSave} className="bg-gray-50 rounded-md border p-4 grid grid-cols-2 sm:grid-cols-5 gap-3 items-end">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Name</label>
+              <input required value={editName} onChange={e => setEditName(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm w-full" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Email</label>
+              <input required type="email" value={editEmail} onChange={e => setEditEmail(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm w-full" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Department</label>
+              <input value={editDepartment} onChange={e => setEditDepartment(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm w-full" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Phone</label>
+              <input value={editPhone} onChange={e => setEditPhone(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm w-full" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Room</label>
+              <input value={editRoom} onChange={e => setEditRoom(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm w-full" />
+            </div>
+            <div className="col-span-2 sm:col-span-5 flex items-center gap-3">
+              <button type="submit" disabled={editSaving} className="bg-[#BF5700] text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-[#a34800] disabled:opacity-50 transition-colors">
+                {editSaving ? 'Saving…' : 'Save'}
+              </button>
+              <button type="button" onClick={() => setEditing(false)} className="text-sm text-gray-500 hover:underline">
+                Cancel
+              </button>
+              {editError && <p className="text-red-500 text-xs">{editError}</p>}
+            </div>
+          </form>
+        </td>
+      </tr>
+    )}
+    </>
   )
 }
