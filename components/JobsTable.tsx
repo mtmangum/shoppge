@@ -31,6 +31,12 @@ interface JobsTableProps {
   highlightFilter?: StatsFilterKey | null
 }
 
+const HIGHLIGHT_STYLES: Record<StatsFilterKey, { bg: string; border: string }> = {
+  pending:    { bg: 'bg-yellow-50', border: 'border-yellow-400' },
+  inprogress: { bg: 'bg-blue-50',   border: 'border-blue-400' },
+  urgent:     { bg: 'bg-red-50',    border: 'border-red-400' },
+}
+
 function matchesHighlight(job: JobListItem, highlightFilter?: StatsFilterKey | null) {
   if (!highlightFilter) return false
   if (highlightFilter === 'urgent') return job.priority === 'urgent'
@@ -194,12 +200,13 @@ export function JobsTable({ jobs, highlightFilter }: JobsTableProps) {
           <tbody className="divide-y">
             {table.getRowModel().rows.map((row, i) => {
               const highlighted = matchesHighlight(row.original, highlightFilter)
+              const style = highlighted && highlightFilter ? HIGHLIGHT_STYLES[highlightFilter] : null
               return (
                 <tr
                   key={row.id}
                   className={clsx(
                     'transition-colors',
-                    highlighted ? 'bg-orange-50' : i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                    style ? style.bg : i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                   )}
                 >
                   {row.getVisibleCells().map((cell, cellIdx) => (
@@ -207,8 +214,7 @@ export function JobsTable({ jobs, highlightFilter }: JobsTableProps) {
                       key={cell.id}
                       className={clsx(
                         'px-4 py-3',
-                        cellIdx === 0 && highlighted && 'border-l-4 border-[#BF5700]',
-                        cellIdx === 0 && !highlighted && 'border-l-4 border-transparent',
+                        cellIdx === 0 && ['border-l-4', style ? style.border : 'border-transparent'],
                         cell.column.columnDef.meta?.hideOnMobile && 'hidden md:table-cell'
                       )}
                     >

@@ -22,11 +22,11 @@ export function StatsCards({
 }) {
   const [hovered, setHovered] = useState<StatsFilterKey | null>(null)
 
-  const cards: { label: string; value: string | number; color: string; filterKey: StatsFilterKey | null }[] = [
-    { label: 'Pending',         value: stats.pending_count,       color: 'text-yellow-600', filterKey: 'pending' },
-    { label: 'In Progress',     value: stats.inprogress_count,    color: 'text-blue-600',   filterKey: 'inprogress' },
-    { label: 'Urgent Open',     value: stats.urgent_open_count,   color: 'text-red-600',    filterKey: 'urgent' },
-    { label: 'Avg. Completion', value: `${stats.avg_completion_days ?? '—'} days`, color: 'text-green-600', filterKey: null },
+  const cards: { label: string; value: string | number; color: string; ring: string; filterKey: StatsFilterKey | null }[] = [
+    { label: 'Pending',         value: stats.pending_count,       color: 'text-yellow-600', ring: 'ring-yellow-400', filterKey: 'pending' },
+    { label: 'In Progress',     value: stats.inprogress_count,    color: 'text-blue-600',   ring: 'ring-blue-400',   filterKey: 'inprogress' },
+    { label: 'Urgent Open',     value: stats.urgent_open_count,   color: 'text-red-600',    ring: 'ring-red-400',    filterKey: 'urgent' },
+    { label: 'Avg. Completion', value: `${stats.avg_completion_days ?? '—'} days`, color: 'text-green-600', ring: '', filterKey: null },
   ]
 
   function handleEnter(key: StatsFilterKey | null) {
@@ -49,7 +49,7 @@ export function StatsCards({
           className={clsx(
             'bg-white rounded-lg border p-4 shadow-sm transition-shadow',
             card.filterKey && 'cursor-pointer',
-            hovered === card.filterKey && card.filterKey && 'ring-2 ring-[#BF5700]'
+            hovered === card.filterKey && card.filterKey && ['ring-2', card.ring]
           )}
         >
           <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{card.label}</p>
