@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { format } from 'date-fns'
 import { desc, sql } from 'drizzle-orm'
 import { auth } from '@/lib/auth'
@@ -7,6 +6,7 @@ import { db } from '@/lib/db'
 import { jobs } from '@/lib/schema'
 import { StatusBadge } from '@/components/StatusBadge'
 import { PriorityBadge } from '@/components/PriorityBadge'
+import { InlineLoginForm } from '@/components/InlineLoginForm'
 
 export default async function RootPage() {
   const session = await auth()
@@ -36,12 +36,7 @@ export default async function RootPage() {
             Submit a work order, attach your drawings, and track it through to completion.
           </p>
         </div>
-        <Link
-          href="/login"
-          className="shrink-0 bg-[#BF5700] text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-[#a34800] transition-colors text-center"
-        >
-          Sign In
-        </Link>
+        <InlineLoginForm />
       </section>
 
       <section className="space-y-3">

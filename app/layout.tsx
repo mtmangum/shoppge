@@ -3,7 +3,6 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Navbar } from '@/components/Navbar'
 import { Toaster } from '@/components/ui/Toaster'
-import { HeaderLogin } from '@/components/HeaderLogin'
 import { auth } from '@/lib/auth'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -35,7 +34,6 @@ export default async function RootLayout({
                   Instrumentation / Machine Shop
                 </h1>
               </div>
-              {!session?.user && <HeaderLogin />}
               <img
                 src="/ut_logo.svg"
                 alt="The University of Texas at Austin"
