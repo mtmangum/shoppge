@@ -18,6 +18,7 @@ import type { JobListItem, JobStatus, JobPriority } from '@/lib/types'
 import Link from 'next/link'
 import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 import clsx from 'clsx'
+import type { StatsFilterKey } from './StatsCards'
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
@@ -27,9 +28,16 @@ declare module '@tanstack/react-table' {
 
 interface JobsTableProps {
   jobs: JobListItem[]
+  highlightFilter?: StatsFilterKey | null
 }
 
-export function JobsTable({ jobs }: JobsTableProps) {
+function matchesHighlight(job: JobListItem, highlightFilter?: StatsFilterKey | null) {
+  if (!highlightFilter) return false
+  if (highlightFilter === 'urgent') return job.priority === 'urgent'
+  return job.status === highlightFilter
+}
+
+export function JobsTable({ jobs, highlightFilter }: JobsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<JobStatus | 'all'>('all')
@@ -184,21 +192,32 @@ export function JobsTable({ jobs }: JobsTableProps) {
             ))}
           </thead>
           <tbody className="divide-y">
-            {table.getRowModel().rows.map((row, i) => (
-              <tr key={row.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                {row.getVisibleCells().map(cell => (
-                  <td
-                    key={cell.id}
-                    className={clsx(
-                      'px-4 py-3',
-                      cell.column.columnDef.meta?.hideOnMobile && 'hidden md:table-cell'
-                    )}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {table.getRowModel().rows.map((row, i) => {
+              const highlighted = matchesHighlight(row.original, highlightFilter)
+              return (
+                <tr
+                  key={row.id}
+                  className={clsx(
+                    'transition-colors',
+                    highlighted ? 'bg-orange-50' : i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                  )}
+                >
+                  {row.getVisibleCells().map((cell, cellIdx) => (
+                    <td
+                      key={cell.id}
+                      className={clsx(
+                        'px-4 py-3',
+                        cellIdx === 0 && highlighted && 'border-l-4 border-[#BF5700]',
+                        cellIdx === 0 && !highlighted && 'border-l-4 border-transparent',
+                        cell.column.columnDef.meta?.hideOnMobile && 'hidden md:table-cell'
+                      )}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

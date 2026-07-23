@@ -4,8 +4,7 @@ import { db } from '@/lib/db'
 import { jobs, users } from '@/lib/schema'
 import { eq, ne, sql, desc } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
-import { JobsTable } from '@/components/JobsTable'
-import { StatsCards } from '@/components/StatsCards'
+import { OpenJobsView } from '@/components/OpenJobsView'
 import Link from 'next/link'
 
 const machinists = alias(users, 'machinists')
@@ -50,9 +49,7 @@ export default async function JobsPage() {
         </Link>
       </div>
 
-      <StatsCards stats={stats as any} />
-
-      <JobsTable jobs={openJobs as any} />
+      <OpenJobsView stats={stats as any} jobs={openJobs as any} />
     </div>
   )
 }

@@ -7,6 +7,17 @@ Dates are in `YYYY-MM-DD`.
 
 ## [Unreleased]
 
+### Added
+- Hovering a stat card on `/jobs` (Pending, In Progress, Urgent Open) now
+  highlights the matching rows in the jobs table below (orange tint + left
+  border), so the count and the rows it represents are visually linked.
+  Avg. Completion doesn't highlight anything, since it's a historical metric
+  with no matching rows in the open-jobs list. Implemented by lifting hover
+  state into a new `OpenJobsView` client wrapper shared by `StatsCards` and
+  `JobsTable` (previously independent siblings with no way to talk to each
+  other); `StatsCards` gained an optional `onHoverFilter` callback so its
+  existing use on `/admin` (no jobs table alongside it) is unaffected.
+
 ### Fixed
 - Session data (name, role) was baked into the JWT at login and never
   refreshed, so an admin editing a user's name, changing their role, or
