@@ -38,17 +38,17 @@ export function UsersManager({ users, currentUserId }: { users: ManagedUser[]; c
         <CreateUserForm onCreated={() => { setShowCreate(false); router.refresh() }} />
       )}
 
-      <div className="rounded-lg border bg-white overflow-hidden shadow-sm">
+      <div className="rounded-lg border bg-white shadow-sm overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-700 text-white">
             <tr>
-              <th className="px-4 py-3 text-left font-medium">Name</th>
-              <th className="px-4 py-3 text-left font-medium">Email</th>
-              <th className="px-4 py-3 text-left font-medium">Role</th>
-              <th className="px-4 py-3 text-left font-medium">Department</th>
-              <th className="px-4 py-3 text-left font-medium">Status</th>
-              <th className="px-4 py-3 text-left font-medium">Password</th>
-              <th className="px-4 py-3 text-left font-medium">Actions</th>
+              <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Name</th>
+              <th className="px-4 py-3 text-left font-medium whitespace-nowrap hidden md:table-cell">Email</th>
+              <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Role</th>
+              <th className="px-4 py-3 text-left font-medium whitespace-nowrap hidden md:table-cell">Department</th>
+              <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Status</th>
+              <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Password</th>
+              <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -262,7 +262,7 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
     <>
     <tr className={rowBg} style={deleting ? { opacity: 0.5 } : undefined}>
       <td className="px-4 py-3">{displayName}{isSelf && <span className="text-gray-400 text-xs ml-1">(you)</span>}</td>
-      <td className="px-4 py-3">{displayEmail}</td>
+      <td className="px-4 py-3 hidden md:table-cell">{displayEmail}</td>
       <td className="px-4 py-3">
         <select
           value={role}
@@ -273,7 +273,7 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
           {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
         </select>
       </td>
-      <td className="px-4 py-3">{displayDepartment || '—'}</td>
+      <td className="px-4 py-3 hidden md:table-cell">{displayDepartment || '—'}</td>
       <td className="px-4 py-3">
         <label className="flex items-center gap-2">
           <input

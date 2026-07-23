@@ -7,6 +7,25 @@ Dates are in `YYYY-MM-DD`.
 
 ## [Unreleased]
 
+### Fixed
+- Mobile layout: the whole site was horizontally scrollable on phone-width
+  screens. Root causes were the header (title + UT logo) and Navbar (5 links +
+  user info) not wrapping, and every data table lacking its own scroll
+  container — so a wide table forced the entire page wider than the viewport,
+  dragging unrelated content (stat cards, sign-in form, even the Sign Out
+  button) off-screen with it. Fixed by wrapping every table in its own
+  `overflow-x-auto` container, letting the header/Navbar wrap (Navbar's user
+  info now drops to its own line if the nav links don't leave room), and a
+  defensive `overflow-x-hidden` on the page root as a backstop. Verified with
+  Puppeteer at a true 375px viewport (the raw headless Chrome CLI screenshots
+  used earlier were silently rendering at a wider forced viewport, which is
+  why this needed a proper tool to actually confirm).
+- Less-critical table columns now hide below the `md` breakpoint instead of
+  contributing to overflow: Users (email, department), Jobs (entry date, date
+  required, requestor, machinist), homepage recent-jobs (entry date), and
+  Activity Log (note) — all still reachable by scrolling the table
+  horizontally, nothing is removed, just deprioritized on narrow screens.
+
 ### Added
 - Global activity log at `/admin/activity`: paginated (50/page), filterable by
   job #, changed-by user, new status, and date range, all via `searchParams` on

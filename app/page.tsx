@@ -44,16 +44,16 @@ export default async function RootPage() {
           Recent Jobs
         </h3>
 
-        <div className="rounded-lg border bg-white overflow-hidden shadow-sm">
+        <div className="rounded-lg border bg-white shadow-sm overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-700 text-white">
               <tr>
-                <th className="px-4 py-3 text-left font-medium">Job #</th>
-                <th className="px-4 py-3 text-left font-medium">Entry Date</th>
+                <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Job #</th>
+                <th className="px-4 py-3 text-left font-medium whitespace-nowrap hidden md:table-cell">Entry Date</th>
                 <th className="px-4 py-3 text-left font-medium">Description</th>
-                <th className="px-4 py-3 text-left font-medium">Status</th>
-                <th className="px-4 py-3 text-left font-medium">Priority</th>
-                <th className="px-4 py-3 text-left font-medium">Days in Queue</th>
+                <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Status</th>
+                <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Priority</th>
+                <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Days in Queue</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -67,7 +67,7 @@ export default async function RootPage() {
               {recentJobs.map((job, i) => (
                 <tr key={job.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                   <td className="px-4 py-3 font-mono font-semibold text-[#BF5700]">{job.id}</td>
-                  <td className="px-4 py-3">{format(new Date(job.entryDate), 'MMM d, yyyy')}</td>
+                  <td className="px-4 py-3 whitespace-nowrap hidden md:table-cell">{format(new Date(job.entryDate), 'MMM d, yyyy')}</td>
                   <td className="px-4 py-3">
                     <span className="line-clamp-1 max-w-md block">{job.description}</span>
                   </td>

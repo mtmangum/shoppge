@@ -22,10 +22,10 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 overflow-x-hidden">
           <header className="bg-[#BF5700] text-white">
             {/* UT Austin burnt orange header */}
-            <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
               <div>
                 <p className="text-xs font-medium opacity-80">
                   Cockrell School of Engineering · Petroleum & Geosystems Engineering
@@ -37,7 +37,7 @@ export default async function RootLayout({
               <img
                 src="/ut_logo.svg"
                 alt="The University of Texas at Austin"
-                className="h-[34px]"
+                className="h-[34px] shrink-0"
               />
             </div>
           </header>

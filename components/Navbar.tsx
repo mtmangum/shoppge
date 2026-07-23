@@ -24,14 +24,14 @@ export function Navbar({ user }: NavbarProps) {
 
   return (
     <nav className="bg-white border-b shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-12">
-        <div className="flex gap-1">
+      <div className="max-w-7xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex gap-1 overflow-x-auto">
           {links.map(link => (
             <Link
               key={link.href}
               href={link.href}
               className={clsx(
-                'px-3 py-1.5 rounded text-sm font-medium transition-colors',
+                'px-3 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap shrink-0',
                 pathname === link.href
                   ? 'bg-[#BF5700] text-white'
                   : 'text-gray-700 hover:bg-gray-100'
@@ -41,7 +41,7 @@ export function Navbar({ user }: NavbarProps) {
             </Link>
           ))}
         </div>
-        <div className="flex items-center gap-3 text-sm text-gray-600">
+        <div className="flex items-center gap-3 text-sm text-gray-600 shrink-0">
           <span>{user.name}</span>
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}

@@ -17,6 +17,13 @@ import { PriorityBadge } from './PriorityBadge'
 import type { JobListItem, JobStatus, JobPriority } from '@/lib/types'
 import Link from 'next/link'
 import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
+import clsx from 'clsx'
+
+declare module '@tanstack/react-table' {
+  interface ColumnMeta<TData, TValue> {
+    hideOnMobile?: boolean
+  }
+}
 
 interface JobsTableProps {
   jobs: JobListItem[]
@@ -51,11 +58,13 @@ export function JobsTable({ jobs }: JobsTableProps) {
       accessorKey: 'entryDate',
       header: 'Entry Date',
       cell: ({ getValue }) => format(new Date(getValue() as string), 'MMM d, yyyy'),
+      meta: { hideOnMobile: true },
     },
     {
       accessorKey: 'dateRequired',
       header: 'Date Required',
       cell: ({ getValue }) => format(new Date(getValue() as string), 'MMM d, yyyy'),
+      meta: { hideOnMobile: true },
     },
     {
       accessorKey: 'description',
@@ -67,11 +76,13 @@ export function JobsTable({ jobs }: JobsTableProps) {
     {
       accessorKey: 'requestorName',
       header: 'Requestor',
+      meta: { hideOnMobile: true },
     },
     {
       accessorKey: 'machinistName',
       header: 'Machinist',
       cell: ({ getValue }) => getValue() as string || <span className="text-gray-400 italic">unassigned</span>,
+      meta: { hideOnMobile: true },
     },
     {
       accessorKey: 'status',
@@ -147,7 +158,7 @@ export function JobsTable({ jobs }: JobsTableProps) {
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border bg-white overflow-hidden shadow-sm">
+      <div className="rounded-lg border bg-white shadow-sm overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-700 text-white">
             {table.getHeaderGroups().map(hg => (
@@ -155,7 +166,10 @@ export function JobsTable({ jobs }: JobsTableProps) {
                 {hg.headers.map(header => (
                   <th
                     key={header.id}
-                    className="px-4 py-3 text-left font-medium cursor-pointer select-none"
+                    className={clsx(
+                      'px-4 py-3 text-left font-medium cursor-pointer select-none whitespace-nowrap',
+                      header.column.columnDef.meta?.hideOnMobile && 'hidden md:table-cell'
+                    )}
                     onClick={header.column.getToggleSortingHandler()}
                   >
                     <div className="flex items-center gap-1">
@@ -173,7 +187,13 @@ export function JobsTable({ jobs }: JobsTableProps) {
             {table.getRowModel().rows.map((row, i) => (
               <tr key={row.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                 {row.getVisibleCells().map(cell => (
-                  <td key={cell.id} className="px-4 py-3">
+                  <td
+                    key={cell.id}
+                    className={clsx(
+                      'px-4 py-3',
+                      cell.column.columnDef.meta?.hideOnMobile && 'hidden md:table-cell'
+                    )}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}

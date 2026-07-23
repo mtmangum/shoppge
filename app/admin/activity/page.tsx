@@ -118,15 +118,15 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
         )}
       </form>
 
-      <div className="rounded-lg border bg-white overflow-hidden shadow-sm">
+      <div className="rounded-lg border bg-white shadow-sm overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-700 text-white">
             <tr>
-              <th className="px-4 py-3 text-left font-medium">Job</th>
-              <th className="px-4 py-3 text-left font-medium">Change</th>
-              <th className="px-4 py-3 text-left font-medium">Note</th>
-              <th className="px-4 py-3 text-left font-medium">Changed By</th>
-              <th className="px-4 py-3 text-left font-medium">When</th>
+              <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Job</th>
+              <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Change</th>
+              <th className="px-4 py-3 text-left font-medium whitespace-nowrap hidden md:table-cell">Note</th>
+              <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Changed By</th>
+              <th className="px-4 py-3 text-left font-medium whitespace-nowrap">When</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -141,13 +141,13 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
                   </Link>
                 </td>
                 <td className="px-4 py-3">
-                  <span className="flex items-center gap-1.5 text-gray-500">
+                  <span className="flex items-center gap-1.5 text-gray-500 whitespace-nowrap">
                     {entry.fromStatus ?? 'created'} → <StatusBadge status={entry.toStatus} />
                   </span>
                 </td>
-                <td className="px-4 py-3 text-gray-600 max-w-xs truncate">{entry.note || '—'}</td>
-                <td className="px-4 py-3">{entry.changedByName ?? 'System'}</td>
-                <td className="px-4 py-3 text-gray-500">{format(new Date(entry.changedAt), 'MMM d, yyyy h:mm a')}</td>
+                <td className="px-4 py-3 text-gray-600 max-w-xs truncate hidden md:table-cell">{entry.note || '—'}</td>
+                <td className="px-4 py-3 whitespace-nowrap">{entry.changedByName ?? 'System'}</td>
+                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{format(new Date(entry.changedAt), 'MMM d, yyyy h:mm a')}</td>
               </tr>
             ))}
           </tbody>

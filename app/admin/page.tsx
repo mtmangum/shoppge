@@ -108,30 +108,32 @@ export default async function AdminDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <section className="bg-white rounded-lg border shadow-sm">
           <h3 className="font-semibold text-gray-700 px-6 pt-4 pb-2 border-b">Machinist Workload</h3>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-gray-500 text-xs uppercase tracking-wide">
-                <th className="px-6 py-2">Machinist</th>
-                <th className="px-6 py-2">Open</th>
-                <th className="px-6 py-2">Urgent</th>
-                <th className="px-6 py-2">Completed</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {workload.map(w => (
-                <tr key={w.id}>
-                  <td className="px-6 py-2">{w.name}</td>
-                  <td className="px-6 py-2">{w.openCount}</td>
-                  <td className="px-6 py-2">
-                    {w.urgentOpenCount > 0
-                      ? <span className="text-red-600 font-semibold">{w.urgentOpenCount}</span>
-                      : w.urgentOpenCount}
-                  </td>
-                  <td className="px-6 py-2 text-gray-500">{w.completedCount}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-500 text-xs uppercase tracking-wide">
+                  <th className="px-6 py-2 whitespace-nowrap">Machinist</th>
+                  <th className="px-6 py-2 whitespace-nowrap">Open</th>
+                  <th className="px-6 py-2 whitespace-nowrap">Urgent</th>
+                  <th className="px-6 py-2 whitespace-nowrap">Completed</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y">
+                {workload.map(w => (
+                  <tr key={w.id}>
+                    <td className="px-6 py-2 whitespace-nowrap">{w.name}</td>
+                    <td className="px-6 py-2">{w.openCount}</td>
+                    <td className="px-6 py-2">
+                      {w.urgentOpenCount > 0
+                        ? <span className="text-red-600 font-semibold">{w.urgentOpenCount}</span>
+                        : w.urgentOpenCount}
+                    </td>
+                    <td className="px-6 py-2 text-gray-500">{w.completedCount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <div className="px-6 py-3 border-t">
             <Link href="/admin/users" className="text-sm text-[#BF5700] hover:underline">Manage users →</Link>
           </div>
@@ -145,11 +147,11 @@ export default async function AdminDashboardPage() {
             <ul className="divide-y">
               {overdueOrUrgent.map(job => (
                 <li key={job.id} className="px-6 py-3 text-sm">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center flex-wrap justify-between gap-2">
                     <Link href={`/jobs/${job.id}`} className="font-mono font-semibold text-[#BF5700] hover:underline">
                       #{job.id}
                     </Link>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center flex-wrap gap-2">
                       <PriorityBadge priority={job.priority} />
                       <StatusBadge status={job.status} />
                       <span className={job.daysElapsed > 14 ? 'text-red-600 font-semibold' : 'text-gray-500'}>
@@ -178,7 +180,7 @@ export default async function AdminDashboardPage() {
         ) : (
           <ul className="divide-y">
             {activity.map(entry => (
-              <li key={entry.id} className="px-6 py-2.5 text-sm flex items-center justify-between gap-3">
+              <li key={entry.id} className="px-6 py-2.5 text-sm flex items-center flex-wrap justify-between gap-3">
                 <div className="flex items-center gap-2 flex-wrap">
                   <Link href={`/jobs/${entry.jobId}`} className="font-mono font-semibold text-[#BF5700] hover:underline">
                     #{entry.jobId}
