@@ -9,6 +9,8 @@ import Link from 'next/link'
 import { StatsCards } from '@/components/StatsCards'
 import { StatusBadge } from '@/components/StatusBadge'
 import { PriorityBadge } from '@/components/PriorityBadge'
+import { ThroughputChart } from '@/components/ThroughputChart'
+import { TurnaroundChart } from '@/components/TurnaroundChart'
 
 const machinists = alias(users, 'machinists')
 const changedByUsers = alias(users, 'changed_by_users')
@@ -55,6 +57,25 @@ export default async function AdminDashboardPage() {
     .orderBy(desc(sql`CURRENT_DATE - ${jobs.entryDate}`))
     .limit(15)
 
+  const { rows: weeklyRows } = await db.execute(sql`
+    SELECT
+      weeks.week_start AS week_start,
+      COALESCE(COUNT(j.id), 0)::int AS completed_count,
+      ROUND(AVG(j.date_completed - j.entry_date))::int AS avg_turnaround_days
+    FROM generate_series(
+      date_trunc('week', CURRENT_DATE) - interval '11 weeks',
+      date_trunc('week', CURRENT_DATE),
+      interval '1 week'
+    ) AS weeks(week_start)
+    LEFT JOIN jobs j
+      ON j.status = 'completed'
+      AND j.date_completed IS NOT NULL
+      AND date_trunc('week', j.date_completed) = weeks.week_start
+    GROUP BY weeks.week_start
+    ORDER BY weeks.week_start
+  `)
+  const weekly = weeklyRows as { week_start: string; completed_count: number; avg_turnaround_days: number | null }[]
+
   const activity = await db
     .select({
       id: jobStatusHistory.id,
@@ -75,6 +96,14 @@ export default async function AdminDashboardPage() {
       <h2 className="text-2xl font-bold text-gray-900">Admin Dashboard</h2>
 
       <StatsCards stats={stats as any} />
+
+      <section className="bg-white rounded-lg border shadow-sm p-6">
+        <h3 className="font-semibold text-gray-700 mb-4">Shop Trends (last 12 weeks)</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <ThroughputChart data={weekly.map(w => ({ weekStart: w.week_start, count: w.completed_count }))} />
+          <TurnaroundChart data={weekly.map(w => ({ weekStart: w.week_start, avgDays: w.avg_turnaround_days }))} />
+        </div>
+      </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <section className="bg-white rounded-lg border shadow-sm">

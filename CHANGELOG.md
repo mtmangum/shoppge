@@ -29,6 +29,13 @@ Dates are in `YYYY-MM-DD`.
   hashes couldn't be migrated) can be given a working login. `POST /api/users` and
   `PATCH /api/users/[id]`, both `requireAdmin()`-gated; an admin can't deactivate or
   demote their own account.
+- Shop trends on `/admin`: two hand-rolled SVG charts (no charting library) —
+  jobs completed per week and average turnaround time per week, both over a
+  trailing 12-week window generated with `generate_series` so weeks with zero
+  completions still show as zero rather than being skipped. Single-hue
+  (brand orange), hover tooltips + crosshair on the line chart, and a direct
+  value label on the peak bar / line endpoint so every value is reachable
+  without hovering.
 
 ### Fixed
 - The "Attach Drawing" file input on the new-job form (`app/jobs/new/page.tsx`) was
