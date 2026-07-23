@@ -67,11 +67,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id   = user.id
         token.role = (user as any).role
       }
+      // Re-read from the DB on every request (not just at sign-in) so a
+      // profile edit, role change, or deactivation in the admin panel takes
+      // effect immediately instead of waiting out the 8h session maxAge.
+      if (token.id) {
+        const [dbUser] = await db
+          .select({ name: users.name, role: users.role, isActive: users.isActive })
+          .from(users)
+          .where(eq(users.id, parseInt(token.id as string)))
+          .limit(1)
+
+        if (!dbUser || !dbUser.isActive) {
+          return { ...token, id: undefined }
+        }
+
+        token.name = dbUser.name
+        token.role = dbUser.role
+      }
       return token
     },
     async session({ session, token }) {
+      if (!token.id) {
+        // Deactivated (or deleted) since the token was issued — treat as signed out.
+        return { ...session, user: undefined as any, expires: session.expires }
+      }
       if (session.user) {
         session.user.id   = token.id as string
+        session.user.name = token.name as string
         session.user.role = token.role as UserRole
       }
       return session

@@ -8,6 +8,18 @@ Dates are in `YYYY-MM-DD`.
 ## [Unreleased]
 
 ### Fixed
+- Session data (name, role) was baked into the JWT at login and never
+  refreshed, so an admin editing a user's name, changing their role, or
+  deactivating their account had no effect on that user's *existing* session
+  until it naturally expired (up to the 8h `maxAge`) — deactivation in
+  particular meant a revoked account kept full access for up to 8 hours.
+  The `jwt` callback in `lib/auth.ts` now re-reads name/role/`isActive` from
+  the DB on every request (not just at sign-in); if the account is no longer
+  active, the token is invalidated and the `session` callback returns no
+  `user`, so `requireAuth()` correctly rejects it and the next request
+  redirects to `/login`. Verified both effects directly: an existing
+  session picks up a name change without re-logging in, and a deactivated
+  user's existing session is redirected to `/login` on its very next request.
 - Mobile layout: the whole site was horizontally scrollable on phone-width
   screens. Root causes were the header (title + UT logo) and Navbar (5 links +
   user info) not wrapping, and every data table lacking its own scroll
