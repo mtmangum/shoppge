@@ -7,6 +7,11 @@ Dates are in `YYYY-MM-DD`.
 
 ## [Unreleased]
 
+### Changed
+- `JobsTable` pagination reduced from 25 to 15 rows per page, so pagination
+  is actually exercised at realistic dev-data volumes instead of everything
+  silently fitting on one page.
+
 ### Fixed
 - `Dockerfile`: `npm ci` → `npm ci --legacy-peer-deps`. The build wasn't actually
   reproducible — it happened to pass on some machines only because their local npm
