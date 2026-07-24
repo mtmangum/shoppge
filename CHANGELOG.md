@@ -7,6 +7,14 @@ Dates are in `YYYY-MM-DD`.
 
 ## [Unreleased]
 
+### Changed
+- "ShopTrack" renamed to "UT ShopTrack" everywhere it appears in the UI.
+- Footer: "Cockrell School of Engineering" and "Petroleum & Geosystems
+  Engineering" are now links to cockrell.utexas.edu and pge.utexas.edu
+  respectively. Added a copyright line with the current year, computed at
+  render time (`new Date().getFullYear()`) rather than hardcoded, so it
+  never goes stale.
+
 ## [0.2.0-beta.2] - 2026-07-24
 
 ### Changed

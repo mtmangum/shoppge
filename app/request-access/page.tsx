@@ -60,7 +60,7 @@ export default function RequestAccessPage() {
     <div className="min-h-[70vh] flex items-center justify-center py-8">
       <form onSubmit={onSubmit} className="bg-white rounded-lg border p-8 w-full max-w-sm space-y-4 shadow-sm">
         <h2 className="text-xl font-bold text-gray-900">Request Access</h2>
-        <p className="text-sm text-gray-500">ShopTrack — PGE Instrumentation / Machine Shop</p>
+        <p className="text-sm text-gray-500">UT ShopTrack — PGE Instrumentation / Machine Shop</p>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>

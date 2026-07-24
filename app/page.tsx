@@ -30,7 +30,7 @@ export default async function RootPage() {
       <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white rounded-lg border p-5 shadow-sm">
         <div>
           <h2 className="text-lg font-bold text-gray-900">
-            ShopTrack — PGE Instrumentation &amp; Machine Shop
+            UT ShopTrack — PGE Instrumentation &amp; Machine Shop
           </h2>
           <p className="text-sm text-gray-600">
             Submit a work order, attach your drawings, and track it through to completion.
