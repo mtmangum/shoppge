@@ -11,6 +11,9 @@ Dates are in `YYYY-MM-DD`.
 - `JobsTable` pagination reduced from 25 to 10 rows per page, so pagination
   is actually exercised at realistic dev-data volumes instead of everything
   silently fitting on one page.
+- Admin nav reordered to Dashboard, Open Jobs, Submit Job, Users, Activity —
+  Dashboard first as the overview/landing view, Activity last since it's an
+  occasional audit/lookup tool rather than a daily-use one.
 
 ### Fixed
 - `Dockerfile`: `npm ci` → `npm ci --legacy-peer-deps`. The build wasn't actually
