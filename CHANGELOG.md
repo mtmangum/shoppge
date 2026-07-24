@@ -48,7 +48,20 @@ Dates are in `YYYY-MM-DD`.
   Dashboard first as the overview/landing view, Activity last since it's an
   occasional audit/lookup tool rather than a daily-use one.
 
+### Added
+- `docker-compose.aws.yml`: the AWS deployment's compose override, committed
+  to the repo instead of living only on the EC2 box — no S3/nginx sidecars,
+  app exposed directly on `:80`, real S3 via IAM creds.
+
 ### Fixed
+- `lib/s3.ts` read `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` for its S3 client
+  credentials even against real AWS S3 (no MinIO involved on that
+  deployment), and always set `forcePathStyle: true`, which MinIO needs but
+  real AWS S3 doesn't. Renamed the app-facing credential vars to
+  `S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY` (kept separate from MinIO's own
+  `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD`, which now only name the MinIO
+  container's superuser creds) and made `forcePathStyle` conditional on
+  `S3_ENDPOINT` being set.
 - `Dockerfile`: `npm ci` → `npm ci --legacy-peer-deps`. The build wasn't actually
   reproducible — it happened to pass on some machines only because their local npm
   resolves the `next-auth`/`nodemailer` peer conflict more leniently than the npm
