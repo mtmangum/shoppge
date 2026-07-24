@@ -64,7 +64,7 @@ export default async function RootLayout({
               <a href="http://www.utexas.edu/policies/privacy/" className="hover:underline">Privacy</a>
               <a href="http://www.utexas.edu/disability" className="hover:underline">Accessibility</a>
             </div>
-            <p className="mt-2">&copy; {new Date().getFullYear()} The University of Texas at Austin</p>
+            <p className="mt-2">&copy; {new Date().getFullYear()} <a href="https://www.utexas.edu" className="hover:underline">The University of Texas at Austin</a></p>
           </footer>
         </div>
         <Toaster />

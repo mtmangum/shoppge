@@ -13,7 +13,8 @@ Dates are in `YYYY-MM-DD`.
   Engineering" are now links to cockrell.utexas.edu and pge.utexas.edu
   respectively. Added a copyright line with the current year, computed at
   render time (`new Date().getFullYear()`) rather than hardcoded, so it
-  never goes stale.
+  never goes stale. "The University of Texas at Austin" in that line links
+  to utexas.edu.
 
 ## [0.2.0-beta.2] - 2026-07-24
 
