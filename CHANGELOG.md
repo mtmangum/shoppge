@@ -7,6 +7,8 @@ Dates are in `YYYY-MM-DD`.
 
 ## [Unreleased]
 
+## [0.2.0-beta.2] - 2026-07-24
+
 ### Changed
 - Header: moved "Cockrell School of Engineering · Petroleum & Geosystems
   Engineering" out of the header (which was getting cluttered at 3 lines)
