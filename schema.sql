@@ -225,7 +225,7 @@ VALUES (
   'admin@pge.utexas.edu',
   'Admin',
   'admin',
-  '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TdxTqe8VvEm5K6k6XKJHF5b4q6rG'
+  '$2a$12$dPvz420HfGeT8cuH2G9VLuxU5JQvq0b9Rhs6YqS2h.bjVBLYWKYWS'
 );
 
 -- ============================================================

@@ -7,6 +7,25 @@ Dates are in `YYYY-MM-DD`.
 
 ## [Unreleased]
 
+### Fixed
+- `Dockerfile`: `npm ci` → `npm ci --legacy-peer-deps`. The build wasn't actually
+  reproducible — it happened to pass on some machines only because their local npm
+  resolves the `next-auth`/`nodemailer` peer conflict more leniently than the npm
+  bundled in the `node:20-alpine` base image.
+- `tsconfig.json`: excluded `scripts/` from the TypeScript project. `next build`
+  type-checks the whole project by default, and `scripts/migrate-from-drupal.ts`
+  imports `mysql2/promise`, a package never added to `package.json` — this broke
+  production builds.
+- `docker-compose.yml`: the app service set `S3_ACCESS_KEY`/`S3_SECRET_KEY`, but
+  `lib/s3.ts` reads `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` for credentials —
+  silently broken S3 auth for anyone using the full Docker Compose stack. Also
+  added `S3_REGION` passthrough and `AUTH_TRUST_HOST` (see below).
+- `schema.sql`: the seed admin's bcrypt hash didn't actually correspond to the
+  documented "changeme" password. Regenerated and verified.
+- Documented `AUTH_TRUST_HOST` in `.env.example` — required by NextAuth v5 for
+  any self-hosted deployment (not auto-detected outside a few known platforms);
+  without it, every auth request fails with `UntrustedHost`.
+
 ## [0.2.0-beta.1] - 2026-07-23
 
 ### Added
