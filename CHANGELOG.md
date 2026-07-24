@@ -8,6 +8,14 @@ Dates are in `YYYY-MM-DD`.
 ## [Unreleased]
 
 ### Changed
+- Header: moved "Cockrell School of Engineering · Petroleum & Geosystems
+  Engineering" out of the header (which was getting cluttered at 3 lines)
+  and into the footer, above the existing department links. Added a simple
+  gear icon to the left of "ShopTrack" in the header, in white to match the
+  UT brand guidelines' two official primary colors (burnt orange + white)
+  rather than introducing an accent color.
+- Footer: replaced the "Faculty Innovation Center" link with "Faculty
+  Technology Studio" (cockrell.utexas.edu/about/faculty/faculty-technology-studio/).
 - Branded the web app as "ShopTrack" in the persistent header, browser tab
   title, login page, request-access page, and homepage sign-in card — the
   repo/package name and README stay as "pge-shop," this is UI-facing branding
