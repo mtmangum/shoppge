@@ -8,7 +8,7 @@ import { auth } from '@/lib/auth'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'PGE Instrumentation/Machine Shop',
+  title: 'ShopTrack | PGE Instrumentation & Machine Shop',
   description: 'Work order management for the UT Austin PGE Machine Shop',
 }
 
@@ -31,8 +31,11 @@ export default async function RootLayout({
                   Cockrell School of Engineering · Petroleum & Geosystems Engineering
                 </p>
                 <h1 className="text-xl font-bold tracking-tight">
-                  Instrumentation / Machine Shop
+                  ShopTrack
                 </h1>
+                <p className="text-xs opacity-90">
+                  Submit, track, and manage Instrumentation &amp; Machine Shop work orders
+                </p>
               </div>
               <img
                 src="/ut_logo.svg"

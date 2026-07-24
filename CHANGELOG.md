@@ -8,6 +8,12 @@ Dates are in `YYYY-MM-DD`.
 ## [Unreleased]
 
 ### Changed
+- Branded the web app as "ShopTrack" in the persistent header, browser tab
+  title, login page, request-access page, and homepage sign-in card — the
+  repo/package name and README stay as "pge-shop," this is UI-facing branding
+  only. Added a one-line subheading under the header logo explaining what the
+  site does ("Submit, track, and manage Instrumentation & Machine Shop work
+  orders"), visible on every page.
 - `JobsTable` pagination reduced from 25 to 10 rows per page, so pagination
   is actually exercised at realistic dev-data volumes instead of everything
   silently fitting on one page.

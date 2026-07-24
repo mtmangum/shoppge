@@ -31,7 +31,7 @@ export default function LoginPage() {
     <div className="min-h-[70vh] flex items-center justify-center">
       <form onSubmit={onSubmit} className="bg-white rounded-lg border p-8 w-full max-w-sm space-y-4 shadow-sm">
         <h2 className="text-xl font-bold text-gray-900">Sign In</h2>
-        <p className="text-sm text-gray-500">PGE Instrumentation / Machine Shop</p>
+        <p className="text-sm text-gray-500">ShopTrack — PGE Instrumentation / Machine Shop</p>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
