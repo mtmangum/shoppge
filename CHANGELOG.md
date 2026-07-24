@@ -8,7 +8,7 @@ Dates are in `YYYY-MM-DD`.
 ## [Unreleased]
 
 ### Changed
-- `JobsTable` pagination reduced from 25 to 15 rows per page, so pagination
+- `JobsTable` pagination reduced from 25 to 10 rows per page, so pagination
   is actually exercised at realistic dev-data volumes instead of everything
   silently fitting on one page.
 
