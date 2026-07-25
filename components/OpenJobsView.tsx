@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { StatsCards, type StatsFilterKey } from './StatsCards'
 import { JobsTable } from './JobsTable'
-import type { JobListItem } from '@/lib/types'
+import type { JobListItem, JobStatus, JobPriority } from '@/lib/types'
 
 interface Stats {
   pending_count: number
@@ -13,13 +13,35 @@ interface Stats {
   avg_completion_days: number
 }
 
-export function OpenJobsView({ stats, jobs }: { stats: Stats; jobs: JobListItem[] }) {
+interface OpenJobsViewProps {
+  stats: Stats
+  jobs: JobListItem[]
+  page: number
+  totalPages: number
+  search: string
+  status: JobStatus | 'all'
+  priority: JobPriority | 'all'
+  sort: string
+  dir: 'asc' | 'desc'
+}
+
+export function OpenJobsView({ stats, jobs, page, totalPages, search, status, priority, sort, dir }: OpenJobsViewProps) {
   const [highlightFilter, setHighlightFilter] = useState<StatsFilterKey | null>(null)
 
   return (
     <>
       <StatsCards stats={stats} onHoverFilter={setHighlightFilter} />
-      <JobsTable jobs={jobs} highlightFilter={highlightFilter} />
+      <JobsTable
+        jobs={jobs}
+        highlightFilter={highlightFilter}
+        page={page}
+        totalPages={totalPages}
+        search={search}
+        status={status}
+        priority={priority}
+        sort={sort}
+        dir={dir}
+      />
     </>
   )
 }

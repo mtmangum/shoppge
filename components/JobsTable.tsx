@@ -1,15 +1,11 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
   flexRender,
   type ColumnDef,
-  type SortingState,
 } from '@tanstack/react-table'
 import { format } from 'date-fns'
 import { StatusBadge } from './StatusBadge'
@@ -23,12 +19,20 @@ import type { StatsFilterKey } from './StatsCards'
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
     hideOnMobile?: boolean
+    sortKey?: string
   }
 }
 
 interface JobsTableProps {
   jobs: JobListItem[]
   highlightFilter?: StatsFilterKey | null
+  page: number
+  totalPages: number
+  search: string
+  status: JobStatus | 'all'
+  priority: JobPriority | 'all'
+  sort: string
+  dir: 'asc' | 'desc'
 }
 
 const HIGHLIGHT_STYLES: Record<StatsFilterKey, { bg: string; border: string }> = {
@@ -43,25 +47,33 @@ function matchesHighlight(job: JobListItem, highlightFilter?: StatsFilterKey | n
   return job.status === highlightFilter
 }
 
-export function JobsTable({ jobs, highlightFilter }: JobsTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
-  const [statusFilter, setStatusFilter] = useState<JobStatus | 'all'>('all')
-  const [priorityFilter, setPriorityFilter] = useState<JobPriority | 'all'>('all')
+export function JobsTable({ jobs, highlightFilter, page, totalPages, search, status, priority, sort, dir }: JobsTableProps) {
+  function buildHref(overrides: Record<string, string>) {
+    const params = new URLSearchParams()
+    if (search) params.set('search', search)
+    if (status !== 'all') params.set('status', status)
+    if (priority !== 'all') params.set('priority', priority)
+    params.set('sort', sort)
+    params.set('dir', dir)
+    params.set('page', String(page))
+    for (const [key, value] of Object.entries(overrides)) {
+      if (value) params.set(key, value)
+      else params.delete(key)
+    }
+    return `/jobs?${params.toString()}`
+  }
 
-  const filteredJobs = useMemo(() => {
-    return jobs.filter(job => {
-      if (statusFilter !== 'all' && job.status !== statusFilter) return false
-      if (priorityFilter !== 'all' && job.priority !== priorityFilter) return false
-      return true
-    })
-  }, [jobs, statusFilter, priorityFilter])
+  function sortHref(sortKey: string) {
+    const nextDir = sort === sortKey && dir === 'asc' ? 'desc' : 'asc'
+    return buildHref({ sort: sortKey, dir: nextDir, page: '1' })
+  }
 
   const columns = useMemo<ColumnDef<JobListItem>[]>(() => [
     {
       accessorKey: 'id',
       header: 'Job #',
       size: 80,
+      meta: { sortKey: 'id' },
       cell: ({ row }) => (
         <Link href={`/jobs/${row.original.id}`} className="font-mono font-semibold text-[#BF5700] hover:underline">
           {row.original.id}
@@ -72,13 +84,13 @@ export function JobsTable({ jobs, highlightFilter }: JobsTableProps) {
       accessorKey: 'entryDate',
       header: 'Entry Date',
       cell: ({ getValue }) => format(new Date(getValue() as string), 'MMM d, yyyy'),
-      meta: { hideOnMobile: true },
+      meta: { hideOnMobile: true, sortKey: 'entryDate' },
     },
     {
       accessorKey: 'dateRequired',
       header: 'Date Required',
       cell: ({ getValue }) => format(new Date(getValue() as string), 'MMM d, yyyy'),
-      meta: { hideOnMobile: true },
+      meta: { hideOnMobile: true, sortKey: 'dateRequired' },
     },
     {
       accessorKey: 'description',
@@ -86,27 +98,30 @@ export function JobsTable({ jobs, highlightFilter }: JobsTableProps) {
       cell: ({ getValue }) => (
         <span className="line-clamp-2 max-w-xs">{getValue() as string}</span>
       ),
+      meta: { sortKey: 'description' },
     },
     {
       accessorKey: 'requestorName',
       header: 'Requestor',
-      meta: { hideOnMobile: true },
+      meta: { hideOnMobile: true, sortKey: 'requestorName' },
     },
     {
       accessorKey: 'machinistName',
       header: 'Machinist',
       cell: ({ getValue }) => getValue() as string || <span className="text-gray-400 italic">unassigned</span>,
-      meta: { hideOnMobile: true },
+      meta: { hideOnMobile: true, sortKey: 'machinistName' },
     },
     {
       accessorKey: 'status',
       header: 'Status',
       cell: ({ getValue }) => <StatusBadge status={getValue() as JobStatus} />,
+      meta: { sortKey: 'status' },
     },
     {
       accessorKey: 'priority',
       header: 'Priority',
       cell: ({ getValue }) => <PriorityBadge priority={getValue() as JobPriority} />,
+      meta: { sortKey: 'priority' },
     },
     {
       accessorKey: 'daysElapsed',
@@ -123,81 +138,50 @@ export function JobsTable({ jobs, highlightFilter }: JobsTableProps) {
   ], [])
 
   const table = useReactTable({
-    data: filteredJobs,
+    data: jobs,
     columns,
-    state: { sorting, globalFilter },
-    onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: { pagination: { pageSize: 10 } },
   })
 
   return (
     <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3 items-center">
-        <input
-          type="text"
-          placeholder="Search jobs…"
-          value={globalFilter}
-          onChange={e => setGlobalFilter(e.target.value)}
-          className="border rounded-md px-3 py-1.5 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-[#BF5700]"
-        />
-        <select
-          value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value as any)}
-          className="border rounded-md px-3 py-1.5 text-sm"
-        >
-          <option value="all">All Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="inprogress">In Progress</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-        <select
-          value={priorityFilter}
-          onChange={e => setPriorityFilter(e.target.value as any)}
-          className="border rounded-md px-3 py-1.5 text-sm"
-        >
-          <option value="all">All Priorities</option>
-          <option value="urgent">Urgent</option>
-          <option value="normal">Normal</option>
-        </select>
-        <span className="text-sm text-gray-500 ml-auto">
-          {table.getFilteredRowModel().rows.length} jobs
-        </span>
-      </div>
-
-      {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-700 text-white">
             {table.getHeaderGroups().map(hg => (
               <tr key={hg.id}>
-                {hg.headers.map(header => (
-                  <th
-                    key={header.id}
-                    className={clsx(
-                      'px-4 py-3 text-left font-medium cursor-pointer select-none whitespace-nowrap',
-                      header.column.columnDef.meta?.hideOnMobile && 'hidden md:table-cell'
-                    )}
-                    onClick={header.column.getToggleSortingHandler()}
-                  >
-                    <div className="flex items-center gap-1">
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                      {header.column.getIsSorted() === 'asc'  && <ChevronUp className="h-3 w-3" />}
-                      {header.column.getIsSorted() === 'desc' && <ChevronDown className="h-3 w-3" />}
-                      {!header.column.getIsSorted()           && <ChevronsUpDown className="h-3 w-3 opacity-40" />}
-                    </div>
-                  </th>
-                ))}
+                {hg.headers.map(header => {
+                  const sortKey = header.column.columnDef.meta?.sortKey
+                  return (
+                    <th
+                      key={header.id}
+                      className={clsx(
+                        'px-4 py-3 text-left font-medium select-none whitespace-nowrap',
+                        header.column.columnDef.meta?.hideOnMobile && 'hidden md:table-cell'
+                      )}
+                    >
+                      {sortKey ? (
+                        <Link href={sortHref(sortKey)} className="flex items-center gap-1">
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                          {sort === sortKey
+                            ? (dir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)
+                            : <ChevronsUpDown className="h-3 w-3 opacity-40" />}
+                        </Link>
+                      ) : (
+                        <div className="flex items-center gap-1">
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                        </div>
+                      )}
+                    </th>
+                  )
+                })}
               </tr>
             ))}
           </thead>
           <tbody className="divide-y">
+            {table.getRowModel().rows.length === 0 && (
+              <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400">No jobs match these filters.</td></tr>
+            )}
             {table.getRowModel().rows.map((row, i) => {
               const highlighted = matchesHighlight(row.original, highlightFilter)
               const style = highlighted && highlightFilter ? HIGHLIGHT_STYLES[highlightFilter] : null
@@ -230,24 +214,20 @@ export function JobsTable({ jobs, highlightFilter }: JobsTableProps) {
 
       {/* Pagination */}
       <div className="flex items-center justify-between text-sm text-gray-600">
-        <span>
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-        </span>
+        <span>Page {page} of {totalPages}</span>
         <div className="flex gap-2">
-          <button
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            className="px-3 py-1 border rounded disabled:opacity-40"
+          <Link
+            href={buildHref({ page: String(page - 1) })}
+            className={clsx('px-3 py-1 border rounded', page <= 1 ? 'opacity-40 pointer-events-none' : 'hover:bg-gray-50')}
           >
             Previous
-          </button>
-          <button
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className="px-3 py-1 border rounded disabled:opacity-40"
+          </Link>
+          <Link
+            href={buildHref({ page: String(page + 1) })}
+            className={clsx('px-3 py-1 border rounded', page >= totalPages ? 'opacity-40 pointer-events-none' : 'hover:bg-gray-50')}
           >
             Next
-          </button>
+          </Link>
         </div>
       </div>
     </div>

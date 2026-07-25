@@ -8,6 +8,14 @@ Dates are in `YYYY-MM-DD`.
 ## [Unreleased]
 
 ### Changed
+- Open Jobs page (`/jobs`) now paginates, sorts, and filters server-side
+  instead of loading every open job into the page and faking pagination in
+  the browser. The query, sort, and status/priority filters live in the URL
+  (`?search=&status=&priority=&sort=&dir=&page=`) and are applied as SQL
+  `WHERE`/`ORDER BY`/`LIMIT`/`OFFSET`, so page-load cost no longer scales
+  with the total number of open jobs ever created. `JobsTable` dropped
+  `@tanstack/react-table`'s in-memory sort/filter/pagination row models
+  (no longer needed) in favor of plain links that update the URL.
 - "ShopTrack" renamed to "UT ShopTrack" everywhere it appears in the UI.
 - Footer: "Cockrell School of Engineering" and "Petroleum & Geosystems
   Engineering" are now links to cockrell.utexas.edu and pge.utexas.edu
