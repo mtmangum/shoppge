@@ -7,6 +7,29 @@ Dates are in `YYYY-MM-DD`.
 
 ## [Unreleased]
 
+### Added
+- README: documented the manual AWS deploy process (one-time EC2/Docker Compose
+  host setup, deploying an update, rolling back) using the existing
+  `docker-compose.aws.yml`.
+- `.github/workflows/ci-cd.yml`: GitHub Actions workflow. `test` job runs
+  typecheck/lint/build on every push/PR to `main`. `deploy` job runs after
+  `test` passes on push to `main`. Both run on a self-hosted runner registered
+  on the EC2 deploy box itself (`pge-shop-ec2`), since this GHE instance is a
+  self-hosted Enterprise Server without GitHub-hosted runners available.
+  Because the runner *is* the deploy target, `deploy` just checks out the repo,
+  copies the persistent `/home/ubuntu/pge-shop/.env` into its workspace
+  (never present in a fresh checkout — it's gitignored), and runs
+  `docker compose -f docker-compose.aws.yml up -d --build` locally — no SSH
+  secrets required.
+- `.eslintrc.json` (`next/core-web-vitals`): `next lint` had no committed config,
+  so it dropped into an interactive setup wizard and had apparently never
+  completed non-interactively before. Needed for `npm run lint` to work in CI.
+
+### Fixed
+- Unescaped `"`/`'` in JSX text (`app/admin/page.tsx`, `app/request-access/page.tsx`)
+  — real `react/no-unescaped-entities` errors that `next lint` had never actually
+  caught before now that it runs to completion.
+
 ### Changed
 - Header: UT logo now hidden on mobile (`< 640px`) to reduce clutter on small
   screens; visible on `sm` breakpoint and up.

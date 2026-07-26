@@ -46,7 +46,7 @@ export default function RequestAccessPage() {
         <div className="bg-white rounded-lg border p-8 w-full max-w-sm space-y-4 shadow-sm text-center">
           <h2 className="text-xl font-bold text-gray-900">Request submitted</h2>
           <p className="text-sm text-gray-600">
-            Thanks — an admin will review your request. You'll be able to sign in once it's approved.
+            Thanks — an admin will review your request. You&apos;ll be able to sign in once it&apos;s approved.
           </p>
           <Link href="/login" className="inline-block text-sm text-[#BF5700] hover:underline">
             ← Back to sign in

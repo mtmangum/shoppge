@@ -188,7 +188,7 @@ export default async function AdminDashboardPage() {
                   <span className="text-gray-500">
                     {entry.fromStatus ?? 'created'} → <StatusBadge status={entry.toStatus} />
                   </span>
-                  {entry.note && <span className="text-gray-400 italic">"{entry.note}"</span>}
+                  {entry.note && <span className="text-gray-400 italic">&quot;{entry.note}&quot;</span>}
                 </div>
                 <div className="text-xs text-gray-400 shrink-0">
                   {entry.changedByName ?? 'System'} · {format(new Date(entry.changedAt), 'MMM d, h:mm a')}

@@ -1,0 +1,57 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Typecheck, lint, build
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci --legacy-peer-deps
+
+      - run: npm run typecheck
+
+      - run: npm run lint
+
+      - run: npm run build
+        env:
+          # Dummy values so `next build` (which touches env-dependent modules
+          # at build time) succeeds without real secrets. Never used at runtime.
+          DATABASE_URL: postgresql://user:pass@localhost:5432/db
+          NEXTAUTH_SECRET: ci-build-only-not-a-real-secret
+          NEXTAUTH_URL: http://localhost:3000
+          S3_BUCKET: ci-build-only
+          S3_REGION: us-east-1
+          S3_ACCESS_KEY_ID: ci-build-only
+          S3_SECRET_ACCESS_KEY: ci-build-only
+
+  deploy:
+    name: Deploy to AWS
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: self-hosted
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore production .env
+        # The runner is the deploy target itself, so checkout lands in a fresh
+        # ephemeral workspace with no .env (it's gitignored). Real secrets
+        # (DB password, S3 keys, etc.) live persistently at the path below,
+        # outside any checkout, and are copied in rather than templated from
+        # secrets here.
+        run: cp /home/ubuntu/pge-shop/.env "$GITHUB_WORKSPACE/.env"
+
+      - name: Rebuild and restart
+        run: docker compose -f docker-compose.aws.yml up -d --build
