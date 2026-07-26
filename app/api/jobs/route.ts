@@ -5,6 +5,7 @@ import { requireAuth } from '@/lib/auth'
 import { createJobSchema } from '@/lib/types'
 import { eq, desc, ne, and, ilike, or } from 'drizzle-orm'
 import { users } from '@/lib/schema'
+import { sendNewJobNotification } from '@/lib/mail'
 
 export async function GET(req: NextRequest) {
   try {
@@ -83,6 +84,24 @@ export async function POST(req: NextRequest) {
       fromStatus:  null,
       toStatus:    'pending',
       changedById: parseInt(user.id as string),
+    })
+
+    // Notify staff — fire-and-forget so a flaky SMTP relay can't block the
+    // 201 response back to the requestor.
+    const requestorRow = await db
+      .select({ name: users.name })
+      .from(users)
+      .where(eq(users.id, parseInt(user.id as string)))
+      .limit(1)
+
+    sendNewJobNotification({
+      jobId:         job.id,
+      description:   data.description,
+      priority:      'normal', // new jobs always start at normal; updatable via PATCH /api/jobs/[id]
+      dateRequired:  data.dateRequired,
+      requestorName: requestorRow[0]?.name ?? (user.email as string) ?? 'Unknown',
+    }).catch((err: unknown) => {
+      console.error('[mail] failed to send new-job notification:', err)
     })
 
     return NextResponse.json({ id: job.id }, { status: 201 })
