@@ -8,6 +8,8 @@ Dates are in `YYYY-MM-DD`.
 ## [Unreleased]
 
 ### Changed
+- Header: UT logo now hidden on mobile (`< 640px`) to reduce clutter on small
+  screens; visible on `sm` breakpoint and up.
 - Open Jobs page (`/jobs`) now paginates, sorts, and filters server-side
   instead of loading every open job into the page and faking pagination in
   the browser. The query, sort, and status/priority filters live in the URL

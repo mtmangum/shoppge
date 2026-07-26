@@ -41,7 +41,7 @@ export default async function RootLayout({
               <img
                 src="/ut_logo.svg"
                 alt="The University of Texas at Austin"
-                className="h-[34px] shrink-0"
+                className="h-[34px] shrink-0 hidden sm:block"
               />
             </div>
           </header>
