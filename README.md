@@ -11,7 +11,7 @@ Shop job tracker, replacing the existing Drupal 7 site at `shop.pge.utexas.edu`.
 - **TanStack Table** for the jobs list
 - **Tailwind CSS**
 - **S3/MinIO** for job attachments (via `@aws-sdk/client-s3`)
-- **Nodemailer** for email notifications (not yet wired up)
+- **Nodemailer** for email notifications (admins/machinists BCC'd on new job submission)
 
 ## Status
 
@@ -19,7 +19,7 @@ Shop job tracker, replacing the existing Drupal 7 site at `shop.pge.utexas.edu`.
 |---|---|
 | Job detail page (view, status changes, machinist assignment, materials, notes, status history) | Done |
 | File uploads to S3/MinIO (upload, presigned download, delete) | Done |
-| Email notifications | Not started |
+| Email notifications | Done |
 | Admin dashboard (analytics, user management) | Done |
 | Self-service access requests (`/request-access` + admin approval queue) | Done |
 
@@ -42,6 +42,14 @@ Fill in `DATABASE_URL`, `S3_*` / `MINIO_*`, and `SMTP_*` values. `NEXTAUTH_SECRE
 ```
 openssl rand -base64 32
 ```
+
+For local email testing without hitting the real UT SMTP relay, run [Mailpit](https://github.com/axllent/mailpit):
+
+```
+docker run -d -p 1025:1025 -p 8025:8025 axllent/mailpit
+```
+
+Then set `SMTP_HOST=localhost` and `SMTP_PORT=1025` in your `.env`. Open http://localhost:8025 to inspect captured emails.
 
 ### 3. Install dependencies and push the schema
 

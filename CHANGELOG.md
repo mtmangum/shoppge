@@ -8,6 +8,15 @@ Dates are in `YYYY-MM-DD`.
 ## [Unreleased]
 
 ### Added
+- **Email notifications on new job submission** (`lib/mail.ts`): when a
+  requestor submits a new job via `POST /api/jobs`, all active `admin` and
+  `machinist` users are BCC'd on a single email containing the job number,
+  description, priority, date needed, requestor name, and a direct link to the
+  job detail page. Uses the existing `SMTP_*` env vars (already documented in
+  `.env.example`). Fire-and-forget — a failed send is logged to the console but
+  never blocks the 201 response back to the requestor.
+  `.env.example` updated with local dev testing instructions using
+  [Mailpit](https://github.com/axllent/mailpit) (`docker run … axllent/mailpit`).
 - README: documented the manual AWS deploy process (one-time EC2/Docker Compose
   host setup, deploying an update, rolling back) using the existing
   `docker-compose.aws.yml`.
