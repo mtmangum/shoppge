@@ -56,13 +56,13 @@ export default async function RootLayout({
             <p className="mb-2">
               <a href="https://cockrell.utexas.edu" className="hover:underline">Cockrell School of Engineering</a>
               {' · '}
-              <a href="https://pge.utexas.edu" className="hover:underline">Petroleum & Geosystems Engineering</a>
+              <a href="https://pge.utexas.edu" className="hover:underline">Petroleum &amp; Geosystems Engineering</a>
             </p>
-            <div className="space-x-4">
-              <a href="https://cockrell.utexas.edu/about/faculty/faculty-technology-studio/" className="hover:underline">Faculty Technology Studio</a>
-              <a href="http://www.pge.utexas.edu/" className="hover:underline">PGE Department</a>
-              <a href="http://www.utexas.edu/policies/privacy/" className="hover:underline">Privacy</a>
-              <a href="http://www.utexas.edu/disability" className="hover:underline">Accessibility</a>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+              <a href="https://emergency.utexas.edu/" className="hover:underline">Emergency Information</a>
+              <a href="https://www.utexas.edu/site-policies" className="hover:underline">Site Policies</a>
+              <a href="http://www.utexas.edu/web-accessibility-policy" className="hover:underline">Web Accessibility Policy</a>
+              <a href="http://www.utexas.edu/web-privacy-policy" className="hover:underline">Web Privacy Policy</a>
             </div>
             <p className="mt-2">&copy; {new Date().getFullYear()} <a href="https://www.utexas.edu" className="hover:underline">The University of Texas at Austin</a></p>
           </footer>
