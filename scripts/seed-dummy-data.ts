@@ -16,6 +16,11 @@ async function seedUsers() {
   const passwordHash = await bcrypt.hash(SEED_PASSWORD, 10)
 
   const rows = [
+    // One obvious login per role, for quick manual testing.
+    { email: 'requestor@utexas.edu', name: 'Test Requestor', role: 'requestor' as const, department: 'Petroleum Engineering', room: 'CPE 2.200' },
+    { email: 'machinist@utexas.edu', name: 'Test Machinist', role: 'machinist' as const, department: 'PGE Shop', room: 'CPE B0.200' },
+    { email: 'admin@utexas.edu', name: 'Test Admin', role: 'admin' as const, department: 'PGE Shop', room: 'CPE B0.200' },
+
     { email: 'jsmith@utexas.edu', name: 'Jane Smith', role: 'requestor' as const, department: 'Petroleum Engineering', room: 'CPE 2.204' },
     { email: 'rjones@utexas.edu', name: 'Robert Jones', role: 'requestor' as const, department: 'Mechanical Engineering', room: 'ETC 4.150' },
     { email: 'mchen@utexas.edu', name: 'Mei Chen', role: 'machinist' as const, department: 'PGE Shop', room: 'CPE B0.200' },
