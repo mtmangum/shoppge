@@ -85,7 +85,8 @@ async function seedJobs(allUsers: { id: number; email: string; role: string }[])
     { description: 'Machine set screws collar for shaft extension', partNumber: 'SS-303', itemDescription: '1in bore shaft collar with set screws', quantity: '4' },
   ]
 
-  const dateOffsets = [-45, -38, -30, -25, -20, -18, -14, -10, -7, -5, -3, -1, 0, 2, 4, 6, 8, 10, 14, 18, 21, 25, 28, 32, 35, 40, 45, 50, 55, 60]
+  // Two jobs per day, covering the last 3 weeks through today.
+  const dateOffsets = Array.from({ length: 22 }, (_, i) => -21 + i).flatMap(offset => [offset, offset])
 
   const jobDefs = dateOffsets.map((offset, i) => {
     const task = taskTemplates[i % taskTemplates.length]
