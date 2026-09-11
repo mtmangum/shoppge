@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { UserRole } from '@/lib/types'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, ChevronDown } from 'lucide-react'
 
 interface ManagedUser {
   id: number
@@ -163,14 +163,17 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
       <td className="px-4 py-3">{displayName}{isSelf && <span className="text-gray-400 text-xs ml-1">(you)</span>}</td>
       <td className="px-4 py-3 hidden md:table-cell">{displayEmail}</td>
       <td className="px-4 py-3">
-        <select
-          value={role}
-          disabled={saving || isSelf}
-          onChange={e => handleRoleChange(e.target.value as UserRole)}
-          className="border rounded px-2 py-1 text-sm disabled:opacity-50"
-        >
-          {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-        </select>
+        <div className="relative inline-block">
+          <select
+            value={role}
+            disabled={saving || isSelf}
+            onChange={e => handleRoleChange(e.target.value as UserRole)}
+            className="border rounded px-2 py-1 text-sm appearance-none pr-7 disabled:opacity-50"
+          >
+            {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-500" />
+        </div>
       </td>
       <td className="px-4 py-3 hidden md:table-cell">{displayDepartment || '—'}</td>
       <td className="px-4 py-3">

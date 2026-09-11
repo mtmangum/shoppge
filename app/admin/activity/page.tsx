@@ -6,6 +6,7 @@ import { eq, and, gte, lte, desc, sql } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import { format } from 'date-fns'
 import Link from 'next/link'
+import { ChevronDown } from 'lucide-react'
 import { StatusBadge } from '@/components/StatusBadge'
 import type { JobStatus } from '@/lib/types'
 
@@ -87,20 +88,26 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
         </div>
         <div>
           <label className="block text-xs text-gray-500 mb-1">Changed By</label>
-          <select name="changedById" defaultValue={searchParams.changedById ?? ''} className="border rounded-md px-2 py-1.5 text-sm">
-            <option value="">Anyone</option>
-            {allUsers.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-          </select>
+          <div className="relative">
+            <select name="changedById" defaultValue={searchParams.changedById ?? ''} className="border rounded-md px-2 py-1.5 text-sm appearance-none pr-8">
+              <option value="">Anyone</option>
+              {allUsers.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+          </div>
         </div>
         <div>
           <label className="block text-xs text-gray-500 mb-1">New Status</label>
-          <select name="status" defaultValue={searchParams.status ?? ''} className="border rounded-md px-2 py-1.5 text-sm">
-            <option value="">Any</option>
-            <option value="pending">Pending</option>
-            <option value="inprogress">In Progress</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
+          <div className="relative">
+            <select name="status" defaultValue={searchParams.status ?? ''} className="border rounded-md px-2 py-1.5 text-sm appearance-none pr-8">
+              <option value="">Any</option>
+              <option value="pending">Pending</option>
+              <option value="inprogress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+          </div>
         </div>
         <div>
           <label className="block text-xs text-gray-500 mb-1">From</label>

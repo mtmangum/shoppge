@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { UserRole } from '@/lib/types'
-import { Plus } from 'lucide-react'
+import { Plus, ChevronDown } from 'lucide-react'
 
 const ROLES: UserRole[] = ['requestor', 'machinist', 'admin']
 
@@ -73,9 +73,12 @@ function CreateUserForm({ onCreated }: { onCreated: () => void }) {
       </div>
       <div>
         <label className="block text-xs text-gray-500 mb-1">Role</label>
-        <select value={role} onChange={e => setRole(e.target.value as UserRole)} className="border rounded-md px-2 py-1.5 text-sm w-full">
-          {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-        </select>
+        <div className="relative w-full">
+          <select value={role} onChange={e => setRole(e.target.value as UserRole)} className="border rounded-md px-2 py-1.5 text-sm w-full appearance-none pr-8">
+            {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+        </div>
       </div>
       <div>
         <label className="block text-xs text-gray-500 mb-1">Department</label>

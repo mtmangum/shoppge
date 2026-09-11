@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
+import { ChevronDown } from 'lucide-react'
 import type { UserRole } from '@/lib/types'
 
 interface AccessRequest {
@@ -96,13 +97,16 @@ function RequestRow({ request }: { request: AccessRequest }) {
         <form onSubmit={handleApprove} className="flex flex-wrap items-end gap-2 pt-1">
           <div>
             <label className="block text-xs text-gray-500 mb-1">Role</label>
-            <select
-              value={role}
-              onChange={e => setRole(e.target.value as UserRole)}
-              className="border rounded-md px-2 py-1.5 text-sm"
-            >
-              {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
+            <div className="relative">
+              <select
+                value={role}
+                onChange={e => setRole(e.target.value as UserRole)}
+                className="border rounded-md px-2 py-1.5 text-sm appearance-none pr-8"
+              >
+                {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            </div>
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1">Password (optional)</label>

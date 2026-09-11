@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ChevronDown } from 'lucide-react'
 import type { JobStatus } from '@/lib/types'
 
 interface JobActionsProps {
@@ -159,17 +160,20 @@ export function JobActions({
       <div className="space-y-1">
         <label className="block text-xs font-medium text-gray-500">Assigned Machinist</label>
         <div className="flex gap-2">
-          <select
-            value={assigneeValue}
-            onChange={e => handleAssign(e.target.value)}
-            disabled={assignSaving}
-            className="border rounded-md px-2 py-1.5 text-sm w-full disabled:opacity-50"
-          >
-            <option value="">Unassigned</option>
-            {machinists.map(m => (
-              <option key={m.id} value={m.id}>{m.name}{m.id === currentUserId ? ' (me)' : ''}</option>
-            ))}
-          </select>
+          <div className="relative w-full">
+            <select
+              value={assigneeValue}
+              onChange={e => handleAssign(e.target.value)}
+              disabled={assignSaving}
+              className="border rounded-md px-2 py-1.5 text-sm w-full appearance-none pr-8 disabled:opacity-50"
+            >
+              <option value="">Unassigned</option>
+              {machinists.map(m => (
+                <option key={m.id} value={m.id}>{m.name}{m.id === currentUserId ? ' (me)' : ''}</option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+          </div>
         </div>
         {assignError && <p className="text-red-500 text-xs">{assignError}</p>}
       </div>
@@ -177,15 +181,18 @@ export function JobActions({
       {/* Status */}
       <form onSubmit={handleStatusSubmit} className="space-y-2">
         <label className="block text-xs font-medium text-gray-500">Status</label>
-        <select
-          value={statusValue}
-          onChange={e => setStatusValue(e.target.value as JobStatus)}
-          className="border rounded-md px-2 py-1.5 text-sm w-full"
-        >
-          {STATUS_OPTIONS.map(s => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
+        <div className="relative w-full">
+          <select
+            value={statusValue}
+            onChange={e => setStatusValue(e.target.value as JobStatus)}
+            className="border rounded-md px-2 py-1.5 text-sm w-full appearance-none pr-8"
+          >
+            {STATUS_OPTIONS.map(s => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+        </div>
         <textarea
           value={statusNote}
           onChange={e => setStatusNote(e.target.value)}
