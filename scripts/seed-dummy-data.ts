@@ -104,7 +104,14 @@ async function seedJobs(allUsers: { id: number; email: string; role: string }[])
     const dateRequired = daysFromNow(offset)
     const isPastDue = status === 'completed'
 
+    // Job was requested some days before it was due (always more than the
+    // 2-day completion lead time below, so completion date never precedes
+    // entry date and avg_completion_days stays non-negative).
+    const leadDays = 3 + (i % 8)
+    const entryDate = daysFromNow(offset - leadDays)
+
     return {
+      entryDate,
       description: task.description,
       requestorId: requestor.id,
       machinistId: status === 'pending' ? null : machinist.id,
