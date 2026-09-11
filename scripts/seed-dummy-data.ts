@@ -98,7 +98,7 @@ async function seedJobs(allUsers: { id: number; email: string; role: string }[])
   // Only this many open (pending/inprogress) jobs are actually overdue —
   // the rest get a due date pushed into the future so the admin
   // dashboard's overdue list isn't the entire open queue.
-  const OVERDUE_COUNT = 5
+  const OVERDUE_COUNT = 2
   let openJobsSeen = 0
 
   const jobDefs = dateOffsets.map((offset, i) => {
