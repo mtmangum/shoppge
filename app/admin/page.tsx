@@ -44,7 +44,11 @@ export default async function AdminDashboardPage() {
       priority: jobs.priority,
       requestorName: users.name,
       machinistName: machinists.name,
-      daysElapsed: sql<number>`CURRENT_DATE - ${jobs.entryDate}`,
+      // Queue age (time since the job was entered) and lateness (time past
+      // its requested due date) are different things — a job entered
+      // 20 days ago but not due for another month isn't overdue.
+      daysInQueue: sql<number>`CURRENT_DATE - ${jobs.entryDate}`,
+      daysOverdue: sql<number>`CURRENT_DATE - ${jobs.dateRequired}`,
     })
     .from(jobs)
     .leftJoin(users, eq(jobs.requestorId, users.id))
@@ -52,9 +56,9 @@ export default async function AdminDashboardPage() {
     .where(and(
       ne(jobs.status, 'completed'),
       ne(jobs.status, 'cancelled'),
-      sql`(${jobs.priority} = 'urgent' OR CURRENT_DATE - ${jobs.entryDate} > 14)`
+      sql`(${jobs.priority} = 'urgent' OR ${jobs.dateRequired} < CURRENT_DATE)`
     ))
-    .orderBy(desc(sql`CURRENT_DATE - ${jobs.entryDate}`))
+    .orderBy(desc(sql`${jobs.dateRequired} < CURRENT_DATE`), desc(sql`CURRENT_DATE - ${jobs.dateRequired}`))
     .limit(15)
 
   const { rows: weeklyRows } = await db.execute(sql`
@@ -154,9 +158,11 @@ export default async function AdminDashboardPage() {
                     <div className="flex items-center flex-wrap gap-2">
                       <PriorityBadge priority={job.priority} />
                       <StatusBadge status={job.status} />
-                      <span className={job.daysElapsed > 14 ? 'text-red-600 font-semibold' : 'text-gray-500'}>
-                        {job.daysElapsed}d
-                      </span>
+                      {job.daysOverdue > 0 ? (
+                        <span className="text-red-600 font-semibold">{job.daysOverdue}d overdue</span>
+                      ) : (
+                        <span className="text-gray-500">{job.daysInQueue}d in queue</span>
+                      )}
                     </div>
                   </div>
                   <p className="text-gray-700 line-clamp-1 mt-1">{job.description}</p>

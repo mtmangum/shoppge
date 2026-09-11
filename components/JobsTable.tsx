@@ -30,6 +30,8 @@ interface JobsTableProps {
   search: string
   status: JobStatus | 'all'
   priority: JobPriority | 'all'
+  mine?: boolean
+  assigned?: boolean
   sort: string
   dir: 'asc' | 'desc'
 }
@@ -46,12 +48,14 @@ function matchesHighlight(job: JobListItem, highlightFilter?: StatsFilterKey | n
   return job.status === highlightFilter
 }
 
-export function JobsTable({ jobs, highlightFilter, page, totalPages, search, status, priority, sort, dir }: JobsTableProps) {
+export function JobsTable({ jobs, highlightFilter, page, totalPages, search, status, priority, mine, assigned, sort, dir }: JobsTableProps) {
   function buildHref(overrides: Record<string, string>) {
     const params = new URLSearchParams()
     if (search) params.set('search', search)
     if (status !== 'all') params.set('status', status)
     if (priority !== 'all') params.set('priority', priority)
+    if (mine) params.set('mine', '1')
+    if (assigned) params.set('assigned', '1')
     params.set('sort', sort)
     params.set('dir', dir)
     params.set('page', String(page))

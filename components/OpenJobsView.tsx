@@ -21,11 +21,13 @@ interface OpenJobsViewProps {
   search: string
   status: JobStatus | 'all'
   priority: JobPriority | 'all'
+  mine: boolean
+  assigned: boolean
   sort: string
   dir: 'asc' | 'desc'
 }
 
-export function OpenJobsView({ stats, jobs, page, totalPages, search, status, priority, sort, dir }: OpenJobsViewProps) {
+export function OpenJobsView({ stats, jobs, page, totalPages, search, status, priority, mine, assigned, sort, dir }: OpenJobsViewProps) {
   const [highlightFilter, setHighlightFilter] = useState<StatsFilterKey | null>(null)
 
   return (
@@ -39,6 +41,8 @@ export function OpenJobsView({ stats, jobs, page, totalPages, search, status, pr
         search={search}
         status={status}
         priority={priority}
+        mine={mine}
+        assigned={assigned}
         sort={sort}
         dir={dir}
       />

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Cog } from 'lucide-react'
+import { Suspense } from 'react'
 import './globals.css'
 import { Navbar } from '@/components/Navbar'
 import { Toaster } from '@/components/ui/Toaster'
@@ -46,7 +47,11 @@ export default async function RootLayout({
             </div>
           </header>
 
-          {session?.user && <Navbar user={session.user} />}
+          {session?.user && (
+            <Suspense fallback={null}>
+              <Navbar user={session.user} />
+            </Suspense>
+          )}
 
           <main className="max-w-7xl mx-auto px-4 py-6">
             {children}

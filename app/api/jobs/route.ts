@@ -18,11 +18,14 @@ export async function GET(req: NextRequest) {
 
     const conditions = []
     if (status && status !== 'all') conditions.push(eq(jobs.status, status as any))
-    if (search) conditions.push(
-      or(
-        ilike(jobs.description, `%${search}%`),
+    if (search) {
+      const jobIdMatch = /^#?\d+$/.test(search) ? parseInt(search.replace('#', ''), 10) : null
+      conditions.push(
+        jobIdMatch !== null
+          ? or(eq(jobs.id, jobIdMatch), ilike(jobs.description, `%${search}%`))
+          : or(ilike(jobs.description, `%${search}%`))
       )
-    )
+    }
 
     const results = await db
       .select({

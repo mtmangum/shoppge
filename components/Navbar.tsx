@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import type { UserRole } from '@/lib/types'
 import clsx from 'clsx'
@@ -12,14 +12,20 @@ interface NavbarProps {
 
 export function Navbar({ user }: NavbarProps) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const role = user.role as UserRole
+  const onJobs = pathname === '/jobs'
+  const mine = onJobs && searchParams.get('mine') === '1'
+  const assigned = onJobs && searchParams.get('assigned') === '1'
 
   const links = [
-    { href: '/admin',      label: 'Dashboard',       roles: ['admin'] },
-    { href: '/jobs',       label: 'Open Jobs',      roles: ['requestor', 'machinist', 'admin'] },
-    { href: '/jobs/new',   label: 'Submit Job',      roles: ['requestor', 'machinist', 'admin'] },
-    { href: '/admin/users', label: 'Users',          roles: ['admin'] },
-    { href: '/admin/activity', label: 'Activity',    roles: ['admin'] },
+    { href: '/admin',      label: 'Dashboard',       roles: ['admin'], active: pathname === '/admin' },
+    { href: '/jobs',       label: 'Open Jobs',      roles: ['requestor', 'machinist', 'admin'], active: onJobs && !mine && !assigned },
+    { href: '/jobs?mine=1', label: 'My Jobs',        roles: ['requestor'], active: mine },
+    { href: '/jobs?assigned=1', label: 'Assigned to Me', roles: ['machinist', 'admin'], active: assigned },
+    { href: '/jobs/new',   label: 'Submit Job',      roles: ['requestor', 'machinist', 'admin'], active: pathname === '/jobs/new' },
+    { href: '/admin/users', label: 'Users',          roles: ['admin'], active: pathname === '/admin/users' },
+    { href: '/admin/activity', label: 'Activity',    roles: ['admin'], active: pathname === '/admin/activity' },
   ].filter(l => l.roles.includes(role))
 
   return (
@@ -32,7 +38,7 @@ export function Navbar({ user }: NavbarProps) {
               href={link.href}
               className={clsx(
                 'px-3 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap shrink-0',
-                pathname === link.href
+                link.active
                   ? 'bg-[#BF5700] text-white'
                   : 'text-gray-700 hover:bg-gray-100'
               )}
