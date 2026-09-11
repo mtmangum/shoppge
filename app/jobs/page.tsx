@@ -11,6 +11,11 @@ import type { JobStatus, JobPriority } from '@/lib/types'
 
 const FIELD_CLASS = 'border border-gray-300 rounded-md px-3 py-1.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#BF5700]'
 
+// jobs.id is a Postgres `integer` column; a longer digit string (e.g. an
+// all-numeric part number pasted into search) would overflow it and crash
+// the query instead of just falling back to a description search.
+const PG_INT4_MAX = 2147483647
+
 const machinists = alias(users, 'machinists')
 
 const PAGE_SIZE = 10
@@ -67,7 +72,8 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
   if (assigned) conditions.push(eq(jobs.machinistId, currentUserId))
   if (search) {
     // Bare or "#"-prefixed numbers also match by job number, not just description text.
-    const jobIdMatch = /^#?\d+$/.test(search) ? parseInt(search.replace('#', ''), 10) : null
+    const parsedId = /^#?\d+$/.test(search) ? parseInt(search.replace('#', ''), 10) : null
+    const jobIdMatch = parsedId !== null && parsedId <= PG_INT4_MAX ? parsedId : null
     conditions.push(
       jobIdMatch !== null
         ? or(eq(jobs.id, jobIdMatch), ilike(jobs.description, `%${search}%`))!

@@ -19,7 +19,10 @@ export async function GET(req: NextRequest) {
     const conditions = []
     if (status && status !== 'all') conditions.push(eq(jobs.status, status as any))
     if (search) {
-      const jobIdMatch = /^#?\d+$/.test(search) ? parseInt(search.replace('#', ''), 10) : null
+      // jobs.id is a Postgres `integer` column; a longer digit string would
+      // overflow it and crash the query instead of falling back to search.
+      const parsedId = /^#?\d+$/.test(search) ? parseInt(search.replace('#', ''), 10) : null
+      const jobIdMatch = parsedId !== null && parsedId <= 2147483647 ? parsedId : null
       conditions.push(
         jobIdMatch !== null
           ? or(eq(jobs.id, jobIdMatch), ilike(jobs.description, `%${search}%`))
