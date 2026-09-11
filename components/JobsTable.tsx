@@ -7,7 +7,7 @@ import {
   flexRender,
   type ColumnDef,
 } from '@tanstack/react-table'
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import { StatusBadge } from './StatusBadge'
 import { PriorityBadge } from './PriorityBadge'
 import type { JobListItem, JobStatus, JobPriority } from '@/lib/types'
@@ -83,13 +83,13 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
     {
       accessorKey: 'entryDate',
       header: 'Entry Date',
-      cell: ({ getValue }) => format(new Date(getValue() as string), 'MMM d, yyyy'),
+      cell: ({ getValue }) => format(parseISO(getValue() as string), 'MMM d, yyyy'),
       meta: { hideOnMobile: true, sortKey: 'entryDate' },
     },
     {
       accessorKey: 'dateRequired',
       header: 'Date Required',
-      cell: ({ getValue }) => format(new Date(getValue() as string), 'MMM d, yyyy'),
+      cell: ({ getValue }) => format(parseISO(getValue() as string), 'MMM d, yyyy'),
       meta: { hideOnMobile: true, sortKey: 'dateRequired' },
     },
     {

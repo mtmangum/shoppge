@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { db } from '@/lib/db'
 import { jobs, users } from '@/lib/schema'
 import { eq, and, inArray, asc } from 'drizzle-orm'
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { StatusBadge } from '@/components/StatusBadge'
@@ -15,7 +15,7 @@ import type { UserRole } from '@/lib/types'
 
 function formatDate(value?: string | null) {
   if (!value) return '—'
-  return format(new Date(value), 'MMM d, yyyy')
+  return format(parseISO(value), 'MMM d, yyyy')
 }
 
 export default async function JobDetailPage({ params }: { params: { id: string } }) {
@@ -50,7 +50,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
     : []
 
   const daysElapsed = Math.floor(
-    (Date.now() - new Date(job.entryDate).getTime()) / (1000 * 60 * 60 * 24)
+    (Date.now() - parseISO(job.entryDate).getTime()) / (1000 * 60 * 60 * 24)
   )
 
   const hasBillingInfo = job.accountNumber || job.accountTitle || job.sponsorOrg || job.bookkeeperName
