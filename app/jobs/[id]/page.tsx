@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { db } from '@/lib/db'
 import { jobs, users } from '@/lib/schema'
 import { eq, and, inArray, asc } from 'drizzle-orm'
-import { format, parseISO } from 'date-fns'
+import { format, parseISO, differenceInCalendarDays } from 'date-fns'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { StatusBadge } from '@/components/StatusBadge'
@@ -49,9 +49,10 @@ export default async function JobDetailPage({ params }: { params: { id: string }
         .where(and(inArray(users.role, ['machinist', 'admin']), eq(users.isActive, true)))
     : []
 
-  const daysElapsed = Math.floor(
-    (Date.now() - parseISO(job.entryDate).getTime()) / (1000 * 60 * 60 * 24)
-  )
+  // Calendar-day difference, not a raw ms/24h division — the latter
+  // undercounts by a day across a spring-forward DST transition, since
+  // that day has fewer than 24 real hours in it.
+  const daysElapsed = differenceInCalendarDays(new Date(), parseISO(job.entryDate))
 
   const hasBillingInfo = job.accountNumber || job.accountTitle || job.sponsorOrg || job.bookkeeperName
 
