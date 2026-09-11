@@ -85,8 +85,15 @@ async function seedJobs(allUsers: { id: number; email: string; role: string }[])
     { description: 'Machine set screws collar for shaft extension', partNumber: 'SS-303', itemDescription: '1in bore shaft collar with set screws', quantity: '4' },
   ]
 
-  // Two jobs per day, covering the last 3 weeks through today.
-  const dateOffsets = Array.from({ length: 22 }, (_, i) => -21 + i).flatMap(offset => [offset, offset])
+  // Historical jobs: one every 3 days back to mid-June, all long since
+  // completed — backfills the admin dashboard's 12-week turnaround and
+  // throughput charts, which would otherwise show gaps for older weeks.
+  const historicalOffsets = Array.from({ length: 21 }, (_, i) => -85 + i * 3)
+
+  // Recent jobs: two jobs per day, last 3 weeks through today, full status mix.
+  const recentOffsets = Array.from({ length: 22 }, (_, i) => -21 + i).flatMap(offset => [offset, offset])
+
+  const dateOffsets = [...historicalOffsets, ...recentOffsets]
 
   const jobDefs = dateOffsets.map((offset, i) => {
     const task = taskTemplates[i % taskTemplates.length]
@@ -94,9 +101,13 @@ async function seedJobs(allUsers: { id: number; email: string; role: string }[])
     const requestor = requestors[i % requestors.length]
     const machinist = machinists[i % machinists.length]
 
-    // Roughly: 40% completed, 25% inprogress, 25% pending, 10% cancelled
+    // Historical jobs are always completed (a job due back in June wouldn't
+    // still be sitting open). Recent jobs get the usual mix: roughly 40%
+    // completed, 25% inprogress, 25% pending, 10% cancelled.
+    const isHistorical = i < historicalOffsets.length
     const statusRoll = i % 10
-    const status = statusRoll < 4 ? 'completed' as const
+    const status = isHistorical ? 'completed' as const
+                 : statusRoll < 4 ? 'completed' as const
                  : statusRoll < 6.5 ? 'inprogress' as const
                  : statusRoll < 9 ? 'pending' as const
                  : 'cancelled' as const
