@@ -47,6 +47,7 @@ export function JobActions({
   const [materialsReq, setMaterialsReq] = useState(materialsRequired)
   const [materialsOrd, setMaterialsOrd] = useState(materialsOrdered)
   const [materialsSaving, setMaterialsSaving] = useState(false)
+  const [materialsError, setMaterialsError] = useState<string | null>(null)
 
   const [notes, setNotes] = useState(machinistNotes)
   const [notesSaving, setNotesSaving] = useState(false)
@@ -89,6 +90,7 @@ export function JobActions({
   }
 
   async function handleAssign(nextValue: string) {
+    const previous = assigneeValue
     setAssigneeValue(nextValue)
     setAssignSaving(true)
     setAssignError(null)
@@ -96,6 +98,7 @@ export function JobActions({
       await patchJob({ machinistId: nextValue ? parseInt(nextValue) : null })
       router.refresh()
     } catch (e: any) {
+      setAssigneeValue(previous)
       setAssignError(e.message)
     } finally {
       setAssignSaving(false)
@@ -103,12 +106,17 @@ export function JobActions({
   }
 
   async function handleMaterialsChange(field: 'materialsRequired' | 'materialsOrdered', value: boolean) {
-    if (field === 'materialsRequired') setMaterialsReq(value)
-    else setMaterialsOrd(value)
+    const setField = field === 'materialsRequired' ? setMaterialsReq : setMaterialsOrd
+    const previous = field === 'materialsRequired' ? materialsReq : materialsOrd
+    setField(value)
     setMaterialsSaving(true)
+    setMaterialsError(null)
     try {
       await patchJob({ [field]: value })
       router.refresh()
+    } catch (e: any) {
+      setField(previous)
+      setMaterialsError(e.message)
     } finally {
       setMaterialsSaving(false)
     }
@@ -233,6 +241,7 @@ export function JobActions({
           />
           Materials ordered
         </label>
+        {materialsError && <p className="text-red-500 text-xs">{materialsError}</p>}
       </div>
 
       {/* Notes */}
