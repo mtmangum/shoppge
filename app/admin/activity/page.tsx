@@ -146,7 +146,7 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
           </thead>
           <tbody className="divide-y">
             {entries.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">No activity matches these filters.</td></tr>
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">No activity matches these filters.</td></tr>
             )}
             {entries.map((entry, i) => (
               <tr key={entry.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>

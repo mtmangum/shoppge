@@ -59,7 +59,7 @@ export default async function RootPage() {
             <tbody className="divide-y">
               {recentJobs.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-gray-400">
+                  <td colSpan={6} className="px-4 py-6 text-center text-gray-500">
                     No jobs yet.
                   </td>
                 </tr>

@@ -79,12 +79,12 @@ function RequestRow({ request }: { request: AccessRequest }) {
           <p className="font-semibold text-gray-900">{request.name}</p>
           <p className="text-gray-600">{request.email}</p>
           {(request.department || request.phone) && (
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-gray-500 mt-0.5">
               {[request.department, request.phone].filter(Boolean).join(' · ')}
             </p>
           )}
         </div>
-        <div className="text-xs text-gray-400 shrink-0">
+        <div className="text-xs text-gray-500 shrink-0">
           {format(new Date(request.createdAt), 'MMM d, yyyy')}
         </div>
       </div>

@@ -71,7 +71,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-gray-500">
           Need an account?{' '}
-          <Link href="/request-access" className="text-[#BF5700] hover:underline">
+          <Link href="/request-access" className="text-[#BF5700] underline">
             Request access
           </Link>
         </p>

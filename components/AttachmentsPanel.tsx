@@ -76,7 +76,7 @@ export function AttachmentsPanel({ jobId, attachments, canDelete }: AttachmentsP
   return (
     <div className="space-y-4">
       {attachments.length === 0 ? (
-        <p className="text-sm text-gray-400 italic">No attachments yet.</p>
+        <p className="text-sm text-gray-500 italic">No attachments yet.</p>
       ) : (
         <ul className="divide-y">
           {attachments.map(att => (
@@ -112,6 +112,7 @@ export function AttachmentsPanel({ jobId, attachments, canDelete }: AttachmentsP
           ref={fileInputRef}
           type="file"
           accept=".pdf,.png,.jpg,.jpeg"
+          aria-label="Choose attachment file"
           className="text-sm text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded file:border file:text-sm file:cursor-pointer"
         />
         <button
@@ -124,7 +125,7 @@ export function AttachmentsPanel({ jobId, attachments, canDelete }: AttachmentsP
         </button>
       </form>
       {error && <p className="text-red-500 text-xs">{error}</p>}
-      <p className="text-xs text-gray-400">PDF, PNG, or JPEG. Max 25MB.</p>
+      <p className="text-xs text-gray-500">PDF, PNG, or JPEG. Max 25MB.</p>
     </div>
   )
 }

@@ -48,7 +48,7 @@ export default function RequestAccessPage() {
           <p className="text-sm text-gray-600">
             Thanks — an admin will review your request. You&apos;ll be able to sign in once it&apos;s approved.
           </p>
-          <Link href="/login" className="inline-block text-sm text-[#BF5700] hover:underline">
+          <Link href="/login" className="inline-block text-sm text-[#BF5700] underline">
             ← Back to sign in
           </Link>
         </div>
@@ -134,7 +134,7 @@ export default function RequestAccessPage() {
 
         <p className="text-center text-sm text-gray-500">
           Already have an account?{' '}
-          <Link href="/login" className="text-[#BF5700] hover:underline">
+          <Link href="/login" className="text-[#BF5700] underline">
             Sign in
           </Link>
         </p>

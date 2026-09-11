@@ -60,7 +60,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/jobs" className="text-gray-500 hover:text-gray-800">
+          <Link href="/jobs" className="text-gray-500 hover:text-gray-800" aria-label="Back to jobs list">
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <h2 className="text-2xl font-bold text-gray-900">
@@ -82,7 +82,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
           <section className="bg-white rounded-lg border p-6">
             <h3 className="font-semibold text-gray-700 border-b pb-2 mb-4">Item List</h3>
             {job.items.length === 0 ? (
-              <p className="text-sm text-gray-400 italic">No line items.</p>
+              <p className="text-sm text-gray-500 italic">No line items.</p>
             ) : (
               <table className="w-full text-sm">
                 <thead>
@@ -162,7 +162,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Machinist</span>
-              <span>{job.machinist?.name ?? <span className="text-gray-400 italic">unassigned</span>}</span>
+              <span>{job.machinist?.name ?? <span className="text-gray-500 italic">unassigned</span>}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Entry Date</span>

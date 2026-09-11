@@ -128,7 +128,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
           className={`${FIELD_CLASS} w-64`}
         />
         <div className="relative">
-          <select name="status" defaultValue={status} className={`${FIELD_CLASS} appearance-none pr-8`}>
+          <select name="status" aria-label="Filter by status" defaultValue={status} className={`${FIELD_CLASS} appearance-none pr-8`}>
             <option value="all">All Statuses</option>
             <option value="pending">Pending</option>
             <option value="inprogress">In Progress</option>
@@ -138,7 +138,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
           <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
         </div>
         <div className="relative">
-          <select name="priority" defaultValue={priority} className={`${FIELD_CLASS} appearance-none pr-8`}>
+          <select name="priority" aria-label="Filter by priority" defaultValue={priority} className={`${FIELD_CLASS} appearance-none pr-8`}>
             <option value="all">All Priorities</option>
             <option value="urgent">Urgent</option>
             <option value="normal">Normal</option>

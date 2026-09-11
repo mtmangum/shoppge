@@ -34,7 +34,7 @@ export default async function RootLayout({
                   <h1 className="text-xl font-bold tracking-tight">
                     UT ShopTrack
                   </h1>
-                  <p className="text-xs opacity-90">
+                  <p className="text-xs text-white">
                     Submit, track, and manage Instrumentation &amp; Machine Shop work orders
                   </p>
                 </div>

@@ -111,7 +111,7 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
     {
       accessorKey: 'machinistName',
       header: 'Machinist',
-      cell: ({ getValue }) => getValue() as string || <span className="text-gray-400 italic">unassigned</span>,
+      cell: ({ getValue }) => getValue() as string || <span className="text-gray-500 italic">unassigned</span>,
       meta: { sortKey: 'machinistName' },
     },
     {
@@ -181,7 +181,7 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
           </thead>
           <tbody className="divide-y">
             {table.getRowModel().rows.length === 0 && (
-              <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400">No jobs match these filters.</td></tr>
+              <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-500">No jobs match these filters.</td></tr>
             )}
             {table.getRowModel().rows.map((row, i) => {
               const highlighted = matchesHighlight(row.original, highlightFilter)
@@ -215,7 +215,7 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
       {/* Mobile: compact cards, whole card tappable */}
       <div className="md:hidden space-y-3">
         {jobs.length === 0 && (
-          <p className="text-center text-gray-400 py-8">No jobs match these filters.</p>
+          <p className="text-center text-gray-500 py-8">No jobs match these filters.</p>
         )}
         {jobs.map(job => {
           const highlighted = matchesHighlight(job, highlightFilter)
@@ -238,7 +238,7 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
                 <PriorityBadge priority={job.priority} />
               </div>
               <div className="text-sm text-gray-600">
-                {job.machinistName || <span className="text-gray-400 italic">unassigned</span>}
+                {job.machinistName || <span className="text-gray-500 italic">unassigned</span>}
               </div>
               <p className="text-sm text-gray-800 line-clamp-2">{job.description}</p>
             </Link>

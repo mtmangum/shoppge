@@ -186,7 +186,7 @@ export default function NewJobPage() {
               onChange={e => setFile(e.target.files?.[0] ?? null)}
               className="text-sm text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded file:border file:text-sm file:cursor-pointer"
             />
-            <p className="text-xs text-gray-400 mt-1">Optional. You can also add more from the job page after submitting.</p>
+            <p className="text-xs text-gray-500 mt-1">Optional. You can also add more from the job page after submitting.</p>
           </div>
         </section>
 

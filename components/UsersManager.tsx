@@ -160,7 +160,7 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
   return (
     <>
     <tr className={rowBg} style={deleting ? { opacity: 0.5 } : undefined}>
-      <td className="px-4 py-3">{displayName}{isSelf && <span className="text-gray-400 text-xs ml-1">(you)</span>}</td>
+      <td className="px-4 py-3">{displayName}{isSelf && <span className="text-gray-500 text-xs ml-1">(you)</span>}</td>
       <td className="px-4 py-3 hidden md:table-cell">{displayEmail}</td>
       <td className="px-4 py-3">
         <div className="relative inline-block">
@@ -168,6 +168,7 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
             value={role}
             disabled={saving || isSelf}
             onChange={e => handleRoleChange(e.target.value as UserRole)}
+            aria-label={`Role for ${displayName}`}
             className="border rounded px-2 py-1 text-sm appearance-none pr-7 disabled:opacity-50"
           >
             {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
