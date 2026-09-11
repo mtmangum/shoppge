@@ -92,7 +92,7 @@ function CreateUserForm({ onCreated }: { onCreated: () => void }) {
         <button type="submit" disabled={submitting} className="bg-[#BF5700] text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-[#a34800] disabled:opacity-50 transition-colors">
           {submitting ? 'Creating…' : 'Create User'}
         </button>
-        {error && <p className="text-red-500 text-xs">{error}</p>}
+        {error && <p role="alert" className="text-red-500 text-xs">{error}</p>}
       </div>
     </form>
   )

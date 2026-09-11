@@ -121,7 +121,7 @@ export default function RequestAccessPage() {
         </div>
 
         {error && (
-          <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded p-2">{error}</p>
+          <p role="alert" className="text-red-500 text-sm bg-red-50 border border-red-200 rounded p-2">{error}</p>
         )}
 
         <button

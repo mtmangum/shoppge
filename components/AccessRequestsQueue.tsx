@@ -153,7 +153,7 @@ function RequestRow({ request }: { request: AccessRequest }) {
           </button>
         </div>
       )}
-      {error && <p className="text-red-500 text-xs">{error}</p>}
+      {error && <p role="alert" className="text-red-500 text-xs">{error}</p>}
     </li>
   )
 }

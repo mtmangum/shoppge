@@ -188,7 +188,7 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
           />
           {isActive ? 'Active' : 'Inactive'}
         </label>
-        {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+        {error && <p role="alert" className="text-red-500 text-xs mt-1">{error}</p>}
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
@@ -209,7 +209,7 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
             <Trash2 className="h-4 w-4" />
           </button>
         </div>
-        {deleteError && <p className="text-red-500 text-xs mt-1 max-w-xs">{deleteError}</p>}
+        {deleteError && <p role="alert" className="text-red-500 text-xs mt-1 max-w-xs">{deleteError}</p>}
       </td>
     </tr>
     {editing && (
@@ -255,7 +255,7 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
               <button type="button" onClick={() => setEditing(false)} className="text-sm text-gray-500 hover:underline">
                 Cancel
               </button>
-              {editError && <p className="text-red-500 text-xs">{editError}</p>}
+              {editError && <p role="alert" className="text-red-500 text-xs">{editError}</p>}
             </div>
           </form>
         </td>

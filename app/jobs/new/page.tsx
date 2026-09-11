@@ -84,10 +84,12 @@ export default function NewJobPage() {
               id="job-date-required"
               type="date"
               {...register('dateRequired')}
+              aria-invalid={errors.dateRequired ? 'true' : undefined}
+              aria-describedby={errors.dateRequired ? 'job-date-required-error' : undefined}
               className="border rounded-md px-3 py-2 w-full text-sm focus:outline-none focus:ring-2 focus:ring-[#BF5700]"
             />
             {errors.dateRequired && (
-              <p className="text-red-500 text-xs mt-1">{errors.dateRequired.message}</p>
+              <p id="job-date-required-error" className="text-red-500 text-xs mt-1">{errors.dateRequired.message}</p>
             )}
           </div>
 
@@ -100,10 +102,12 @@ export default function NewJobPage() {
               {...register('description')}
               rows={3}
               placeholder="Describe what you need machined…"
+              aria-invalid={errors.description ? 'true' : undefined}
+              aria-describedby={errors.description ? 'job-description-error' : undefined}
               className="border rounded-md px-3 py-2 w-full text-sm focus:outline-none focus:ring-2 focus:ring-[#BF5700]"
             />
             {errors.description && (
-              <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>
+              <p id="job-description-error" className="text-red-500 text-xs mt-1">{errors.description.message}</p>
             )}
           </div>
 
@@ -226,7 +230,7 @@ export default function NewJobPage() {
         </fieldset>
 
         {error && (
-          <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded p-3">
+          <p role="alert" className="text-red-500 text-sm bg-red-50 border border-red-200 rounded p-3">
             {error}
             {createdJobId && (
               <>

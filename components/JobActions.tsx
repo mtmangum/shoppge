@@ -184,7 +184,7 @@ export function JobActions({
             <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
           </div>
         </div>
-        {assignError && <p className="text-red-500 text-xs">{assignError}</p>}
+        {assignError && <p role="alert" className="text-red-500 text-xs">{assignError}</p>}
       </div>
 
       {/* Status */}
@@ -211,7 +211,7 @@ export function JobActions({
           rows={2}
           className="border rounded-md px-2 py-1.5 text-sm w-full"
         />
-        {statusError && <p className="text-red-500 text-xs">{statusError}</p>}
+        {statusError && <p role="alert" className="text-red-500 text-xs">{statusError}</p>}
         <button
           type="submit"
           disabled={statusSaving || statusValue === status}
@@ -244,7 +244,7 @@ export function JobActions({
           />
           Materials ordered
         </label>
-        {materialsError && <p className="text-red-500 text-xs">{materialsError}</p>}
+        {materialsError && <p role="alert" className="text-red-500 text-xs">{materialsError}</p>}
       </div>
 
       {/* Notes */}
@@ -257,7 +257,7 @@ export function JobActions({
           rows={3}
           className="border rounded-md px-2 py-1.5 text-sm w-full"
         />
-        {notesError && <p className="text-red-500 text-xs">{notesError}</p>}
+        {notesError && <p role="alert" className="text-red-500 text-xs">{notesError}</p>}
         <button
           type="submit"
           disabled={notesSaving || notes === machinistNotes}
@@ -271,7 +271,7 @@ export function JobActions({
       {isAdmin && (
         <div className="space-y-2 border-t pt-4">
           <label className="block text-xs font-medium text-red-600">Danger Zone</label>
-          {deleteError && <p className="text-red-500 text-xs">{deleteError}</p>}
+          {deleteError && <p role="alert" className="text-red-500 text-xs">{deleteError}</p>}
           <button
             type="button"
             onClick={handleDelete}

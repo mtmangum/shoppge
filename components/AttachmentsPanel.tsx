@@ -124,7 +124,7 @@ export function AttachmentsPanel({ jobId, attachments, canDelete }: AttachmentsP
           {uploading ? 'Uploading…' : 'Upload'}
         </button>
       </form>
-      {error && <p className="text-red-500 text-xs">{error}</p>}
+      {error && <p role="alert" className="text-red-500 text-xs">{error}</p>}
       <p className="text-xs text-gray-500">PDF, PNG, or JPEG. Max 25MB.</p>
     </div>
   )

@@ -58,7 +58,7 @@ export function InlineLoginForm() {
         >
           {submitting ? 'Signing in…' : 'Sign In'}
         </button>
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
       </form>
       <p className="text-xs text-gray-500">
         Need an account?{' '}
