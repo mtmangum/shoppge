@@ -30,13 +30,21 @@ export default function NewJobPage() {
     setSubmitting(true)
     setError(null)
     try {
-      const res = await fetch('/api/jobs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-      if (!res.ok) throw new Error(await res.text())
-      const { id } = await res.json()
+      // If a previous attempt already created the job and only the
+      // attachment upload failed, retry the upload against that job
+      // instead of submitting the form again (which would create a
+      // second job).
+      let id = createdJobId
+      if (id === null) {
+        const res = await fetch('/api/jobs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+        if (!res.ok) throw new Error(await res.text())
+        ;({ id } = await res.json())
+        setCreatedJobId(id)
+      }
 
       if (file) {
         const uploadForm = new FormData()
@@ -45,7 +53,6 @@ export default function NewJobPage() {
         if (!uploadRes.ok) {
           const { error: uploadError } = await uploadRes.json().catch(() => ({ error: 'Attachment upload failed' }))
           setError(`Job #${id} was created, but the attachment failed to upload: ${uploadError ?? 'unknown error'}.`)
-          setCreatedJobId(id)
           setSubmitting(false)
           return
         }
@@ -65,6 +72,7 @@ export default function NewJobPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Basic Info */}
+        <fieldset disabled={createdJobId !== null} className="disabled:opacity-50">
         <section className="bg-white rounded-lg border p-6 space-y-4">
           <h3 className="font-semibold text-gray-700 border-b pb-2">Job Details</h3>
 
@@ -108,11 +116,13 @@ export default function NewJobPage() {
             </label>
           </div>
         </section>
+        </fieldset>
 
         {/* Line Items */}
         <section className="bg-white rounded-lg border p-6 space-y-4">
           <h3 className="font-semibold text-gray-700 border-b pb-2">Item List</h3>
 
+          <fieldset disabled={createdJobId !== null} className="space-y-4 disabled:opacity-50">
           {fields.map((field, i) => (
             <div key={field.id} className="grid grid-cols-12 gap-2 items-start">
               <div className="col-span-3">
@@ -157,6 +167,7 @@ export default function NewJobPage() {
           >
             <Plus className="h-4 w-4" /> Add item
           </button>
+          </fieldset>
 
           {/* File upload */}
           <div className="pt-2">
@@ -174,6 +185,7 @@ export default function NewJobPage() {
         </section>
 
         {/* Sponsor Info */}
+        <fieldset disabled={createdJobId !== null} className="disabled:opacity-50">
         <section className="bg-white rounded-lg border p-6 space-y-4">
           <h3 className="font-semibold text-gray-700 border-b pb-2">Billing / Sponsor Information</h3>
 
@@ -205,6 +217,7 @@ export default function NewJobPage() {
             </div>
           </div>
         </section>
+        </fieldset>
 
         {error && (
           <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded p-3">
@@ -226,7 +239,7 @@ export default function NewJobPage() {
             disabled={submitting}
             className="bg-[#BF5700] text-white px-6 py-2 rounded-md font-medium hover:bg-[#a34800] disabled:opacity-50 transition-colors"
           >
-            {submitting ? 'Submitting…' : 'Submit Job'}
+            {submitting ? 'Submitting…' : createdJobId !== null ? 'Retry Attachment Upload' : 'Submit Job'}
           </button>
           <button
             type="button"
