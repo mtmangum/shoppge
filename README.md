@@ -85,8 +85,12 @@ see that file for the full service layout and required env vars.
 
 ## Deploying to AWS
 
-Current deployment is a single EC2 instance running `docker-compose.aws.yml` (app + Postgres,
-talking to real S3 directly — no MinIO/nginx sidecars, app exposed on `:80`).
+Current deployment is a single EC2 instance running `docker-compose.yml` (app + Postgres + MinIO
+for attachment storage + nginx reverse-proxying `:80`/`:443` to the app's internal `:3000`).
+`docker-compose.aws.yml` is a lighter alternative (app + Postgres only, talking to real S3
+directly, app exposed straight on `:80`) that this box does **not** currently use — don't point
+CI or a manual deploy at it unless you're also removing the nginx/storage containers, since their
+`ports` mappings will otherwise collide.
 
 This GHE instance is self-hosted (GitHub Enterprise Server) and doesn't provide GitHub-hosted
 runners, so the EC2 box itself is registered as a self-hosted Actions runner (systemd service
@@ -95,7 +99,7 @@ user). `.github/workflows/ci-cd.yml` runs typecheck/lint/build on every push and
 on that runner, and on push to `main` (after those checks pass) deploys automatically: since the
 runner *is* the deploy target, the `deploy` job just checks out the repo into its own workspace,
 copies the persistent production `.env` in from `/home/ubuntu/pge-shop/.env` (the checkout itself
-never contains `.env` — it's gitignored), and runs `docker compose -f docker-compose.aws.yml up
+never contains `.env` — it's gitignored), and runs `docker compose -f docker-compose.yml up
 -d --build` directly. No SSH secrets are needed for this — there's nothing to add in GHE's
 Secrets settings for deploy to work.
 
@@ -134,7 +138,7 @@ From a local checkout of the repo:
 ```
 rsync -az --delete --exclude '.git' --exclude 'node_modules' --exclude '.next' --exclude '.env' \
   ./ <user>@<host>:<path-to-app-dir>/
-ssh <user>@<host> "cd <path-to-app-dir> && docker compose -f docker-compose.aws.yml up -d --build"
+ssh <user>@<host> "cd <path-to-app-dir> && docker compose -f docker-compose.yml up -d --build"
 ```
 
 `.env` is excluded deliberately — it holds real production secrets that only ever live on the
@@ -148,7 +152,7 @@ so existing data persists.
 
 ```
 git checkout <previous-tag-or-commit>
-docker compose -f docker-compose.aws.yml up -d --build
+docker compose -f docker-compose.yml up -d --build
 ```
 
 ## Project layout

@@ -54,4 +54,4 @@ jobs:
         run: cp /home/ubuntu/pge-shop/.env "$GITHUB_WORKSPACE/.env"
 
       - name: Rebuild and restart
-        run: docker compose -f docker-compose.aws.yml up -d --build
+        run: docker compose -f docker-compose.yml up -d --build
