@@ -30,8 +30,9 @@ export function InlineLoginForm() {
     <div className="space-y-1.5">
       <form onSubmit={onSubmit} className="flex flex-col sm:flex-row sm:items-end gap-2">
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Email</label>
+          <label htmlFor="inline-login-email" className="block text-xs text-gray-500 mb-1">Email</label>
           <input
+            id="inline-login-email"
             type="email"
             required
             value={email}
@@ -40,8 +41,9 @@ export function InlineLoginForm() {
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Password</label>
+          <label htmlFor="inline-login-password" className="block text-xs text-gray-500 mb-1">Password</label>
           <input
+            id="inline-login-password"
             type="password"
             required
             value={password}

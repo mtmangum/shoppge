@@ -96,6 +96,7 @@ export function AttachmentsPanel({ jobId, attachments, canDelete }: AttachmentsP
                     onClick={() => handleDelete(att.id)}
                     disabled={deletingId === att.id}
                     className="text-gray-400 hover:text-red-500 disabled:opacity-50"
+                    aria-label={`Delete ${att.originalName}`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>

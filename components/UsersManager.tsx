@@ -216,28 +216,29 @@ function UserRow({ user, isSelf, rowBg }: { user: ManagedUser; isSelf: boolean; 
         <td colSpan={6} className="px-4 py-4 border-t-0">
           <form onSubmit={handleEditSave} className="bg-gray-50 rounded-md border p-4 grid grid-cols-2 sm:grid-cols-6 gap-3 items-end">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Name</label>
-              <input required value={editName} onChange={e => setEditName(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm w-full" />
+              <label htmlFor={`edit-name-${user.id}`} className="block text-xs text-gray-500 mb-1">Name</label>
+              <input id={`edit-name-${user.id}`} required value={editName} onChange={e => setEditName(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm w-full" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Email</label>
-              <input required type="email" value={editEmail} onChange={e => setEditEmail(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm w-full" />
+              <label htmlFor={`edit-email-${user.id}`} className="block text-xs text-gray-500 mb-1">Email</label>
+              <input id={`edit-email-${user.id}`} required type="email" value={editEmail} onChange={e => setEditEmail(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm w-full" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Department</label>
-              <input value={editDepartment} onChange={e => setEditDepartment(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm w-full" />
+              <label htmlFor={`edit-department-${user.id}`} className="block text-xs text-gray-500 mb-1">Department</label>
+              <input id={`edit-department-${user.id}`} value={editDepartment} onChange={e => setEditDepartment(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm w-full" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Phone</label>
-              <input value={editPhone} onChange={e => setEditPhone(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm w-full" />
+              <label htmlFor={`edit-phone-${user.id}`} className="block text-xs text-gray-500 mb-1">Phone</label>
+              <input id={`edit-phone-${user.id}`} value={editPhone} onChange={e => setEditPhone(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm w-full" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Room</label>
-              <input value={editRoom} onChange={e => setEditRoom(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm w-full" />
+              <label htmlFor={`edit-room-${user.id}`} className="block text-xs text-gray-500 mb-1">Room</label>
+              <input id={`edit-room-${user.id}`} value={editRoom} onChange={e => setEditRoom(e.target.value)} className="border rounded-md px-2 py-1.5 text-sm w-full" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">New Password</label>
+              <label htmlFor={`edit-password-${user.id}`} className="block text-xs text-gray-500 mb-1">New Password</label>
               <input
+                id={`edit-password-${user.id}`}
                 type="password"
                 value={editPassword}
                 minLength={8}

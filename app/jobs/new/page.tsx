@@ -77,10 +77,11 @@ export default function NewJobPage() {
           <h3 className="font-semibold text-gray-700 border-b pb-2">Job Details</h3>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="job-date-required" className="block text-sm font-medium text-gray-700 mb-1">
               Date Required <span className="text-red-500">*</span>
             </label>
             <input
+              id="job-date-required"
               type="date"
               {...register('dateRequired')}
               className="border rounded-md px-3 py-2 w-full text-sm focus:outline-none focus:ring-2 focus:ring-[#BF5700]"
@@ -91,10 +92,11 @@ export default function NewJobPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="job-description" className="block text-sm font-medium text-gray-700 mb-1">
               Job Description <span className="text-red-500">*</span>
             </label>
             <textarea
+              id="job-description"
               {...register('description')}
               rows={3}
               placeholder="Describe what you need machined…"
@@ -130,6 +132,7 @@ export default function NewJobPage() {
                 <input
                   {...register(`items.${i}.partNumber`)}
                   placeholder="Part #"
+                  aria-label={`Part number for item ${i + 1}`}
                   className="border rounded px-2 py-1.5 text-sm w-full"
                 />
               </div>
@@ -138,6 +141,7 @@ export default function NewJobPage() {
                 <input
                   {...register(`items.${i}.quantity`)}
                   placeholder="Qty"
+                  aria-label={`Quantity for item ${i + 1}`}
                   className="border rounded px-2 py-1.5 text-sm w-full"
                 />
               </div>
@@ -146,13 +150,14 @@ export default function NewJobPage() {
                 <input
                   {...register(`items.${i}.description`)}
                   placeholder="Description"
+                  aria-label={`Description for item ${i + 1}`}
                   className="border rounded px-2 py-1.5 text-sm w-full"
                 />
               </div>
               <div className="col-span-1 flex items-end pb-0.5">
                 {i === 0 && <div className="h-5" />}
                 {fields.length > 1 && (
-                  <button type="button" onClick={() => remove(i)} className="text-gray-400 hover:text-red-500 p-1">
+                  <button type="button" onClick={() => remove(i)} className="text-gray-400 hover:text-red-500 p-1" aria-label={`Remove item ${i + 1}`}>
                     <Trash2 className="h-4 w-4" />
                   </button>
                 )}
@@ -171,10 +176,11 @@ export default function NewJobPage() {
 
           {/* File upload */}
           <div className="pt-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="job-attachment" className="block text-sm font-medium text-gray-700 mb-1">
               Attach Drawing (PDF only)
             </label>
             <input
+              id="job-attachment"
               type="file"
               accept=".pdf"
               onChange={e => setFile(e.target.files?.[0] ?? null)}
@@ -191,28 +197,28 @@ export default function NewJobPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Account Number</label>
-              <input {...register('accountNumber')} placeholder="00-0000-0000"
+              <label htmlFor="job-account-number" className="block text-xs text-gray-500 mb-1">Account Number</label>
+              <input id="job-account-number" {...register('accountNumber')} placeholder="00-0000-0000"
                 className="border rounded-md px-3 py-2 w-full text-sm" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Account Title</label>
-              <input {...register('accountTitle')}
+              <label htmlFor="job-account-title" className="block text-xs text-gray-500 mb-1">Account Title</label>
+              <input id="job-account-title" {...register('accountTitle')}
                 className="border rounded-md px-3 py-2 w-full text-sm" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Sponsoring Faculty/Organization</label>
-              <input {...register('sponsorOrg')}
+              <label htmlFor="job-sponsor-org" className="block text-xs text-gray-500 mb-1">Sponsoring Faculty/Organization</label>
+              <input id="job-sponsor-org" {...register('sponsorOrg')}
                 className="border rounded-md px-3 py-2 w-full text-sm" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Account Bookkeeper</label>
-              <input {...register('bookkeeperName')}
+              <label htmlFor="job-bookkeeper-name" className="block text-xs text-gray-500 mb-1">Account Bookkeeper</label>
+              <input id="job-bookkeeper-name" {...register('bookkeeperName')}
                 className="border rounded-md px-3 py-2 w-full text-sm" />
             </div>
             <div className="col-span-2">
-              <label className="block text-xs text-gray-500 mb-1">Bookkeeper Address</label>
-              <textarea {...register('bookkeeperAddress')} rows={2}
+              <label htmlFor="job-bookkeeper-address" className="block text-xs text-gray-500 mb-1">Bookkeeper Address</label>
+              <textarea id="job-bookkeeper-address" {...register('bookkeeperAddress')} rows={2}
                 className="border rounded-md px-3 py-2 w-full text-sm" />
             </div>
           </div>

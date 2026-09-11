@@ -83,13 +83,13 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
 
       <form method="get" className="bg-white rounded-lg border p-4 flex flex-wrap items-end gap-3">
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Job #</label>
-          <input type="number" name="jobId" defaultValue={searchParams.jobId} className="border rounded-md px-2 py-1.5 text-sm w-24" />
+          <label htmlFor="activity-job-id" className="block text-xs text-gray-500 mb-1">Job #</label>
+          <input id="activity-job-id" type="number" name="jobId" defaultValue={searchParams.jobId} className="border rounded-md px-2 py-1.5 text-sm w-24" />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Changed By</label>
+          <label htmlFor="activity-changed-by" className="block text-xs text-gray-500 mb-1">Changed By</label>
           <div className="relative">
-            <select name="changedById" defaultValue={searchParams.changedById ?? ''} className="border rounded-md px-2 py-1.5 text-sm appearance-none pr-8">
+            <select id="activity-changed-by" name="changedById" defaultValue={searchParams.changedById ?? ''} className="border rounded-md px-2 py-1.5 text-sm appearance-none pr-8">
               <option value="">Anyone</option>
               {allUsers.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
             </select>
@@ -97,9 +97,9 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
           </div>
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">New Status</label>
+          <label htmlFor="activity-new-status" className="block text-xs text-gray-500 mb-1">New Status</label>
           <div className="relative">
-            <select name="status" defaultValue={searchParams.status ?? ''} className="border rounded-md px-2 py-1.5 text-sm appearance-none pr-8">
+            <select id="activity-new-status" name="status" defaultValue={searchParams.status ?? ''} className="border rounded-md px-2 py-1.5 text-sm appearance-none pr-8">
               <option value="">Any</option>
               <option value="pending">Pending</option>
               <option value="inprogress">In Progress</option>
@@ -110,12 +110,12 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
           </div>
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">From</label>
-          <input type="date" name="from" defaultValue={searchParams.from} className="border rounded-md px-2 py-1.5 text-sm" />
+          <label htmlFor="activity-from" className="block text-xs text-gray-500 mb-1">From</label>
+          <input id="activity-from" type="date" name="from" defaultValue={searchParams.from} className="border rounded-md px-2 py-1.5 text-sm" />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">To</label>
-          <input type="date" name="to" defaultValue={searchParams.to} className="border rounded-md px-2 py-1.5 text-sm" />
+          <label htmlFor="activity-to" className="block text-xs text-gray-500 mb-1">To</label>
+          <input id="activity-to" type="date" name="to" defaultValue={searchParams.to} className="border rounded-md px-2 py-1.5 text-sm" />
         </div>
         <button type="submit" className="bg-[#BF5700] text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-[#a34800] transition-colors">
           Filter

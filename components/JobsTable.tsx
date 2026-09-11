@@ -216,18 +216,20 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
       <div className="flex items-center justify-between text-sm text-gray-600">
         <span>Page {page} of {totalPages}</span>
         <div className="flex gap-2">
-          <Link
-            href={buildHref({ page: String(page - 1) })}
-            className={clsx('px-3 py-1 border rounded', page <= 1 ? 'opacity-40 pointer-events-none' : 'hover:bg-gray-50')}
-          >
-            Previous
-          </Link>
-          <Link
-            href={buildHref({ page: String(page + 1) })}
-            className={clsx('px-3 py-1 border rounded', page >= totalPages ? 'opacity-40 pointer-events-none' : 'hover:bg-gray-50')}
-          >
-            Next
-          </Link>
+          {page <= 1 ? (
+            <span className="px-3 py-1 border rounded opacity-40" aria-disabled="true">Previous</span>
+          ) : (
+            <Link href={buildHref({ page: String(page - 1) })} className="px-3 py-1 border rounded hover:bg-gray-50">
+              Previous
+            </Link>
+          )}
+          {page >= totalPages ? (
+            <span className="px-3 py-1 border rounded opacity-40" aria-disabled="true">Next</span>
+          ) : (
+            <Link href={buildHref({ page: String(page + 1) })} className="px-3 py-1 border rounded hover:bg-gray-50">
+              Next
+            </Link>
+          )}
         </div>
       </div>
     </div>

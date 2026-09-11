@@ -166,10 +166,11 @@ export function JobActions({
 
       {/* Assignment */}
       <div className="space-y-1">
-        <label className="block text-xs font-medium text-gray-500">Assigned Machinist</label>
+        <label htmlFor="job-assigned-machinist" className="block text-xs font-medium text-gray-500">Assigned Machinist</label>
         <div className="flex gap-2">
           <div className="relative w-full">
             <select
+              id="job-assigned-machinist"
               value={assigneeValue}
               onChange={e => handleAssign(e.target.value)}
               disabled={assignSaving}
@@ -188,9 +189,10 @@ export function JobActions({
 
       {/* Status */}
       <form onSubmit={handleStatusSubmit} className="space-y-2">
-        <label className="block text-xs font-medium text-gray-500">Status</label>
+        <label htmlFor="job-status" className="block text-xs font-medium text-gray-500">Status</label>
         <div className="relative w-full">
           <select
+            id="job-status"
             value={statusValue}
             onChange={e => setStatusValue(e.target.value as JobStatus)}
             className="border rounded-md px-2 py-1.5 text-sm w-full appearance-none pr-8"
@@ -205,6 +207,7 @@ export function JobActions({
           value={statusNote}
           onChange={e => setStatusNote(e.target.value)}
           placeholder="Optional note about this change…"
+          aria-label="Optional note about this status change"
           rows={2}
           className="border rounded-md px-2 py-1.5 text-sm w-full"
         />
@@ -246,8 +249,9 @@ export function JobActions({
 
       {/* Notes */}
       <form onSubmit={handleNotesSubmit} className="space-y-2">
-        <label className="block text-xs font-medium text-gray-500">Machinist Notes</label>
+        <label htmlFor="job-machinist-notes" className="block text-xs font-medium text-gray-500">Machinist Notes</label>
         <textarea
+          id="job-machinist-notes"
           value={notes}
           onChange={e => { setNotes(e.target.value); setNotesSaved(false) }}
           rows={3}

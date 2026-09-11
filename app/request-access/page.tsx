@@ -63,8 +63,9 @@ export default function RequestAccessPage() {
         <p className="text-sm text-gray-500">UT ShopTrack — PGE Instrumentation / Machine Shop</p>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+          <label htmlFor="access-name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
           <input
+            id="access-name"
             required
             value={name}
             onChange={e => setName(e.target.value)}
@@ -73,8 +74,9 @@ export default function RequestAccessPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <label htmlFor="access-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
           <input
+            id="access-email"
             type="email"
             required
             value={email}
@@ -84,8 +86,9 @@ export default function RequestAccessPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+          <label htmlFor="access-department" className="block text-sm font-medium text-gray-700 mb-1">Department</label>
           <input
+            id="access-department"
             value={department}
             onChange={e => setDepartment(e.target.value)}
             placeholder="e.g. PGE"
@@ -94,8 +97,9 @@ export default function RequestAccessPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+          <label htmlFor="access-phone" className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
           <input
+            id="access-phone"
             value={phone}
             onChange={e => setPhone(e.target.value)}
             className="border rounded-md px-3 py-2 w-full text-sm focus:outline-none focus:ring-2 focus:ring-[#BF5700]"
@@ -103,10 +107,11 @@ export default function RequestAccessPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="access-reason" className="block text-sm font-medium text-gray-700 mb-1">
             Why do you need access?
           </label>
           <textarea
+            id="access-reason"
             value={reason}
             onChange={e => setReason(e.target.value)}
             rows={3}

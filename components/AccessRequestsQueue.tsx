@@ -96,9 +96,10 @@ function RequestRow({ request }: { request: AccessRequest }) {
       {showApprove ? (
         <form onSubmit={handleApprove} className="flex flex-wrap items-end gap-2 pt-1">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Role</label>
+            <label htmlFor={`access-role-${request.id}`} className="block text-xs text-gray-500 mb-1">Role</label>
             <div className="relative">
               <select
+                id={`access-role-${request.id}`}
                 value={role}
                 onChange={e => setRole(e.target.value as UserRole)}
                 className="border rounded-md px-2 py-1.5 text-sm appearance-none pr-8"
@@ -109,8 +110,9 @@ function RequestRow({ request }: { request: AccessRequest }) {
             </div>
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Password (optional)</label>
+            <label htmlFor={`access-password-${request.id}`} className="block text-xs text-gray-500 mb-1">Password (optional)</label>
             <input
+              id={`access-password-${request.id}`}
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
