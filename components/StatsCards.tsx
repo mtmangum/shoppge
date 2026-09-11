@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import clsx from 'clsx'
 
 interface Stats {
@@ -12,6 +13,12 @@ interface Stats {
 }
 
 export type StatsFilterKey = 'pending' | 'inprogress' | 'urgent'
+
+const FILTER_HREF: Record<StatsFilterKey, string> = {
+  pending: '/jobs?status=pending',
+  inprogress: '/jobs?status=inprogress',
+  urgent: '/jobs?priority=urgent',
+}
 
 export function StatsCards({
   stats,
@@ -41,21 +48,35 @@ export function StatsCards({
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {cards.map(card => (
-        <div
-          key={card.label}
-          onMouseEnter={() => handleEnter(card.filterKey)}
-          onMouseLeave={handleLeave}
-          className={clsx(
-            'bg-white rounded-lg border p-4 shadow-sm transition-shadow',
-            card.filterKey && 'cursor-pointer',
-            hovered === card.filterKey && card.filterKey && ['ring-2', card.ring]
-          )}
-        >
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{card.label}</p>
-          <p className={`text-3xl font-bold mt-1 ${card.color}`}>{card.value}</p>
-        </div>
-      ))}
+      {cards.map(card => {
+        const cardClassName = clsx(
+          'block bg-white rounded-lg border p-4 shadow-sm transition-shadow',
+          card.filterKey && 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#BF5700]',
+          hovered === card.filterKey && card.filterKey && ['ring-2', card.ring]
+        )
+        const content = (
+          <>
+            <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{card.label}</p>
+            <p className={`text-3xl font-bold mt-1 ${card.color}`}>{card.value}</p>
+          </>
+        )
+
+        if (!card.filterKey) {
+          return <div key={card.label} className={cardClassName}>{content}</div>
+        }
+
+        return (
+          <Link
+            key={card.label}
+            href={FILTER_HREF[card.filterKey]}
+            onMouseEnter={() => handleEnter(card.filterKey)}
+            onMouseLeave={handleLeave}
+            className={cardClassName}
+          >
+            {content}
+          </Link>
+        )
+      })}
     </div>
   )
 }
