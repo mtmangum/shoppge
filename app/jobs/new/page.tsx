@@ -126,8 +126,8 @@ export default function NewJobPage() {
 
           <fieldset disabled={createdJobId !== null} className="space-y-4 disabled:opacity-50">
           {fields.map((field, i) => (
-            <div key={field.id} className="grid grid-cols-12 gap-2 items-start">
-              <div className="col-span-3">
+            <div key={field.id} className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-start pb-3 sm:pb-0 border-b sm:border-0 last:border-b-0 last:pb-0">
+              <div className="sm:col-span-3">
                 {i === 0 && <label className="block text-xs text-gray-500 mb-1">Part #</label>}
                 <input
                   {...register(`items.${i}.partNumber`)}
@@ -136,7 +136,7 @@ export default function NewJobPage() {
                   className="border rounded px-2 py-1.5 text-sm w-full"
                 />
               </div>
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 {i === 0 && <label className="block text-xs text-gray-500 mb-1">Qty</label>}
                 <input
                   {...register(`items.${i}.quantity`)}
@@ -145,7 +145,7 @@ export default function NewJobPage() {
                   className="border rounded px-2 py-1.5 text-sm w-full"
                 />
               </div>
-              <div className="col-span-6">
+              <div className="sm:col-span-6">
                 {i === 0 && <label className="block text-xs text-gray-500 mb-1">Description</label>}
                 <input
                   {...register(`items.${i}.description`)}
@@ -154,8 +154,8 @@ export default function NewJobPage() {
                   className="border rounded px-2 py-1.5 text-sm w-full"
                 />
               </div>
-              <div className="col-span-1 flex items-end pb-0.5">
-                {i === 0 && <div className="h-5" />}
+              <div className="sm:col-span-1 flex justify-end sm:items-end sm:pb-0.5">
+                {i === 0 && <div className="hidden sm:block h-5" />}
                 {fields.length > 1 && (
                   <button type="button" onClick={() => remove(i)} className="text-gray-400 hover:text-red-500 p-1" aria-label={`Remove item ${i + 1}`}>
                     <Trash2 className="h-4 w-4" />

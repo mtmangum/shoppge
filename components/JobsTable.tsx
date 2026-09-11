@@ -18,7 +18,6 @@ import type { StatsFilterKey } from './StatsCards'
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
-    hideOnMobile?: boolean
     sortKey?: string
   }
 }
@@ -84,13 +83,13 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
       accessorKey: 'entryDate',
       header: 'Entry Date',
       cell: ({ getValue }) => format(parseISO(getValue() as string), 'MMM d, yyyy'),
-      meta: { hideOnMobile: true, sortKey: 'entryDate' },
+      meta: { sortKey: 'entryDate' },
     },
     {
       accessorKey: 'dateRequired',
       header: 'Date Required',
       cell: ({ getValue }) => format(parseISO(getValue() as string), 'MMM d, yyyy'),
-      meta: { hideOnMobile: true, sortKey: 'dateRequired' },
+      meta: { sortKey: 'dateRequired' },
     },
     {
       accessorKey: 'description',
@@ -103,13 +102,13 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
     {
       accessorKey: 'requestorName',
       header: 'Requestor',
-      meta: { hideOnMobile: true, sortKey: 'requestorName' },
+      meta: { sortKey: 'requestorName' },
     },
     {
       accessorKey: 'machinistName',
       header: 'Machinist',
       cell: ({ getValue }) => getValue() as string || <span className="text-gray-400 italic">unassigned</span>,
-      meta: { hideOnMobile: true, sortKey: 'machinistName' },
+      meta: { sortKey: 'machinistName' },
     },
     {
       accessorKey: 'status',
@@ -145,7 +144,8 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border bg-white shadow-sm overflow-x-auto">
+      {/* Desktop/tablet table */}
+      <div className="hidden md:block rounded-lg border bg-white shadow-sm overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-700 text-white">
             {table.getHeaderGroups().map(hg => (
@@ -155,10 +155,7 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
                   return (
                     <th
                       key={header.id}
-                      className={clsx(
-                        'px-4 py-3 text-left font-medium select-none whitespace-nowrap',
-                        header.column.columnDef.meta?.hideOnMobile && 'hidden md:table-cell'
-                      )}
+                      className="px-4 py-3 text-left font-medium select-none whitespace-nowrap"
                     >
                       {sortKey ? (
                         <Link href={sortHref(sortKey)} className="flex items-center gap-1">
@@ -198,8 +195,7 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
                       key={cell.id}
                       className={clsx(
                         'px-4 py-3',
-                        cellIdx === 0 && ['border-l-4', style ? style.border : 'border-transparent'],
-                        cell.column.columnDef.meta?.hideOnMobile && 'hidden md:table-cell'
+                        cellIdx === 0 && ['border-l-4', style ? style.border : 'border-transparent']
                       )}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -210,6 +206,40 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile: compact cards, whole card tappable */}
+      <div className="md:hidden space-y-3">
+        {jobs.length === 0 && (
+          <p className="text-center text-gray-400 py-8">No jobs match these filters.</p>
+        )}
+        {jobs.map(job => {
+          const highlighted = matchesHighlight(job, highlightFilter)
+          const style = highlighted && highlightFilter ? HIGHLIGHT_STYLES[highlightFilter] : null
+          return (
+            <Link
+              key={job.id}
+              href={`/jobs/${job.id}`}
+              className={clsx(
+                'block rounded-lg border bg-white shadow-sm p-4 space-y-1.5 border-l-4',
+                style ? [style.bg, style.border] : 'border-l-transparent'
+              )}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono font-semibold text-[#BF5700]">#{job.id}</span>
+                <StatusBadge status={job.status} />
+              </div>
+              <div className="flex items-center justify-between gap-2 text-sm text-gray-600">
+                <span>Due {format(parseISO(job.dateRequired), 'MMM d, yyyy')}</span>
+                <PriorityBadge priority={job.priority} />
+              </div>
+              <div className="text-sm text-gray-600">
+                {job.machinistName || <span className="text-gray-400 italic">unassigned</span>}
+              </div>
+              <p className="text-sm text-gray-800 line-clamp-2">{job.description}</p>
+            </Link>
+          )
+        })}
       </div>
 
       {/* Pagination */}
