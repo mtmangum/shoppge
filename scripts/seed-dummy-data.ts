@@ -95,6 +95,12 @@ async function seedJobs(allUsers: { id: number; email: string; role: string }[])
 
   const dateOffsets = [...historicalOffsets, ...recentOffsets]
 
+  // Only this many open (pending/inprogress) jobs are actually overdue —
+  // the rest get a due date pushed into the future so the admin
+  // dashboard's overdue list isn't the entire open queue.
+  const OVERDUE_COUNT = 5
+  let openJobsSeen = 0
+
   const jobDefs = dateOffsets.map((offset, i) => {
     const task = taskTemplates[i % taskTemplates.length]
     const account = accounts[i % accounts.length]
@@ -112,14 +118,27 @@ async function seedJobs(allUsers: { id: number; email: string; role: string }[])
                  : statusRoll < 9 ? 'pending' as const
                  : 'cancelled' as const
 
-    const dateRequired = daysFromNow(offset)
+    const isOpen = status === 'pending' || status === 'inprogress'
+    if (isOpen) openJobsSeen++
+    const isOverdue = isOpen && openJobsSeen <= OVERDUE_COUNT
+    // On-schedule open jobs get a due date in the future instead of the
+    // original (past) offset; overdue/completed/cancelled jobs keep it.
+    const dueOffset = isOpen && !isOverdue
+      ? 2 + (openJobsSeen - OVERDUE_COUNT) * 2
+      : offset
+
+    const dateRequired = daysFromNow(dueOffset)
     const isPastDue = status === 'completed'
 
     // Job was requested some days before it was due (always more than the
     // 2-day completion lead time below, so completion date never precedes
-    // entry date and avg_completion_days stays non-negative).
+    // entry date and avg_completion_days stays non-negative). On-schedule
+    // open jobs were entered recently rather than "leadDays before their
+    // (future) due date", which would otherwise land in the future too.
     const leadDays = 3 + (i % 8)
-    const entryDate = daysFromNow(offset - leadDays)
+    const entryDate = isOpen && !isOverdue
+      ? daysFromNow(-((openJobsSeen - OVERDUE_COUNT) % 7))
+      : daysFromNow(dueOffset - leadDays)
 
     return {
       entryDate,
