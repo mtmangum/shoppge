@@ -6,7 +6,10 @@ import { eq, ne, and, ilike, sql, asc, desc, count } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import { OpenJobsView } from '@/components/OpenJobsView'
 import Link from 'next/link'
+import { ChevronDown } from 'lucide-react'
 import type { JobStatus, JobPriority } from '@/lib/types'
+
+const FIELD_CLASS = 'border border-gray-300 rounded-md px-3 py-1.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#BF5700]'
 
 const machinists = alias(users, 'machinists')
 
@@ -100,20 +103,26 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
           name="search"
           placeholder="Search jobs…"
           defaultValue={search}
-          className="border rounded-md px-3 py-1.5 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-[#BF5700]"
+          className={`${FIELD_CLASS} w-64`}
         />
-        <select name="status" defaultValue={status} className="border rounded-md px-3 py-1.5 text-sm">
-          <option value="all">All Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="inprogress">In Progress</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-        <select name="priority" defaultValue={priority} className="border rounded-md px-3 py-1.5 text-sm">
-          <option value="all">All Priorities</option>
-          <option value="urgent">Urgent</option>
-          <option value="normal">Normal</option>
-        </select>
+        <div className="relative">
+          <select name="status" defaultValue={status} className={`${FIELD_CLASS} appearance-none pr-8`}>
+            <option value="all">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="inprogress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+        </div>
+        <div className="relative">
+          <select name="priority" defaultValue={priority} className={`${FIELD_CLASS} appearance-none pr-8`}>
+            <option value="all">All Priorities</option>
+            <option value="urgent">Urgent</option>
+            <option value="normal">Normal</option>
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+        </div>
         <button
           type="submit"
           className="bg-gray-700 text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-gray-800 transition-colors"
