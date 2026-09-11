@@ -51,9 +51,12 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
   const dir = searchParams.dir === 'asc' ? 'asc' : 'desc'
   const orderFn = dir === 'asc' ? asc : desc
 
-  // This page only ever shows open (non-completed) jobs.
-  const conditions = [ne(jobs.status, 'completed')]
-  if (status !== 'all') conditions.push(eq(jobs.status, status))
+  // With no status filter, this page shows only open (non-completed,
+  // non-cancelled) jobs. An explicit status filter overrides that default
+  // so "Completed" and "Cancelled" are actually reachable.
+  const conditions = status !== 'all'
+    ? [eq(jobs.status, status)]
+    : [ne(jobs.status, 'completed'), ne(jobs.status, 'cancelled')]
   if (priority !== 'all') conditions.push(eq(jobs.priority, priority))
   if (search) conditions.push(ilike(jobs.description, `%${search}%`))
   const where = and(...conditions)
