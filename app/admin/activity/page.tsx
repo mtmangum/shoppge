@@ -8,14 +8,13 @@ import Link from 'next/link'
 import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react'
 import { formatTimestamp } from '@/lib/dates'
 import { daysInQueueSql, resolveSortKey, resolveSortDir, sortOrderFn } from '@/lib/query-helpers'
+import { FIELD_CLASS, LABEL_CLASS, SELECT_CHEVRON_CLASS } from '@/lib/ui-classes'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { QueueAgeBadge } from '@/components/shared/QueueAgeBadge'
 import { Pagination } from '@/components/shared/Pagination'
 import { ActivityRow } from '@/components/jobs/ActivityRow'
 import type { JobStatus } from '@/lib/types'
 
-const FIELD_CLASS = 'block h-10 w-full min-w-0 appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 text-sm leading-5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#BF5700]'
-const LABEL_CLASS = 'mb-1 block text-xs font-medium leading-4 text-gray-600'
 const DATE_CLASS = `${FIELD_CLASS} [&::-webkit-date-and-time-value]:min-h-5 [&::-webkit-date-and-time-value]:text-left`
 
 const changedByUsers = alias(users, 'changed_by_users')
@@ -149,7 +148,7 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
               <option value="">Anyone</option>
               {allUsers.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
             </select>
-            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <ChevronDown aria-hidden="true" className={SELECT_CHEVRON_CLASS} />
           </div>
         </div>
         <div>
@@ -162,7 +161,7 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
-            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <ChevronDown aria-hidden="true" className={SELECT_CHEVRON_CLASS} />
           </div>
         </div>
         <div>

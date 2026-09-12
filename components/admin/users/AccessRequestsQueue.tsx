@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { ChevronDown } from 'lucide-react'
+import { LABEL_CLASS, SELECT_CHEVRON_CLASS } from '@/lib/ui-classes'
 import type { UserRole } from '@/lib/types'
 
 interface AccessRequest {
@@ -96,7 +97,7 @@ function RequestRow({ request }: { request: AccessRequest }) {
       {showApprove ? (
         <form onSubmit={handleApprove} className="flex flex-wrap items-end gap-2 pt-1">
           <div>
-            <label htmlFor={`access-role-${request.id}`} className="block text-xs text-gray-500 mb-1">Role</label>
+            <label htmlFor={`access-role-${request.id}`} className={LABEL_CLASS}>Role</label>
             <div className="relative">
               <select
                 id={`access-role-${request.id}`}
@@ -106,11 +107,11 @@ function RequestRow({ request }: { request: AccessRequest }) {
               >
                 {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
-              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+              <ChevronDown className={SELECT_CHEVRON_CLASS} />
             </div>
           </div>
           <div>
-            <label htmlFor={`access-password-${request.id}`} className="block text-xs text-gray-500 mb-1">Password (optional)</label>
+            <label htmlFor={`access-password-${request.id}`} className={LABEL_CLASS}>Password (optional)</label>
             <input
               id={`access-password-${request.id}`}
               type="password"

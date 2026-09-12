@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
+import { SELECT_CHEVRON_CLASS } from '@/lib/ui-classes'
 import type { JobStatus } from '@/lib/types'
 
 interface JobActionsProps {
@@ -212,7 +213,7 @@ export function JobActions({
                 <option key={m.id} value={m.id}>{m.name}{m.id === currentUserId ? ' (me)' : ''}</option>
               ))}
             </select>
-            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <ChevronDown className={SELECT_CHEVRON_CLASS} />
           </div>
         </div>
         <p id="job-assignment-save-status" role="status" className="text-xs text-gray-500">
@@ -236,7 +237,7 @@ export function JobActions({
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
-          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+          <ChevronDown className={SELECT_CHEVRON_CLASS} />
         </div>
         <textarea
           value={statusNote}

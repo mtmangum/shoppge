@@ -9,10 +9,27 @@ const { create, act } = require('react-test-renderer')
 
 // Exercise the real component/hooks. Only the Next router and debounce clock
 // are controlled here, so response commits can arrive between keystrokes.
-const source = fs.readFileSync(path.join(__dirname, '../components/jobs/JobFilters.tsx'), 'utf8')
-const compiled = ts.transpileModule(source, {
+const root = path.join(__dirname, '..')
+const compiled = ts.transpileModule(fs.readFileSync(path.join(root, 'components/jobs/JobFilters.tsx'), 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2020 },
 }).outputText
+
+// Real @/lib/* modules the component imports at runtime (not just as
+// `import type`) get loaded and transpiled the same way — a plain
+// `require('@/...')` would otherwise hit real Node module resolution and
+// throw, since that alias only exists via tsconfig/webpack, not Node.
+const moduleCache = new Map()
+function loadModule(relPath) {
+  const resolved = path.resolve(root, relPath)
+  if (moduleCache.has(resolved)) return moduleCache.get(resolved)
+  const exports = {}
+  moduleCache.set(resolved, exports)
+  const modCompiled = ts.transpileModule(fs.readFileSync(resolved, 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2020 },
+  }).outputText
+  vm.runInNewContext(modCompiled, { exports, require: id => id.startsWith('@/') ? loadModule(id.slice(2) + '.ts') : require(id) })
+  return exports
+}
 
 function setup(t, initialQuery = '') {
   let query = initialQuery
@@ -27,7 +44,7 @@ function setup(t, initialQuery = '') {
     exports,
     require: id => id === 'next/navigation'
       ? { useRouter: () => router, useSearchParams: () => new URLSearchParams(query) }
-      : require(id),
+      : id.startsWith('@/') ? loadModule(id.slice(2) + '.ts') : require(id),
     URLSearchParams,
     setTimeout: (callback, delay) => { const id = ++nextTimer; timers.set(id, { callback, at: now + delay }); return id },
     clearTimeout: id => timers.delete(id),

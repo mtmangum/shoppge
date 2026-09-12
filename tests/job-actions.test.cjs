@@ -7,10 +7,27 @@ const ts = require('typescript')
 const React = require('react')
 const { create, act } = require('react-test-renderer')
 
-const source = fs.readFileSync(path.join(__dirname, '../components/jobs/JobActions.tsx'), 'utf8')
-const compiled = ts.transpileModule(source, {
+const root = path.join(__dirname, '..')
+const compiled = ts.transpileModule(fs.readFileSync(path.join(root, 'components/jobs/JobActions.tsx'), 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2020 },
 }).outputText
+
+// Real @/lib/* modules the component imports at runtime (not just as
+// `import type`) get loaded and transpiled the same way — a plain
+// `require('@/...')` would otherwise hit real Node module resolution and
+// throw, since that alias only exists via tsconfig/webpack, not Node.
+const moduleCache = new Map()
+function loadModule(relPath) {
+  const resolved = path.resolve(root, relPath)
+  if (moduleCache.has(resolved)) return moduleCache.get(resolved)
+  const exports = {}
+  moduleCache.set(resolved, exports)
+  const modCompiled = ts.transpileModule(fs.readFileSync(resolved, 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2020 },
+  }).outputText
+  vm.runInNewContext(modCompiled, { exports, require: id => id.startsWith('@/') ? loadModule(id.slice(2) + '.ts') : require(id) })
+  return exports
+}
 
 function setup(t, overrides = {}) {
   const requests = []
@@ -22,7 +39,7 @@ function setup(t, overrides = {}) {
     exports,
     require: id => id === 'next/navigation'
       ? { useRouter: () => ({ refresh: () => refreshes++, push: url => destinations.push(url) }) }
-      : require(id),
+      : id.startsWith('@/') ? loadModule(id.slice(2) + '.ts') : require(id),
     window: { confirm: () => confirmed },
     fetch: (url, options) => new Promise((resolve, reject) => requests.push({
       url, method: options.method, body: options.body ? JSON.parse(options.body) : undefined, resolve, reject,

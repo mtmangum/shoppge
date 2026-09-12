@@ -3,9 +3,8 @@
 import { useEffect, useRef, useState, useTransition, type ReactNode } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ChevronDown, Loader2 } from 'lucide-react'
+import { FIELD_CLASS, LABEL_CLASS, SELECT_CHEVRON_CLASS } from '@/lib/ui-classes'
 import type { JobPriority, JobStatus } from '@/lib/types'
-
-const FIELD_CLASS = 'border border-gray-300 rounded-md px-3 py-1.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#BF5700]'
 
 interface Filters {
   search: string
@@ -125,7 +124,7 @@ export function JobFilters({ search, status, priority, total, children }: JobFil
         }}
       >
         <div className="w-full sm:w-64">
-          <label htmlFor="jobs-search" className="block text-xs font-medium text-gray-600 mb-1">Search jobs</label>
+          <label htmlFor="jobs-search" className={LABEL_CLASS}>Search jobs</label>
           <input
             ref={searchInput}
             id="jobs-search"
@@ -140,7 +139,7 @@ export function JobFilters({ search, status, priority, total, children }: JobFil
           />
         </div>
         <div>
-          <label htmlFor="jobs-status" className="block text-xs font-medium text-gray-600 mb-1">Status</label>
+          <label htmlFor="jobs-status" className={LABEL_CLASS}>Status</label>
           <div className="relative">
             <select id="jobs-status" name="status" value={filters.status} onChange={event => changeSelect('status', event.target.value)} className={`${FIELD_CLASS} appearance-none pr-8`}>
               <option value="all">All Statuses</option>
@@ -149,18 +148,18 @@ export function JobFilters({ search, status, priority, total, children }: JobFil
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
-            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <ChevronDown aria-hidden="true" className={SELECT_CHEVRON_CLASS} />
           </div>
         </div>
         <div>
-          <label htmlFor="jobs-priority" className="block text-xs font-medium text-gray-600 mb-1">Priority</label>
+          <label htmlFor="jobs-priority" className={LABEL_CLASS}>Priority</label>
           <div className="relative">
             <select id="jobs-priority" name="priority" value={filters.priority} onChange={event => changeSelect('priority', event.target.value)} className={`${FIELD_CLASS} appearance-none pr-8`}>
               <option value="all">All Priorities</option>
               <option value="urgent">Urgent</option>
               <option value="normal">Normal</option>
             </select>
-            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <ChevronDown aria-hidden="true" className={SELECT_CHEVRON_CLASS} />
           </div>
         </div>
         <button type="button" onClick={clear} disabled={!hasFilters} className="text-sm text-gray-600 underline px-2 py-1.5 disabled:opacity-40 disabled:no-underline">
