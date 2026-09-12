@@ -15,26 +15,34 @@ export async function PATCH(
     const { status, note } = updateStatusSchema.parse(body)
     const jobId = parseInt(params.id)
 
-    const [existing] = await db.select({ status: jobs.status }).from(jobs).where(eq(jobs.id, jobId)).limit(1)
-    if (!existing) return NextResponse.json({ error: 'Job not found' }, { status: 404 })
+    return await db.transaction(async tx => {
+      // Serialize status changes for this job and keep the history entry atomic.
+      const [existing] = await tx.select({ status: jobs.status })
+        .from(jobs).where(eq(jobs.id, jobId)).limit(1).for('update')
+      if (!existing) return NextResponse.json({ error: 'Job not found' }, { status: 404 })
+      if (existing.status === status && !note?.trim()) {
+        return NextResponse.json({ ok: true })
+      }
 
-    const updates: Record<string, any> = { status, updatedAt: new Date() }
-    if (status === 'completed') {
-      updates.dateCompleted = new Date().toISOString().split('T')[0]
-      updates.completedById = parseInt(user.id as string)
-    }
+      const updates: Partial<typeof jobs.$inferInsert> = { status, updatedAt: new Date() }
+      if (status === 'completed' && existing.status !== 'completed') {
+        updates.dateCompleted = new Date().toISOString().split('T')[0]
+        updates.completedById = parseInt(user.id as string)
+      } else if (status !== 'completed') {
+        updates.dateCompleted = null
+        updates.completedById = null
+      }
 
-    await db.update(jobs).set(updates).where(eq(jobs.id, jobId))
-
-    await db.insert(jobStatusHistory).values({
-      jobId,
-      fromStatus: existing.status,
-      toStatus: status,
-      changedById: parseInt(user.id as string),
-      note,
+      await tx.update(jobs).set(updates).where(eq(jobs.id, jobId))
+      await tx.insert(jobStatusHistory).values({
+        jobId,
+        fromStatus: existing.status,
+        toStatus: status,
+        changedById: parseInt(user.id as string),
+        note,
+      })
+      return NextResponse.json({ ok: true })
     })
-
-    return NextResponse.json({ ok: true })
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 400 })
   }

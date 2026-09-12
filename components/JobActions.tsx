@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import type { JobStatus } from '@/lib/types'
@@ -19,6 +19,24 @@ interface JobActionsProps {
 
 const STATUS_OPTIONS: JobStatus[] = ['pending', 'inprogress', 'completed', 'cancelled']
 
+// Track the last successful save immediately, before router.refresh returns.
+// Incoming server values update clean fields without replacing unsaved drafts.
+function useSavedField<T extends string>(value: T) {
+  const [field, setField] = useState({ draft: value, saved: value })
+  useEffect(() => {
+    setField(current => current.saved === value ? current : {
+      draft: current.draft === current.saved ? value : current.draft,
+      saved: value,
+    })
+  }, [value])
+  return {
+    value: field.draft,
+    saved: field.saved,
+    change: (draft: T) => setField(current => ({ ...current, draft })),
+    markSaved: (saved: T) => setField(current => ({ ...current, saved })),
+  }
+}
+
 export function JobActions({
   jobId,
   status,
@@ -35,7 +53,8 @@ export function JobActions({
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
-  const [statusValue, setStatusValue] = useState<JobStatus>(status)
+  const statusField = useSavedField(status)
+  const { value: statusValue, change: setStatusValue } = statusField
   const [statusNote, setStatusNote] = useState('')
   const [statusSaving, setStatusSaving] = useState(false)
   const [statusError, setStatusError] = useState<string | null>(null)
@@ -43,13 +62,16 @@ export function JobActions({
   const [assigneeValue, setAssigneeValue] = useState<string>(machinistId ? String(machinistId) : '')
   const [assignSaving, setAssignSaving] = useState(false)
   const [assignError, setAssignError] = useState<string | null>(null)
+  const [assignSaved, setAssignSaved] = useState(false)
 
   const [materialsReq, setMaterialsReq] = useState(materialsRequired)
   const [materialsOrd, setMaterialsOrd] = useState(materialsOrdered)
   const [materialsSaving, setMaterialsSaving] = useState(false)
   const [materialsError, setMaterialsError] = useState<string | null>(null)
+  const [materialsSaved, setMaterialsSaved] = useState(false)
 
-  const [notes, setNotes] = useState(machinistNotes)
+  const notesField = useSavedField(machinistNotes)
+  const { value: notes, change: setNotes } = notesField
   const [notesSaving, setNotesSaving] = useState(false)
   const [notesError, setNotesError] = useState<string | null>(null)
   const [notesSaved, setNotesSaved] = useState(false)
@@ -68,6 +90,7 @@ export function JobActions({
 
   async function handleStatusSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (statusSaving || statusValue === statusField.saved) return
     setStatusSaving(true)
     setStatusError(null)
     try {
@@ -80,6 +103,7 @@ export function JobActions({
         const { error } = await res.json().catch(() => ({ error: 'Request failed' }))
         throw new Error(error ?? 'Request failed')
       }
+      statusField.markSaved(statusValue)
       setStatusNote('')
       router.refresh()
     } catch (e: any) {
@@ -94,8 +118,10 @@ export function JobActions({
     setAssigneeValue(nextValue)
     setAssignSaving(true)
     setAssignError(null)
+    setAssignSaved(false)
     try {
       await patchJob({ machinistId: nextValue ? parseInt(nextValue) : null })
+      setAssignSaved(true)
       router.refresh()
     } catch (e: any) {
       setAssigneeValue(previous)
@@ -111,8 +137,10 @@ export function JobActions({
     setField(value)
     setMaterialsSaving(true)
     setMaterialsError(null)
+    setMaterialsSaved(false)
     try {
       await patchJob({ [field]: value })
+      setMaterialsSaved(true)
       router.refresh()
     } catch (e: any) {
       setField(previous)
@@ -146,11 +174,13 @@ export function JobActions({
 
   async function handleNotesSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (notesSaving || notes === notesField.saved) return
     setNotesSaving(true)
     setNotesError(null)
     setNotesSaved(false)
     try {
       await patchJob({ machinistNotes: notes })
+      notesField.markSaved(notes)
       setNotesSaved(true)
       router.refresh()
     } catch (e: any) {
@@ -171,6 +201,7 @@ export function JobActions({
           <div className="relative w-full">
             <select
               id="job-assigned-machinist"
+              aria-describedby="job-assignment-save-status"
               value={assigneeValue}
               onChange={e => handleAssign(e.target.value)}
               disabled={assignSaving}
@@ -184,6 +215,9 @@ export function JobActions({
             <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
           </div>
         </div>
+        <p id="job-assignment-save-status" role="status" className="text-xs text-gray-500">
+          {assignSaving ? 'Saving assignment…' : assignSaved ? 'Assignment saved.' : 'Saves automatically.'}
+        </p>
         {assignError && <p role="alert" className="text-red-500 text-xs">{assignError}</p>}
       </div>
 
@@ -193,6 +227,7 @@ export function JobActions({
         <div className="relative w-full">
           <select
             id="job-status"
+            disabled={statusSaving}
             value={statusValue}
             onChange={e => setStatusValue(e.target.value as JobStatus)}
             className="border rounded-md px-2 py-1.5 text-sm w-full appearance-none pr-8"
@@ -205,6 +240,7 @@ export function JobActions({
         </div>
         <textarea
           value={statusNote}
+          disabled={statusSaving}
           onChange={e => setStatusNote(e.target.value)}
           placeholder="Optional note about this change…"
           aria-label="Optional note about this status change"
@@ -214,11 +250,12 @@ export function JobActions({
         {statusError && <p role="alert" className="text-red-500 text-xs">{statusError}</p>}
         <button
           type="submit"
-          disabled={statusSaving || statusValue === status}
+          disabled={statusSaving || statusValue === statusField.saved}
           className="bg-[#BF5700] text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-[#a34800] disabled:opacity-50 transition-colors"
         >
           {statusSaving ? 'Updating…' : 'Update Status'}
         </button>
+        <p className="text-xs text-gray-500">Choose a different status to enable Update Status. The optional note is saved with that change.</p>
       </form>
 
       {/* Materials */}
@@ -244,6 +281,9 @@ export function JobActions({
           />
           Materials ordered
         </label>
+        <p role="status" className="text-xs text-gray-500">
+          {materialsSaving ? 'Saving materials…' : materialsSaved ? 'Materials saved.' : 'Saves automatically.'}
+        </p>
         {materialsError && <p role="alert" className="text-red-500 text-xs">{materialsError}</p>}
       </div>
 
@@ -252,6 +292,7 @@ export function JobActions({
         <label htmlFor="job-machinist-notes" className="block text-xs font-medium text-gray-500">Machinist Notes</label>
         <textarea
           id="job-machinist-notes"
+          disabled={notesSaving}
           value={notes}
           onChange={e => { setNotes(e.target.value); setNotesSaved(false) }}
           rows={3}
@@ -260,7 +301,7 @@ export function JobActions({
         {notesError && <p role="alert" className="text-red-500 text-xs">{notesError}</p>}
         <button
           type="submit"
-          disabled={notesSaving || notes === machinistNotes}
+          disabled={notesSaving || notes === notesField.saved}
           className="px-3 py-1.5 rounded-md border text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
         >
           {notesSaving ? 'Saving…' : notesSaved ? 'Saved' : 'Save Notes'}

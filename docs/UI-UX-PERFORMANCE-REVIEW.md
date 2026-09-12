@@ -1,203 +1,145 @@
 # UT ShopTrack UI/UX and Performance Review
 
-Review date: September 11, 2026
+Review date: September 11, 2026 (America/Chicago). Audit baseline: `d892f52` on `main`. The job-functionality follow-up below includes subsequent fixes and regression tests.
 
-Latest implementation: Real-time job filtering was committed and pushed as `e00a44d`; deployment verification is still pending. The local activity-page asset failure is fixed by separating development and production build output. See the implementation sections below.
+## Current assessment
 
-Follow-up status: The reviewed UI/workflow fixes are implemented and live, including the numeric-search boundary correction and error associations/announcements. The latest independent checks passed on both the jobs page and API. Performance recommendations and remaining visual/assistive-technology verification are still outstanding.
+Normal live pages and the checked assets load successfully. Open Jobs now serves the real-time filter implementation. The most important new finding is missing validation on other routes: malformed filters and oversized job IDs still produce HTTP 500 responses. Filtering consistency, pagination, and preservation of personal queue context should come next.
 
-## Scope and limitations
+The Activity Log alignment fix (`d892f52`) is now confirmed in live output. A fresh authenticated recheck after the user’s deployment update found shared `h-10` heights on all five fields and the Filter button, the responsive grid, and the date-value normalization rules in the served CSS. This supersedes the earlier sample that contained the old classes. Local appearance was previously approved visually by the user; no new browser visual check was performed.
 
-Reviewed deployment: [http://3.21.240.225/](http://3.21.240.225/).
+Preserve the official university burnt orange (`#BF5700`). No brand-color replacement is recommended.
 
-This follow-up inspected deployed HTML and referenced JavaScript, including authenticated admin-session requests to the jobs list, Completed/Cancelled/Urgent filters, new-job form, job detail, and admin dashboard. The repository's explicit test account was used for ordinary authentication. No jobs, attachments, access requests, or user records were created or changed.
+## Scope and evidence
 
-This second follow-up used Playwright browser automation against the live deployment (the first follow-up was HTTP/source-only). The previously reported out-of-range numeric-search crash was reproduced live (confirmed via server logs: Postgres error `22003`, `value "2147483648" is out of range for type integer`), then re-verified as fixed after deployment. Response timings recorded earlier in this document are small-sample network measurements from the prior pass, not Core Web Vitals or load-test results, and were not recollected in this pass.
+- Deployment: [http://3.21.240.225/](http://3.21.240.225/).
+- Used the repository's existing test administrator for ordinary authentication. Read-only requests covered the jobs list, dashboard, activity log, users, new-job form, a current job detail, assigned queue, and boundary cases. No jobs, users, attachments, or access requests were created or changed.
+- Measured three sequential HTTP requests per main route, inspected referenced production assets, and reviewed the local implementation. No load test, database query-plan inspection, production log inspection, or CI inspection was performed.
+- No connected browser surface was available. This pass does not claim new visual, keyboard, screen-reader, hydration, or mobile interaction verification. The user's earlier screenshot and confirmation establish local activity-field alignment only.
+- All ten existing real-time job-filter component tests passed again. They cover the component's routing/timer behavior, not real-browser navigation. Typecheck and lint passed during the preceding implementation turn, with the existing root-layout image warning; no application source changed during this audit.
+- Earlier reviews reported browser/axe/CI checks. Those are historical results, not independently repeated or sufficient to mark the remaining items below complete.
 
-Local source was reviewed through `8b4046f`, which fixes the numeric-search overflow. Changes from `b874035` (personal views, ID search, overdue logic), `6a87df4` (control names and other accessibility improvements), and `c1177ac` (field-error associations and alert announcements) are all now visible in the served build — confirmed by fetching the deployed new-job JavaScript bundle directly and finding `aria-describedby`, `aria-invalid`, and `job-date-required-error` present. The axe-core audit is reported in the accessibility commit message; it was not independently rerun in this session.
+## Prioritized recommendation table
 
-Brand constraint: preserve the official university burnt orange (`#BF5700`). Contrast recommendations should adjust foreground text, opacity, or link styling while retaining that color.
-
-## Recommendation tracking table
-
-Local implementation and deployed evidence are tracked separately. A completed source change is not marked complete on the live site when the served code lacks it. Effort estimates are preliminary.
-
-| # | Area | Local implementation | Deployed verification / remaining work | Effort |
+| ID | Priority | Finding and evidence | Recommendation / completion criteria | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Verification | Prior source and isolated handler/date checks passed. | Browser-automated (Playwright) checks now cover login, search (including the crash boundary), My Jobs/Assigned to Me, and the new-job form. Keyboard/screen-reader interaction walkthroughs remain outstanding. | Small |
-| 2 | Mobile | Implemented for job-list cards and stacked line items in `4ab455e`. | Live in checked HTML/JavaScript: job cards include due date, priority, and assignee; line items use the responsive single-column grid. Visual layout verification remains pending. | Visual verification |
-| 3 | Accessibility | `6a87df4` adds missing control names; `c1177ac` connects Date Required/Description errors with aria-describedby/aria-invalid and makes action errors alerts. | **Confirmed deployed**: fetched the live new-job bundle (`page-fbf0c7aff7e1806c.js`) directly and found `aria-describedby`, `aria-invalid`, and `job-date-required-error` present. A persistent visible search label is now included in the local real-time-filter implementation; deployment remains pending. | Complete in served code |
-| 4 | Summary cards | Implemented in `3c7934c`; matching filter links and focus styling reviewed. | Live: authenticated jobs/dashboard HTML and JavaScript include all three matching filter links. | Complete in served code |
-| 5 | Job discovery | Personal views, ID search, and the numeric-overflow fix (`8b4046f`) implemented. | Confirmed live in the latest independent pass: 12 page/API checks passed, including current job 278, #278, integer max, overflow, prefixed overflow, and a very long number. Prior sample job 213 is no longer present; current test IDs were discovered from the live list. | Complete in tested flows |
-| 6 | Overdue logic | Implemented in `b874035`: requested due date determines lateness; completed/cancelled jobs excluded; queue age tracked separately. | Live dashboard now emits overdue-day labels. Source confirms deadline-based logic. | Complete in reviewed code/live output |
-| 7 | Loading and errors | Open: no route-level loading/error components. | Recovery and loading interactions were not browser-tested. Add skeletons and actionable retry states. | Medium |
-| 8 | Dashboard speed | Open: five independent dashboard queries remain sequential. | Runtime query timings were not inspected. Parallelize and measure the improvement. | Small |
-| 9 | Uploads | Open: files are still fully buffered by the app before storage upload. | Direct-upload/progress behavior was not verified. The duplicate-job retry fix is a separate completed source change. | Medium–large |
-| 10 | Database performance | Pending profiling. | No query plans or representative-load measurements available. Profile before adding indexes or caching. | Medium |
-| 11 | Deployment | Personal-view, ID-search, overdue, accessible-name, error-association, and numeric-search-crash changes are all now served. | **Confirmed deployed** end-to-end via CI/CD (`gh run view`) and direct bundle inspection. Build/production resource contention remains unverified. | Verification |
-| 12 | Measurement | Initial live HTTP timings collected (prior pass). | Partial: sampled responses were fast, but rendering, LCP, INP, CLS, mobile conditions, and concurrency remain unmeasured. | Medium |
-| 13 | Real-time filtering | Implemented locally: 300 ms search debounce; immediate status/priority/Clear; personal scope and sort preserved; page reset; visible pending status; persistent labels. | Ten focused component tests passed. Deployment and browser interaction verification remain outstanding. | Deployment / verification |
-| 14 | Local development assets | Fixed: development uses `.next-dev`, while production build/start retain `.next`, preventing build output collisions. | Local activity HTML returned 200, but CSS and most JavaScript returned 404 before the fix. After the server restarted, the authenticated page and all referenced CSS/JavaScript returned 200. Browser visual verification remains pending. | Complete locally |
-| 15 | Activity filter consistency | Implemented locally: uniform 40 px controls and button, aligned labels, consistent padding, and responsive grid. | Local markup and generated CSS verified; visual browser verification pending. | Complete locally |
+| A1 | High | Live Activity Log returns 500 for invalid job IDs, changed-by IDs, dates, and statuses. Jobs also returns 500 for invalid status/priority and an oversized detail ID. The prior search overflow fix remains effective but does not cover these routes. | Validate integer ranges, enum values, dates, and pagination before querying. Show field guidance for bad filters; return a safe not-found response for invalid detail IDs. Add focused regression coverage. | Reproduced live |
+| A2 | Resolved | Fresh live HTML contains shared 40 px heights on all five activity fields and the Filter button, plus the responsive grid. The served stylesheet includes the height and date-normalization rules. | Retain the consistent control sizing. | Confirmed deployed in HTML/CSS; local appearance user-approved |
+| A3 | Medium | Open Jobs applies filters automatically; Activity Log still uses a manual GET form and Filter button. | Apply selects immediately, debounce Job # by 300 ms, and apply complete valid dates. Validate reversed ranges, retain results with an updating indicator, reset pagination, and make Clear immediate. Keep newest-first ordering. | Recommended; not implemented |
+| A4 | Medium | Both activity and jobs accept `page=999999`, displaying “Page 999999 of 3” with empty results. Activity's disabled Previous is still a normal link with only pointer suppression. | Clamp or redirect pages after counting results. Render unavailable pagination as inert text, following the existing JobsTable pattern. Verify keyboard behavior. | Reproduced live / confirmed in source |
+| A5 | Medium | On Assigned to Me, summary links go to `/jobs?status=…` or `/jobs?priority=urgent`, dropping `assigned=1`. Statistics are global while the queue is personal. The same shared implementation is used for My Jobs. | Make card counts and links match the current queue, or explicitly label them as shop-wide navigation. Preserve personal scope when cards are presented as queue filters. | Assigned links confirmed live; shared behavior confirmed in source |
+| A6 | Medium | The Open Jobs status option says “All Statuses,” but the default query excludes completed and cancelled jobs. The heading remains “Open Jobs” even when selecting Completed. | Use “Open statuses” / “All open jobs” for the default, or implement a true all-status option. Make the heading reflect completed/cancelled views. | Confirmed in source |
+| A7 | Medium | No route-level loading or error components exist. Job filters show pending state, but navigation and server failures have no application-specific recovery UI. | Add useful route loading states and actionable retry/back controls for jobs and admin pages. Validate with delayed responses and failures. | Open; failure URLs above demonstrate the need |
+| A8 | Medium | Activity notes are hidden below `md` and truncated on larger screens, with no full-note expansion in the log. Job detail remains a separate way to inspect history. | Offer expandable notes or mobile activity cards so users can read full changes without leaving the log. Check small-screen table overflow visually. | Confirmed in source; visual impact unmeasured |
+| A9 | Medium | Sort direction is conveyed by icons without `aria-sort`; active navigation has no `aria-current`. | Add semantic sort/current-page state and verify with keyboard and assistive technology. Keep the earlier field labels and error associations. | Confirmed in source |
+| A10 | Medium | Dashboard performs five independent database queries sequentially; activity performs three. Jobs runs its three queries in parallel but recomputes global statistics on every applied filter. | Parallelize independent admin queries. Measure statistics/query cost under realistic data and filtering before choosing scoped caching or indexes. | Source-confirmed opportunity; no measured DB bottleneck |
+| A11 | Medium | Attachment handling parses multipart data and creates a full Buffer before storage; the 25 MB check occurs after multipart parsing. | Profile memory with concurrent uploads. Consider streaming or signed direct uploads, with size/type enforcement, progress, and recoverable retries. | Source-confirmed scaling risk; no load measurement |
+| A12 | Measurement | Current timings cover HTTP responses only. Mobile rendering, LCP, INP, CLS, concurrency, and build-time contention remain unknown. | Run production browser measurements and collect field metrics. Assess self-hosted build/deployment resource use before moving builds or increasing resources. | Outstanding |
+| A13 | High before deployment | Attachment deletion required only authentication, although the UI restricts deletion to machinists/admins. A unit test reproduced requestor access to the handler. | Handler now uses `requireMachinist`; permission tests cover denied requestors and allowed machinists/admins. | Fixed locally; not deployed |
+| A14 | High before deployment | Status updates and history inserts were separate writes; reopening retained completion metadata, and same-status completion notes replaced completion attribution. | Status/history now share a transaction with a job-row lock. Reopening clears completion fields; same-status notes preserve original attribution; empty duplicate changes are no-ops. | Fixed locally; unit tests pass; no real-DB concurrency test |
+| A15 | Medium | Save buttons could reactivate before refreshed props arrived; editable in-flight fields risked discarding new text; attachment retry errors stayed visible after success. Assignment/material saves lacked confirmation. | Track successful saves immediately, preserve drafts on refresh, lock in-flight fields, show autosave feedback, and clear attachment retry errors. | Fixed locally; component tests pass |
 
-Latest local validation at `8b4046f`: typechecking passed; lint passed with the existing `<img>` warning in `app/layout.tsx`.
 
-## Activity filter styling
+Priorities reflect observed user impact. Boundary failures are reproducible; resource concerns are hypotheses to measure, not claims of current slowdowns.
 
-The activity filters now share a 40 px height, border, corner radius, font size, horizontal padding, and label styling. Native date controls have an explicit height and normalized WebKit date-value alignment. The Filter button matches the fields, and the responsive grid stacks fields on small screens before forming a single row on wide screens. The official university burnt orange is preserved. Source/type checks and local HTTP/CSS verification cover the change; visual browser verification remains pending.
+## Live failure and edge-case evidence
 
-## Local activity-page repair
+Each URL below was requested once during this audit. Ordinary baseline requests succeeded. These are malformed-filter/link cases, not evidence that normal browsing consistently fails.
 
-The running development server shared `.next` with a production validation build. Its activity-page HTML and database queries succeeded, but its referenced stylesheet and most JavaScript chunks returned 404, leaving the page unstyled and unable to hydrate. Development output now uses `.next-dev`; production output remains `.next` for the existing Docker deployment. The development directory is ignored by Git and its generated route types are included in TypeScript checks. The config change restarted the local server automatically.
-
-Verification uses authenticated HTTP requests and asset responses; no connected browser was available for visual testing. This is a local development fix, not evidence of a production activity-page defect.
-
-## Real-time filtering implementation (pushed, deployment unverified)
-
-- Replaced the manual Filter button with a 300 ms search debounce and immediate status/priority changes. Enter still applies search immediately; clearing search or using Clear applies immediately.
-- URL query parameters retain personal-view scope and sorting; filter changes reset pagination to page 1. Client-side replacement avoids adding a history entry for every search and preserves scroll position.
-- Existing results remain mounted while route transitions run. An “Updating jobs…” status and busy state communicate progress without disabling the inputs.
-- Draft text is preserved when an earlier response commits. External URL navigation resynchronizes the controls and cancels pending typing; unmount and Clear also cancel debounce timers. Composition input waits until composition ends.
-- Added persistent visible Search jobs, Status, and Priority labels. Clear returns focus to search. The official burnt orange remains unchanged.
-- Added `npm test` with ten real-component regression checks for debouncing, immediate combined filters, Clear/scope preservation, intermediate response handling, external navigation, timer cleanup, composition, Enter, empty search, and normalized no-op search. CI now runs these tests.
-- Source typechecking, all ten tests, lint, and the production build passed. Lint retains the existing image warning. The build succeeded after allowing access to the existing Google Fonts dependency. Browser behavior and production deployment have not been verified for this new feature. Earlier live-verification records in this document refer to the previously deployed build.
-
-## Latest independent verification
-
-Reviewed local commit `8b4046f` and rechecked the deployment using authenticated HTTP requests and direct asset inspection. This pass did not run browser automation, inspect CI runs, or read production logs; earlier review notes about those checks are retained as prior results.
-
-- All 12 search requests returned HTTP 200: each of `278`, `#278`, `2147483647`, `2147483648`, `#2147483648`, and `999999999999999999999999999999` was checked on both `/jobs` and `/api/jobs`. Valid current IDs returned the job; the unmatched boundary/overflow values returned empty results. No further findings in the range-guard fix.
-- New-job asset `page-fbf0c7aff7e1806c.js` contains both field-error IDs, `aria-invalid`, `aria-describedby`, and `role:"alert"`. Current detail asset `page-32bc6a6a6e6c3656.js` includes the attachment name and action alert roles. The error-accessibility implementation is now confirmed in served code; announcement behavior still needs assistive-technology testing.
-- Requestor My Jobs navigation, the hidden personal-scope field, and scope-preserving sort links passed inspection. Earlier mobile cards, stacked fields, summary links, and inert pagination remain served.
-- The historical sample job 213 returned 404, so this pass discovered current job 278 from the live list and verified its detail page and search results. The old ID is no longer used as a regression fixture.
-- Typecheck passed. Lint passed with the existing `<img>` warning. No source files or live job/user records were modified by this review.
-
-## Resolved follow-up finding
-
-**P2 — Out-of-range numeric searches crash the jobs page. Fixed in `8b4046f`.** An authenticated GET to `/jobs?search=2147483648` returned HTTP 500. The parser treated any digit-only string as a job ID, but `jobs.id` is a PostgreSQL `integer` column (max `2147483647`); the query failed with Postgres error `22003` (`value "2147483648" is out of range for type integer`) instead of throwing a caught, friendly error.
-
-Fix: the parsed value is now capped at `2147483647` in both [the jobs page](../app/jobs/page.tsx) and [the jobs API](../app/api/jobs/route.ts) (which share this parsing pattern) — a match outside that range now falls back to description search instead of hitting the database with an invalid integer. Reproduced live pre-fix (500, confirmed via server logs), then re-verified live post-deploy: `search=2147483648` now returns 200 with "0 jobs", and the in-range boundary `search=2147483647` still resolves correctly.
-
-## Deployed evidence
-
-- Authenticated admin requests to Assigned to Me and My Jobs now produce the intended personal-view output, replacing the previous Open Jobs fallback. The admin test account has no matching jobs in those sampled personal views.
-- A separate login with the explicit test requestor account confirmed My Jobs navigation, a hidden `mine=1` filter input, and sort links retaining the personal scope.
-- `/jobs?search=%23213` now returns a link to job 213. The out-of-range numeric case (`search=2147483648`), which previously returned HTTP 500, now returns 200 with a normal "0 jobs" Open Jobs page after `8b4046f` deployed.
-- The dashboard now contains “d overdue” labels; local source bases them on requested deadlines and excludes completed/cancelled jobs.
-- Live status/priority filters now have accessible names. The job-detail upload input is also named, and no unnamed controls were found by the HTML check on the new-job or job-detail pages. The search input still relies on placeholder text rather than an explicit persistent label; this check is not a full accessibility audit.
-- The served new-job asset is now `page-fbf0c7aff7e1806c.js` (superseding the previously-checked `page-13b30751e0b4e7c1.js`) and includes `job-date-required-error`, `job-description-error`, `aria-invalid`, and `aria-describedby` — `c1177ac`'s error-association changes are confirmed deployed. The checked detail asset was `page-447af658801a3333.js` and includes the upload control name.
-- Earlier mobile cards, stacked fields, summary-card links, labels, and inert pagination remain live.
-- No job, attachment, access-request, or user records were created or changed. Visual, keyboard, screen-reader, and mutation-failure-path testing remains outstanding.
-
-### Live response timing sample
-
-Samples retained from the preceding follow-up, not newly collected in the latest independent pass. These are single HTTP samples, not browser-render timings or production percentiles.
-
-| Request | Time to initial response | Total HTML response |
-| --- | --- | --- |
-| Assigned to Me (admin) | 230 ms | 271 ms |
-| My Jobs (test requestor) | 254 ms | 301 ms |
-| Search for #213 | 159 ms | 202 ms |
-| Admin dashboard | 216 ms | 323 ms |
-| New-job form | 231 ms | 271 ms |
-| Job detail | 356 ms | 382 ms |
-
-The dashboard response was about 92 KB of HTML, excluding other browser assets. No Core Web Vitals score is claimed.
-
-### Resolved high-priority findings
-
-| Original finding | Resolution | Reviewed commit(s) |
-| --- | --- | --- |
-| Completed jobs were unreachable through the filter, and cancelled jobs appeared in the default open queue. | Explicit status filters now override the default open queue. The default excludes both completed and cancelled jobs. | `182dc9e` |
-| Calendar dates could display a day early. | Date-only values use `parseISO` in the homepage, jobs table, and job detail page. The follow-up correction uses `differenceInCalendarDays` for queue age, avoiding undercounts across daylight-saving transitions. | `9668c58`, `f4bcfb6` |
-| Retrying a failed attachment upload could create a duplicate job. | The form retains the created job ID, locks the saved job fields, and offers “Retry Attachment Upload.” Subsequent attempts upload to the existing job. | `f5504e1` |
-| Failed material updates could appear saved. | Material checkboxes restore their previous values and display errors on failure. Assignment changes now also roll back on failure. | `722556f` |
-
-### Follow-up verification
-
-- Reviewed the status-filter logic: explicit Completed and Cancelled filters override the open-queue exclusions.
-- Confirmed corrected calendar-date formatting in America/Chicago.
-- Targeted handler checks verified that retries after both HTTP and network upload failures create only one job and reuse its ID.
-- Targeted handler checks passed for successful material saves, rollback of both material fields on failure, and assignment rollback on failure.
-- The initial follow-up found a DST undercount in queue age. After commit `f4bcfb6`, all 12 calendar-day cases passed across America/Chicago and UTC, including spring/fall transitions, midnight boundaries, same-day counts, and longer intervals. No further findings were identified in that correction.
-- Typechecking passed after the four fixes and again after the DST correction. Lint passed after the four fixes with the existing `<img>` warning in `app/layout.tsx`.
-- Second follow-up: reproduced the out-of-range numeric-search crash live (server logs showed Postgres `22003`), fixed it in `8b4046f`, and re-verified live post-deploy (200/"0 jobs" for the crashing input, correct behavior at the exact int4 boundary). Also directly fetched the deployed new-job JS bundle and confirmed the `c1177ac` error-association markers are present, resolving the earlier "not yet deployed" open question.
-
-The historical checks above used code inspection and isolated handler/date tests. Live HTTP/browser evidence from both follow-ups is recorded separately above; mutation failure paths, full keyboard traversal, and screen-reader behavior remain unverified.
-
-### Everyday workflow improvements
-
-- Implemented and deployed: “My Jobs” for requestors and “Assigned to Me” for machinists/admins; query scope is retained in filter forms and table links.
-- Implemented and deployed: bare or #-prefixed job-number search, alongside description search, with the out-of-range numeric boundary fixed (`8b4046f`).
-- Implemented and deployed: deadline-based overdue calculation with separate queue-age/lateness values.
-- All three are confirmed live and working, including the previously-broken numeric boundary case.
-
-### Relevant implementation files
-
-- [Job filters and search](../app/jobs/page.tsx)
-- [Table date formatting, mobile columns, and pagination](../components/JobsTable.tsx)
-- [New-job submission and form layout](../app/jobs/new/page.tsx)
-- [Material updates and machinist actions](../components/JobActions.tsx)
-- [Summary-card interactions](../components/StatsCards.tsx)
-- [Inline login labels](../components/InlineLoginForm.tsx)
-- [Attachment controls](../components/AttachmentsPanel.tsx)
-- [Dashboard overdue calculation](../app/admin/page.tsx)
-
-## Performance priorities
-
-These are implementation risks and optimization opportunities, not measured production bottlenecks.
-
-### 1. Parallelize dashboard queries
-
-Five independent dashboard queries currently run sequentially. The jobs list already uses parallel fetching; apply that pattern to the dashboard to reduce cumulative database wait time.
-
-Implementation: [Admin dashboard](../app/admin/page.tsx).
-
-### 2. Add loading and recovery states
-
-There are no route-level loading or error components. Add table skeletons and actionable errors while data loads or fails. Use route loading boundaries or component-level Suspense where appropriate so users receive immediate feedback during navigation.
-
-Reference: [Next.js 14 data-fetching patterns and streaming guidance](https://nextjs.org/docs/14/app/building-your-application/data-fetching/patterns).
-
-### 3. Reduce upload memory pressure
-
-Files are fully buffered through the app before reaching storage, with a 25 MB limit. Concurrent uploads could increase memory pressure. Consider direct uploads using signed storage requests, with progress indicators and retry controls.
-
-Implementation: [Attachment upload handler](../app/api/jobs/[id]/attachments/route.ts).
-
-### 4. Profile database work as the archive grows
-
-Every jobs-list request recomputes whole-table statistics. Description search uses substring matching without a matching search index in the supplied schema. Measure query plans and timings with representative data before adding caching or indexes.
-
-Implementation: [Jobs page](../app/jobs/page.tsx) and [database schema and statistics view](../schema.sql).
-
-### 5. Check deployment resource contention
-
-The README says builds share a small production server. If that deployment description is still accurate, builds could affect response times. Move builds off the serving machine if resource contention is confirmed.
-
-Reference: [Deployment documentation](../README.md).
-
-## Measurement follow-up
-
-The deployed site is reachable and initial HTTP measurements are recorded above. When browser access is available, measure desktop and mobile rendering and interactions, including authenticated job-list, job-detail, submission, and admin workflows.
-
-Use these Core Web Vitals targets at the 75th percentile, segmented by mobile and desktop:
-
-| Metric | Target |
+| Request | Observed result |
 | --- | --- |
-| Largest Contentful Paint (LCP) | 2.5 seconds or less |
-| Interaction to Next Paint (INP) | 200 milliseconds or less |
-| Cumulative Layout Shift (CLS) | 0.1 or less |
+| `/admin/activity?jobId=2147483648` | HTTP 500 |
+| `/admin/activity?jobId=abc` | HTTP 500 |
+| `/admin/activity?changedById=2147483648` | HTTP 500 |
+| `/admin/activity?from=invalid` | HTTP 500 |
+| `/admin/activity?status=invalid` | HTTP 500 |
+| `/jobs?status=invalid` | HTTP 500 |
+| `/jobs?priority=invalid` | HTTP 500 |
+| `/jobs/2147483648` | HTTP 500 |
+| `/admin/activity?page=999999` | HTTP 200; “Page 999999 of 3,” empty results |
+| `/jobs?page=999999` | HTTP 200; “Page 999999 of 3,” empty results |
+| `/admin/activity?from=2026-09-11&to=2026-09-01` | HTTP 200; empty results without a reversed-range explanation |
+| `/jobs?search=2147483648` | HTTP 200; prior search overflow fix still holds |
+| `/api/jobs?search=2147483648` | HTTP 200; prior API search overflow fix still holds |
+| `/jobs/278` | HTTP 200; current job discovered from the live list |
 
-These are targets, not measured results for UT ShopTrack. Use production-build lab tests for diagnosis and real-user measurements to assess actual experience. Lighthouse does not directly measure INP; interaction testing and field measurements are needed.
+Activity's initial Previous link points to `?page=0` and has `opacity-40 pointer-events-none`, but neither `tabindex` nor `aria-disabled`. Pointer suppression does not make a link inert for keyboard activation. No keyboard walkthrough was performed.
 
-Reference: [Core Web Vitals guidance](https://web.dev/articles/vitals?hl=en).
+## Fresh performance sample
+
+Three sequential requests per route from the review machine, authenticated as admin, with `Accept-Encoding: identity`. Medians include network connection/latency overhead; these are not server-only timings. Full-response time covers HTML only, not assets, rendering, or interactivity. HTML sizes are uncompressed. Small sample, no controlled cold/warm-cache split.
+
+| Route | Median time to first byte | Median full HTML response | HTML size |
+| --- | ---: | ---: | ---: |
+| `/jobs` | 186 ms | 295 ms | 41.7 KiB |
+| `/admin` | 218 ms | 356 ms | 71.0 KiB |
+| `/admin/activity` | 190 ms | 312 ms | 106.1 KiB |
+| `/admin/users` | 171 ms | 216 ms | 33.3 KiB |
+| `/jobs/new` | 161 ms | 200 ms | 18.2 KiB |
+
+The authenticated `/` request, including its redirect to jobs, had a 446 ms median time until the final response headers and 521 ms until full HTML. It is not directly comparable to the direct-route first-byte timings.
+
+All 18 unique CSS/JavaScript assets referenced by the sampled routes returned HTTP 200. The largest checked JavaScript file was 172,834 bytes uncompressed; a separate gzip request transferred 53,742 bytes with `Cache-Control: public, max-age=31536000, immutable`. This confirms compression and long-lived caching for that asset, not a complete page transfer budget or browser cache test.
+
+The activity response was the largest HTML sample at 106.1 KiB for its current 50-row page. This is a baseline to track as features/data change, not sufficient evidence to reduce the page size. Normal route timings alone do not justify describing the site as slow.
+
+### Measurement targets
+
+Use field measurements at the 75th percentile, segmented by desktop and mobile: LCP ≤ 2.5 seconds, INP ≤ 200 ms, CLS ≤ 0.1. None was measured here. Browser lab tests should diagnose issues; real-user metrics establish whether visitors meet the targets. See [Web Vitals guidance](https://web.dev/articles/vitals).
+
+For perceived navigation performance, [Next.js 14 loading UI guidance](https://nextjs.org/docs/14/app/building-your-application/routing/loading-ui-and-streaming) explains how route loading boundaries provide immediate feedback while content loads. Adding one does not remove the need to validate inputs or optimize queries.
+
+## Confirmed improvements and retained fixes
+
+| Area | Current evidence | Remaining verification |
+| --- | --- | --- |
+| Real-time Open Jobs filtering (`e00a44d`) | Live jobs bundle contains “Updating jobs,” “Filter jobs,” and “Search jobs.” Local source implements 300 ms debounce, immediate selects/Clear, scope/sort preservation, pagination reset, composition handling, and stale-draft protection. All ten component tests passed again. | Browser interaction, Back/Forward behavior, focus, and screen-reader announcement checks |
+| Activity control alignment (`d892f52`) | Common 40 px field/button height and responsive grid confirmed in fresh live HTML; height and date-normalization rules confirmed in served CSS. User confirmed local appearance. | No new browser visual walkthrough performed |
+| Development asset isolation (`d892f52`) | Development uses `.next-dev`; production retains `.next`. Previous local HTTP verification confirmed repaired assets after the config restart. | No new production change is required for the local asset collision itself |
+| Search overflow correction (`8b4046f`) | Jobs page and API both still return 200 for `2147483648` search. | Extend equivalent validation to other inputs/routes under A1 |
+| Earlier mobile, labels, error associations, overdue, and personal navigation work | Retained in current source; prior review recorded deployed evidence. | Fresh visual/assistive-technology verification remains outstanding; no blanket accessibility pass claimed |
+
+## Job-functionality unit-testing follow-up
+
+Added 43 unit/component tests, bringing `npm test` to **53 passing tests**. These exercise real TypeScript handlers, schemas, and React components; external database, authentication, storage, router, and HTTP effects are mocked. The helper rejects unmocked imports of live database/auth/storage/mail services. No production data is used as a mutation fixture.
+
+| Test file | Tests | Coverage |
+| --- | ---: | --- |
+| [job-actions.test.cjs](../tests/job-actions.test.cjs) | 15 | Status enablement, payloads, in-flight locking, duplicate-save prevention, failed-save retry, notes, refresh/draft synchronization, assignment/unassignment, materials, visible autosave feedback, admin delete confirmation/navigation |
+| [job-status-api.test.cjs](../tests/job-status-api.test.cjs) | 8 | Status/history recording, completion attribution, reopening, same-status notes, atomic failure handling, duplicate no-op, invalid status/denied actor, missing job |
+| [job-update-api.test.cjs](../tests/job-update-api.test.cjs) | 6 | Assignment/materials/notes/priority payloads, schema validation, status-history bypass prevention, role guards, missing job |
+| [attachments.test.cjs](../tests/attachments.test.cjs) | 6 | No-file submission, upload success/failure, retained retry file, download links, hidden deletion controls, retry-error clearing, serialized deletion UI |
+| [job-attachments-api.test.cjs](../tests/job-attachments-api.test.cjs) | 8 | File type/size checks, stored bytes/metadata, storage failure handling, delete permissions, signed downloads, missing attachments |
+| [job-filters.test.cjs](../tests/job-filters.test.cjs) | 10 | Existing debounce, immediate filters/Clear, personal scope, pagination reset, composition, Enter, and response ordering checks |
+
+New tests reproduced failures before fixes: three status/notes UI save-state cases, two attachment UI retry/concurrency cases, four status/history consistency cases, and the attachment delete authorization case. All pass after the local fixes. The status transaction test uses a transactional database double; it verifies handler boundaries and rollback intent, not PostgreSQL lock behavior under real concurrent requests.
+
+The reported disabled Update Status button was checked directly: selecting a different Status enables it. Assignment and Materials save immediately, and Machinist Notes uses Save Notes. A status-change note alone still does not enable Update Status. The UI now explains the button's scope and displays “Saving…” / “Saved” feedback for automatic assignment/material saves. The original report did not identify which field was changed, so no claim is made that an otherwise disabled Status dropdown was reproduced.
+
+Read-only production smoke check: `/jobs/278` returned HTTP 200 with Machinist Actions and all three named action fields. All ten referenced JavaScript assets returned 200. No live saves, uploads, deletes, or status transitions were performed.
+
+Validation: all 53 tests and typecheck passed; lint passed with the existing root-layout `<img>` warning. The production build also passed. Browser interactions, end-to-end new-job creation, real PostgreSQL rollback/concurrency, and storage integration remain outside this unit-test pass. Earlier audit items, including URL/input validation (A1), remain open.
+
+## Implementation references
+
+- [Activity query parsing, controls, notes, and pagination](../app/admin/activity/page.tsx)
+- [Jobs query parsing, status defaults, heading, and statistics](../app/jobs/page.tsx)
+- [Job detail ID parsing](../app/jobs/[id]/page.tsx)
+- [Real-time job filters](../components/JobFilters.tsx) and [component tests](../tests/job-filters.test.cjs)
+- [Summary-card links and labels](../components/StatsCards.tsx)
+- [Jobs table sort and pagination semantics](../components/JobsTable.tsx)
+- [Navigation state](../components/Navbar.tsx)
+- [Dashboard query sequence](../app/admin/page.tsx)
+- [Upload buffering and validation](../app/api/jobs/[id]/attachments/route.ts)
+- [SQL indexes and statistics view](../schema.sql)
+- [Build output configuration](../next.config.mjs) and [CI/deployment workflow](../.github/workflows/ci-cd.yml)
 
 ## Suggested implementation order
 
-The reviewed UI/workflow fixes — high-priority fixes, summary links, mobile layouts, personal queues, job-number search (including the out-of-range boundary), deadline-based overdue output, and error associations/announcements — are implemented and confirmed in live responses or served code. Remaining work is entirely in the Performance priorities and Measurement follow-up sections below, plus the minor usability item noted in the tracking table (an explicit persistent search label).
+1. Fix shared route/filter validation and invalid pagination (A1/A4); add boundary regression checks.
+2. Implement automatic activity filters with valid-date/range handling (A3). Activity alignment (A2) is now confirmed deployed.
+3. Clarify status labels and personal-queue summary behavior (A5/A6); improve note access and semantic state (A8/A9).
+4. Add loading/recovery UI and parallelize independent admin queries (A7/A10).
+5. Complete browser and field measurements; prioritize upload, database, and build-resource work from the results (A10–A12).
 
-1. Verify mobile layouts and the full set of fixes visually and with keyboard/screen-reader interaction in the browser (the two remaining browser-automation gaps: visual layout and assistive-tech behavior).
-2. Consider an explicit persistent search label, preserving official university colors (the one open, minor usability item).
-3. Add loading and recovery states and parallelize dashboard queries.
-4. Measure production performance, then address uploads, database queries, and build resource contention based on the results.
+The initial audit changed documentation only. The subsequent job-functionality follow-up adds tests and the local fixes recorded in A13–A15. Deployment of those follow-up fixes has not yet been verified. No new browser verification is claimed.

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { jobAttachments } from '@/lib/schema'
-import { requireAuth } from '@/lib/auth'
+import { requireAuth, requireMachinist } from '@/lib/auth'
 import { getAttachmentDownloadUrl, deleteAttachment } from '@/lib/s3'
 import { and, eq } from 'drizzle-orm'
 
@@ -34,7 +34,7 @@ export async function DELETE(
   { params }: { params: { id: string; attachmentId: string } }
 ) {
   try {
-    await requireAuth()
+    await requireMachinist()
     const [attachment] = await db
       .select()
       .from(jobAttachments)
@@ -51,6 +51,7 @@ export async function DELETE(
 
     return NextResponse.json({ ok: true })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 400 })
+    const status = e.message === 'Unauthorized' ? 401 : e.message?.startsWith('Forbidden:') ? 403 : 400
+    return NextResponse.json({ error: e.message }, { status })
   }
 }

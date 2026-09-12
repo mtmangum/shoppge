@@ -58,6 +58,8 @@ export function AttachmentsPanel({ jobId, attachments, canDelete }: AttachmentsP
   }
 
   async function handleDelete(attachmentId: number) {
+    if (deletingId !== null) return
+    setError(null)
     setDeletingId(attachmentId)
     try {
       const res = await fetch(`/api/jobs/${jobId}/attachments/${attachmentId}`, { method: 'DELETE' })
@@ -94,7 +96,7 @@ export function AttachmentsPanel({ jobId, attachments, canDelete }: AttachmentsP
                 {canDelete && (
                   <button
                     onClick={() => handleDelete(att.id)}
-                    disabled={deletingId === att.id}
+                    disabled={deletingId !== null}
                     className="text-gray-400 hover:text-red-500 disabled:opacity-50"
                     aria-label={`Delete ${att.originalName}`}
                   >
@@ -111,6 +113,7 @@ export function AttachmentsPanel({ jobId, attachments, canDelete }: AttachmentsP
         <input
           ref={fileInputRef}
           type="file"
+          disabled={uploading}
           accept=".pdf,.png,.jpg,.jpeg"
           aria-label="Choose attachment file"
           className="text-sm text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded file:border file:text-sm file:cursor-pointer"
