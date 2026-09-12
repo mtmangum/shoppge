@@ -14,6 +14,11 @@ Dates are in `YYYY-MM-DD`.
   `lib/db.ts`. Removed five unused npm dependencies (`tailwind-merge`,
   `@radix-ui/react-dialog`/`react-select`/`react-label`/`react-tabs`) and the
   empty `app/api/reports/` directory.
+- Reorganized `components/` into topical subfolders: `shared/` (badges used
+  across routes), `jobs/` (jobs list/detail workflow), `admin/users/`,
+  `admin/charts/`, `auth/`. No behavior change. `Navbar.tsx` and the
+  in-progress `AccountSettings.tsx` are deliberately left in place pending
+  other work landing.
 
 ## [0.2.0-beta.3] - 2026-09-12
 

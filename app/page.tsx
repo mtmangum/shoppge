@@ -6,7 +6,7 @@ import { db } from '@/lib/db'
 import { jobs } from '@/lib/schema'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { PriorityBadge } from '@/components/shared/PriorityBadge'
-import { InlineLoginForm } from '@/components/InlineLoginForm'
+import { InlineLoginForm } from '@/components/auth/InlineLoginForm'
 
 export default async function RootPage() {
   const session = await auth()
