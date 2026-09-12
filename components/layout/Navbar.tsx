@@ -54,7 +54,12 @@ export function Navbar({ user }: NavbarProps) {
             href="/settings"
             aria-label={`${user.name || 'Your account'}: account settings`}
             aria-current={pathname === '/settings' ? 'page' : undefined}
-            className={clsx('inline-flex items-center gap-1.5 rounded px-2 py-1.5 hover:bg-gray-100', pathname === '/settings' && 'bg-gray-100 font-medium')}
+            className={clsx(
+              'inline-flex shrink-0 items-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium transition-colors',
+              pathname === '/settings'
+                ? 'bg-[#BF5700] text-white'
+                : 'text-gray-700 hover:bg-gray-100'
+            )}
           >
             <span className="max-w-[12rem] truncate">{user.name || 'Account Settings'}</span>
             <Settings className="h-4 w-4 shrink-0" aria-hidden="true" />

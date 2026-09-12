@@ -5,21 +5,14 @@ aren't obvious from just reading the code. Update this file as these items
 get resolved or new ones come up — it's meant to stay current, not be a
 one-time snapshot.
 
-## In-progress work as of 2026-09-12
+## Landed since the last update
 
-Account settings / theme system (light/dark mode) is mid-development,
-**uncommitted in the working tree**, by another engineer (Matt Mangum):
-`components/AccountSettings.tsx`, `lib/account-settings.ts`,
-`app/settings/page.tsx`, `app/api/account/route.ts`,
-`app/api/account/password/route.ts`, `tests/account-api.test.cjs`,
-`tests/account-settings.test.cjs`, plus modifications to `app/layout.tsx`
-(theme cookie applied via `data-theme`) and `components/Navbar.tsx` (adds
-the Settings link). Don't move, refactor around, or assume the final shape
-of these files until they're committed — the `components/` reorg in this
-same release deliberately left `AccountSettings.tsx` and `Navbar.tsx` in
-place for this reason (see CHANGELOG). Once committed, `AccountSettings.tsx`
-likely belongs in a new `components/account/` folder and `Navbar.tsx` in
-`components/layout/`, matching the rest of the reorg's pattern.
+Account settings / theme system (light/dark mode), originally built by Matt
+Mangum, landed in `0.2.0-beta.4`: `components/account/AccountSettings.tsx`,
+`lib/account-settings.ts`, `app/settings/page.tsx`,
+`app/api/account/route.ts`, `app/api/account/password/route.ts`, plus
+`components/layout/Navbar.tsx` (the account-settings link) and the theme
+cookie applied via `data-theme` in `app/layout.tsx`.
 
 ## Still-open security items
 
@@ -72,13 +65,14 @@ upstream tracking branch is set. Don't treat "the push succeeded" as proof
 the hook actually ran and checked anything — if you're not sure, check
 `CHANGELOG.md` yourself before pushing.
 
-## Where things live after the `0.2.0-beta.3` refactor
+## Where things live after the `0.2.0-beta.3`/`beta.4` refactor
 
 `components/` is now organized into subfolders instead of one flat
 directory: `shared/` (StatusBadge/PriorityBadge/QueueAgeBadge/Pagination —
 used across multiple routes), `jobs/` (the jobs list/detail workflow),
-`admin/users/`, `admin/charts/`, `auth/` (InlineLoginForm), and the
-pre-existing `ui/` (generic non-domain primitives — Toaster, Pill).
+`admin/users/`, `admin/charts/`, `auth/` (InlineLoginForm), `layout/`
+(Navbar), `account/` (AccountSettings), and the pre-existing `ui/` (generic
+non-domain primitives — Toaster, Pill).
 
 New shared modules worth knowing about before adding a new duplicate of
 something they already cover:

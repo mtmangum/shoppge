@@ -36,6 +36,8 @@ export function StatsCards({
     { label: 'Avg. Completion', value: `${stats.avg_completion_days ?? '—'} days`, color: 'text-green-600', ring: '', filterKey: null },
   ]
 
+  const highlightsRows = Boolean(onHoverFilter)
+
   function handleEnter(key: StatsFilterKey | null) {
     setHovered(key)
     onHoverFilter?.(key)
@@ -52,7 +54,9 @@ export function StatsCards({
         const cardClassName = clsx(
           'block bg-white rounded-lg border p-4 shadow-sm transition-shadow',
           card.filterKey && 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#BF5700]',
-          hovered === card.filterKey && card.filterKey && ['ring-2', card.ring]
+          card.filterKey && (highlightsRows
+            ? hovered === card.filterKey && ['ring-2', card.ring]
+            : 'hover:shadow-md')
         )
         const content = (
           <>

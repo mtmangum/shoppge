@@ -62,7 +62,6 @@ export default async function AdminDashboardPage() {
       sql`(${jobs.priority} = 'urgent' OR ${jobs.dateRequired} < CURRENT_DATE)`
     ))
     .orderBy(desc(sql`${jobs.dateRequired} < CURRENT_DATE`), desc(sql`CURRENT_DATE - ${jobs.dateRequired}`))
-    .limit(15)
 
   const { rows: weeklyRows } = await db.execute(sql`
     SELECT
@@ -99,7 +98,7 @@ export default async function AdminDashboardPage() {
       .leftJoin(changedByUsers, eq(jobStatusHistory.changedById, changedByUsers.id))
       .leftJoin(jobs, eq(jobStatusHistory.jobId, jobs.id))
       .orderBy(desc(jobStatusHistory.changedAt), desc(jobStatusHistory.id))
-      .limit(8),
+      .limit(10),
     db
       .select({
         openCount: sql<number>`COUNT(*)::int`,
@@ -116,8 +115,7 @@ export default async function AdminDashboardPage() {
       })
       .from(jobs)
       .where(needsAssignment)
-      .orderBy(asc(jobs.entryDate), asc(jobs.id))
-      .limit(5),
+      .orderBy(asc(jobs.entryDate), asc(jobs.id)),
   ])
 
   return (
@@ -135,9 +133,9 @@ export default async function AdminDashboardPage() {
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section className="bg-white rounded-lg border shadow-sm">
-          <h3 className="font-semibold text-gray-700 px-6 pt-4 pb-2 border-b">Machinist Workload</h3>
-          <div className="overflow-x-auto">
+        <section className="bg-white rounded-lg border shadow-sm flex flex-col lg:h-[485px]">
+          <h3 className="font-semibold text-gray-700 px-6 pt-4 pb-2 border-b shrink-0">Machinist Workload</h3>
+          <div className="flex-1 overflow-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-gray-500 text-xs uppercase tracking-wide">
@@ -163,17 +161,17 @@ export default async function AdminDashboardPage() {
               </tbody>
             </table>
           </div>
-          <div className="px-6 py-3 border-t">
+          <div className="px-6 py-3 border-t shrink-0">
             <Link href="/admin/users" className="text-sm text-[#BF5700] hover:underline">Manage users →</Link>
           </div>
         </section>
 
-        <section className="bg-white rounded-lg border shadow-sm">
-          <h3 className="font-semibold text-gray-700 px-6 pt-4 pb-2 border-b">Overdue / Urgent Jobs</h3>
+        <section className="bg-white rounded-lg border shadow-sm flex flex-col lg:h-[485px]">
+          <h3 className="font-semibold text-gray-700 px-6 pt-4 pb-2 border-b shrink-0">Overdue / Urgent Jobs</h3>
           {overdueOrUrgent.length === 0 ? (
             <p className="text-sm text-gray-500 italic px-6 py-4">Nothing overdue or urgent right now.</p>
           ) : (
-            <ul className="divide-y">
+            <ul className="divide-y flex-1 overflow-y-auto">
               {overdueOrUrgent.map(job => (
                 <li key={job.id}>
                   <Link href={`/jobs/${job.id}`} className="block px-6 py-3 text-sm hover:bg-gray-50 focus-visible:ring-inset">
@@ -202,15 +200,60 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section aria-labelledby="recent-activity-heading" className="min-w-0 bg-white rounded-lg border shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-4 border-b">
+        <section aria-labelledby="needs-assignment-heading" className="min-w-0 bg-white rounded-lg border shadow-sm flex flex-col lg:h-[552px]">
+          <div className="px-5 py-4 border-b shrink-0">
+            <h3 id="needs-assignment-heading" className="font-semibold text-gray-700">Needs Assignment</h3>
+            <p className="mt-1 text-xs text-gray-500">Open jobs without a machinist</p>
+          </div>
+          <dl className="grid grid-cols-2 gap-4 px-5 py-4 border-b shrink-0">
+            <div>
+              <dt className="text-xs font-medium text-gray-500">Unassigned open jobs</dt>
+              <dd className="mt-1 text-3xl font-bold tabular-nums text-[#BF5700]">{assignmentStats.openCount}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium text-gray-500">Urgent among these</dt>
+              <dd className={`mt-1 text-3xl font-bold tabular-nums ${assignmentStats.urgentCount > 0 ? 'text-red-600' : 'text-gray-700'}`}>
+                {assignmentStats.urgentCount}
+              </dd>
+            </div>
+          </dl>
+          {unassignedJobs.length === 0 ? (
+            <p className="px-5 py-4 text-sm text-gray-500">All open jobs are assigned.</p>
+          ) : (
+            <>
+              <p className="px-5 pt-4 pb-2 text-xs font-medium text-gray-500 shrink-0">Oldest unassigned jobs · select a job to assign it</p>
+              <ul className="divide-y flex-1 overflow-y-auto">
+                {unassignedJobs.map(job => (
+                  <li key={job.id}>
+                    <Link href={`/jobs/${job.id}`} className="block px-5 py-3 hover:bg-gray-50 focus-visible:ring-inset">
+                      <div className="flex items-center justify-between gap-3 text-sm">
+                        <div className="flex min-w-0 items-center flex-wrap gap-2">
+                          <span className="font-mono font-semibold text-[#BF5700]">#{job.id}</span>
+                          {job.priority === 'urgent' && <PriorityBadge priority={job.priority} />}
+                        </div>
+                        <span className="flex shrink-0 items-center gap-1 text-right text-xs text-gray-500">
+                          <QueueAgeBadge days={job.daysInQueue} showUnit />
+                          <span>in queue</span>
+                        </span>
+                      </div>
+                      <p className="mt-1 line-clamp-1 text-sm text-gray-700">{job.description}</p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
+
+        <section aria-labelledby="recent-activity-heading" className="min-w-0 bg-white rounded-lg border shadow-sm flex flex-col lg:h-[552px]">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-4 border-b shrink-0">
             <h3 id="recent-activity-heading" className="font-semibold text-gray-700">Recent Activity</h3>
             <Link href="/admin/activity" className="text-sm text-[#BF5700] hover:underline">View full log →</Link>
           </div>
           {activity.length === 0 ? (
             <p className="text-sm text-gray-500 italic px-5 py-4">No status changes yet.</p>
           ) : (
-            <ul className="divide-y">
+            <ul className="divide-y flex-1 overflow-y-auto">
               {activity.map(entry => {
                 const deletedAuthor = entry.note?.match(/^\[Original author: (.*?) </)?.[1]
                 const actor = entry.changedByName ?? (deletedAuthor ? `${deletedAuthor} (deleted)` : 'System')
@@ -239,51 +282,9 @@ export default async function AdminDashboardPage() {
               })}
             </ul>
           )}
-        </section>
-
-        <section aria-labelledby="needs-assignment-heading" className="min-w-0 bg-white rounded-lg border shadow-sm">
-          <div className="px-5 py-4 border-b">
-            <h3 id="needs-assignment-heading" className="font-semibold text-gray-700">Needs Assignment</h3>
-            <p className="mt-1 text-xs text-gray-500">Open jobs without a machinist</p>
+          <div className="border-t px-5 py-3 shrink-0 lg:hidden">
+            <Link href="/admin/activity" className="text-sm text-[#BF5700] hover:underline">View full log →</Link>
           </div>
-          <dl className="grid grid-cols-2 gap-4 px-5 py-4 border-b">
-            <div>
-              <dt className="text-xs font-medium text-gray-500">Unassigned open jobs</dt>
-              <dd className="mt-1 text-3xl font-bold tabular-nums text-[#BF5700]">{assignmentStats.openCount}</dd>
-            </div>
-            <div>
-              <dt className="text-xs font-medium text-gray-500">Urgent among these</dt>
-              <dd className={`mt-1 text-3xl font-bold tabular-nums ${assignmentStats.urgentCount > 0 ? 'text-red-600' : 'text-gray-700'}`}>
-                {assignmentStats.urgentCount}
-              </dd>
-            </div>
-          </dl>
-          {unassignedJobs.length === 0 ? (
-            <p className="px-5 py-4 text-sm text-gray-500">All open jobs are assigned.</p>
-          ) : (
-            <>
-              <p className="px-5 pt-4 pb-2 text-xs font-medium text-gray-500">Oldest unassigned jobs · select a job to assign it</p>
-              <ul className="divide-y">
-                {unassignedJobs.map(job => (
-                  <li key={job.id}>
-                    <Link href={`/jobs/${job.id}`} className="block px-5 py-3 hover:bg-gray-50 focus-visible:ring-inset">
-                      <div className="flex items-center justify-between gap-3 text-sm">
-                        <div className="flex min-w-0 items-center flex-wrap gap-2">
-                          <span className="font-mono font-semibold text-[#BF5700]">#{job.id}</span>
-                          {job.priority === 'urgent' && <PriorityBadge priority={job.priority} />}
-                        </div>
-                        <span className="flex shrink-0 items-center gap-1 text-right text-xs text-gray-500">
-                          <QueueAgeBadge days={job.daysInQueue} showUnit />
-                          <span>in queue</span>
-                        </span>
-                      </div>
-                      <p className="mt-1 line-clamp-1 text-sm text-gray-700">{job.description}</p>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
         </section>
       </div>
     </div>

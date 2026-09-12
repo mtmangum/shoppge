@@ -7,6 +7,8 @@ Dates are in `YYYY-MM-DD`.
 
 ## [Unreleased]
 
+## [0.2.0-beta.4] - 2026-09-12
+
 ### Added
 - Account Settings (`/settings`, linked from the navbar's account menu):
   edit your own name/department/phone/room, change your password (requires
@@ -24,9 +26,8 @@ Dates are in `YYYY-MM-DD`.
   empty `app/api/reports/` directory.
 - Reorganized `components/` into topical subfolders: `shared/` (badges used
   across routes), `jobs/` (jobs list/detail workflow), `admin/users/`,
-  `admin/charts/`, `auth/`. No behavior change. `Navbar.tsx` and the
-  in-progress `AccountSettings.tsx` are deliberately left in place pending
-  other work landing.
+  `admin/charts/`, `auth/`, `layout/` (`Navbar`), `account/`
+  (`AccountSettings`). No behavior change.
 - Extracted `components/ui/Pill.tsx` (shared rounded-pill shell for
   `StatusBadge`/`PriorityBadge`/`QueueAgeBadge`, each keeping its own
   color/label logic) and `components/shared/Pagination.tsx` (shared
@@ -41,6 +42,38 @@ Dates are in `YYYY-MM-DD`.
   `isJobOwnerOrElevated` — no change in who can access what; added test
   coverage for the case (a requestor viewing/uploading to a job that isn't
   theirs) that wasn't previously exercised.
+- Admin dashboard: Machinist Workload, Overdue/Urgent Jobs, Recent Activity,
+  and Needs Assignment now hold a fixed height instead of growing with the
+  data, and scroll internally once content overflows — so the dashboard's
+  overall layout stays stable as the shop accumulates more jobs/history
+  instead of the page growing indefinitely taller. Only applies at the `lg`
+  breakpoint where these sit two-up in a grid and benefit from matching
+  heights; below that they stack to one column and grow naturally with the
+  page scrolling normally, since a nested scroll area has no alignment
+  benefit there and is worse to use on a touch screen (on mobile, Recent
+  Activity also gets a second "View full log →" link at the bottom of its
+  now-long list, so it's reachable without scrolling back to the top).
+  Needs Assignment's two summary numbers stay visible above its scrolling
+  job list rather than scrolling away with it, and it now sits before
+  Recent Activity rather than after. Recent Activity kept at a display cap
+  of 10 (a quick glance, not the full record — it already links to the
+  paginated `/admin/activity` log for that) despite now scrolling, unlike
+  the other three lists, which are naturally capped by the shop's current
+  open/unassigned job count rather than an arbitrary display limit;
+  `job_status_history` is an append-only log that only grows over the life
+  of the shop, so it's the one list here that stays deliberately bounded.
+  Overdue/Urgent Jobs' and Needs Assignment's display caps (15 and 5)
+  removed entirely, since scrolling makes them unnecessary and both
+  queries are already bounded by the shop's current open-job count.
+- Dashboard summary cards (Pending/In Progress/Urgent Open) no longer show
+  a colored hover ring on the admin dashboard, where there's no adjacent
+  jobs table for it to highlight — that affordance now only appears on
+  `/jobs`, where hovering a card actually highlights matching rows. Both
+  pages share the same `StatsCards` component; it now only applies the
+  row-highlighting hover style when a page actually wires up highlighting.
+- Navbar: the account-settings link (showing the signed-in user's name)
+  now uses the same orange active-page styling as the other nav links
+  instead of a separate gray treatment, for visual consistency.
 
 ### Fixed
 - Activity log pagination: disabled Prev/Next (page 1's Previous, the last
