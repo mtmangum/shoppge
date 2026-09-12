@@ -13,6 +13,18 @@ Dates are in `YYYY-MM-DD`.
   that had it still reaches `/jobs/new` via that page-level button, since
   "Open Jobs"/"My Jobs"/"Assigned to Me" already route through `/jobs`.
 
+### Fixed
+- `tailwind.config.ts`'s `content` glob didn't include `lib/`, so Tailwind
+  couldn't see class names defined only inside `lib/ui-classes.ts` string
+  constants (as opposed to literal classes in `.tsx` files). This silently
+  broke `SELECT_CHEVRON_CLASS`'s `right-2.5` specifically — every other
+  class in that same string happened to also appear elsewhere in a scanned
+  file and so still compiled, but the chevron's positioning didn't, and it
+  rendered flush against the left edge of every select field using it
+  (jobs filter bar, activity log filters, create-user form, access-request
+  approval form) instead of the right. Added `lib/**/*.{js,ts,jsx,tsx,mdx}`
+  to `content`.
+
 ## [0.2.0-beta.4] - 2026-09-12
 
 ### Added
