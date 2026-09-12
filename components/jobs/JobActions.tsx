@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
-import { SELECT_CHEVRON_CLASS } from '@/lib/ui-classes'
+import { SELECT_CHEVRON_CLASS, FIELD_CLASS } from '@/lib/ui-classes'
 import type { JobStatus } from '@/lib/types'
 
 interface JobActionsProps {
@@ -206,7 +206,7 @@ export function JobActions({
               value={assigneeValue}
               onChange={e => handleAssign(e.target.value)}
               disabled={assignSaving}
-              className="border rounded-md px-2 py-1.5 text-sm w-full appearance-none pr-8 disabled:opacity-50"
+              className={`${FIELD_CLASS} appearance-none pr-8 disabled:opacity-50`}
             >
               <option value="">Unassigned</option>
               {machinists.map(m => (
