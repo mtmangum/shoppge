@@ -24,6 +24,8 @@ jobs:
 
       - run: npm run lint
 
+      - run: npm test
+
       - run: npm run build
         env:
           # Dummy values so `next build` (which touches env-dependent modules

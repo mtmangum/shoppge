@@ -6,10 +6,8 @@ import { eq, ne, and, or, ilike, sql, asc, desc, count } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import { OpenJobsView } from '@/components/OpenJobsView'
 import Link from 'next/link'
-import { ChevronDown } from 'lucide-react'
+import { JobFilters } from '@/components/JobFilters'
 import type { JobStatus, JobPriority } from '@/lib/types'
-
-const FIELD_CLASS = 'border border-gray-300 rounded-md px-3 py-1.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#BF5700]'
 
 // jobs.id is a Postgres `integer` column; a longer digit string (e.g. an
 // all-numeric part number pasted into search) would overflow it and crash
@@ -107,9 +105,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
   ])
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
-  const hasFilters = Boolean(search || status !== 'all' || priority !== 'all')
   const heading = mine ? 'My Jobs' : assigned ? 'Assigned to Me' : 'Open Jobs'
-  const viewParam = mine ? '?mine=1' : assigned ? '?assigned=1' : ''
 
   return (
     <div className="space-y-6">
@@ -123,59 +119,21 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
         </Link>
       </div>
 
-      <form method="get" className="flex flex-wrap gap-3 items-center">
-        {mine && <input type="hidden" name="mine" value="1" />}
-        {assigned && <input type="hidden" name="assigned" value="1" />}
-        <input
-          type="text"
-          name="search"
-          placeholder="Search jobs or #…"
-          defaultValue={search}
-          className={`${FIELD_CLASS} w-64`}
+      <JobFilters search={search} status={status} priority={priority} total={total}>
+        <OpenJobsView
+          stats={stats as any}
+          jobs={openJobs as any}
+          page={page}
+          totalPages={totalPages}
+          search={search}
+          status={status}
+          priority={priority}
+          mine={mine}
+          assigned={assigned}
+          sort={sortKey}
+          dir={dir}
         />
-        <div className="relative">
-          <select name="status" aria-label="Filter by status" defaultValue={status} className={`${FIELD_CLASS} appearance-none pr-8`}>
-            <option value="all">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="inprogress">In Progress</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-        </div>
-        <div className="relative">
-          <select name="priority" aria-label="Filter by priority" defaultValue={priority} className={`${FIELD_CLASS} appearance-none pr-8`}>
-            <option value="all">All Priorities</option>
-            <option value="urgent">Urgent</option>
-            <option value="normal">Normal</option>
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-        </div>
-        <button
-          type="submit"
-          className="bg-gray-700 text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-gray-800 transition-colors"
-        >
-          Filter
-        </button>
-        {hasFilters && (
-          <Link href={`/jobs${viewParam}`} className="text-sm text-gray-500 hover:underline">Clear</Link>
-        )}
-        <span className="text-sm text-gray-500 ml-auto">{total} jobs</span>
-      </form>
-
-      <OpenJobsView
-        stats={stats as any}
-        jobs={openJobs as any}
-        page={page}
-        totalPages={totalPages}
-        search={search}
-        status={status}
-        priority={priority}
-        mine={mine}
-        assigned={assigned}
-        sort={sortKey}
-        dir={dir}
-      />
+      </JobFilters>
     </div>
   )
 }
