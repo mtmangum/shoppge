@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { jobAttachments, jobs } from '@/lib/schema'
-import { requireAuth } from '@/lib/auth'
+import { requireAuth, isJobOwnerOrElevated } from '@/lib/auth'
 import { uploadAttachment } from '@/lib/s3'
 import { sniffFileType } from '@/lib/file-type'
 import { eq } from 'drizzle-orm'
@@ -23,7 +23,7 @@ export async function POST(
     // Requestors can only attach files to their own jobs; machinists/admins
     // can attach to any job (they need to add reference files while working
     // unassigned or assigned work alike).
-    if (user.role === 'requestor' && job.requestorId !== parseInt(user.id as string)) {
+    if (!isJobOwnerOrElevated(user, job)) {
       return NextResponse.json({ error: 'Forbidden: not your job' }, { status: 403 })
     }
 

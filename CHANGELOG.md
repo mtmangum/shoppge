@@ -23,6 +23,16 @@ Dates are in `YYYY-MM-DD`.
   `StatusBadge`/`PriorityBadge`/`QueueAgeBadge`, each keeping its own
   color/label logic) and `components/shared/Pagination.tsx` (shared
   Prev/Next pager).
+- Extracted `lib/ui-classes.ts` (shared form-field styling for the jobs
+  filter bar, activity log filters, and the create-user form — the three
+  places that share the same "label above a single-line field, items-end
+  row" layout) and `lib/query-helpers.ts` (shared days-in-queue/days-overdue
+  SQL fragments and sort-key/direction resolution). Consolidated the
+  requestor-job-ownership check (job detail page, attachment upload,
+  attachment download) into a single `lib/auth.ts` helper,
+  `isJobOwnerOrElevated` — no change in who can access what; added test
+  coverage for the case (a requestor viewing/uploading to a job that isn't
+  theirs) that wasn't previously exercised.
 
 ### Fixed
 - Activity log pagination: disabled Prev/Next (page 1's Previous, the last

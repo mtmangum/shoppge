@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { jobAttachments, jobs } from '@/lib/schema'
-import { requireAuth, requireMachinist } from '@/lib/auth'
+import { requireAuth, requireMachinist, isJobOwnerOrElevated } from '@/lib/auth'
 import { getAttachmentDownloadUrl, deleteAttachment } from '@/lib/s3'
 import { and, eq } from 'drizzle-orm'
 
@@ -24,7 +24,7 @@ export async function GET(
 
     if (user.role === 'requestor') {
       const [job] = await db.select({ requestorId: jobs.requestorId }).from(jobs).where(eq(jobs.id, attachment.jobId)).limit(1)
-      if (job?.requestorId !== parseInt(user.id as string)) {
+      if (!job || !isJobOwnerOrElevated(user, job)) {
         return NextResponse.json({ error: 'Forbidden: not your job' }, { status: 403 })
       }
     }

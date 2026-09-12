@@ -132,3 +132,16 @@ export async function requireAdmin() {
   if (user.role !== 'admin') throw new Error('Forbidden: admin role required')
   return user
 }
+
+/**
+ * Requestors may only access jobs they submitted; machinists/admins can
+ * access any job. A plain predicate rather than a throwing assertion since
+ * callers respond differently on failure (notFound() on the job detail
+ * page, a 403 JSON body from the API routes).
+ */
+export function isJobOwnerOrElevated(
+  user: { id: string; role: string },
+  job: { requestorId: number }
+): boolean {
+  return user.role !== 'requestor' || job.requestorId === parseInt(user.id, 10)
+}

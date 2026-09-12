@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth'
+import { auth, isJobOwnerOrElevated } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import { db } from '@/lib/db'
 import { jobs, users } from '@/lib/schema'
@@ -42,7 +42,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
   // Requestors can only see their own jobs — job detail includes billing/
   // sponsor account info that shouldn't be visible shop-wide. Machinists and
   // admins keep full access since they need to browse and pick up any job.
-  if (role === 'requestor' && job.requestorId !== currentUserId) notFound()
+  if (!isJobOwnerOrElevated(session.user, job)) notFound()
 
   const machinists = canManage
     ? await db

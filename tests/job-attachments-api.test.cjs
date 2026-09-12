@@ -2,14 +2,14 @@ const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const loadTs = require('./helpers/load-ts.cjs')
 
-function setup({ role = 'machinist', exists = true, storageFails = false } = {}) {
+function setup({ role = 'machinist', exists = true, storageFails = false, userId = '7', requestorId = 7 } = {}) {
   const calls = { uploads: [], deletes: [], inserts: [], dbDeletes: 0, reads: 0 }
   const db = {
     select() {
       calls.reads++
       const query = {
         from: () => query, where: () => query, limit: () => query,
-        then: (yes, no) => Promise.resolve(exists ? [{ id: 5, jobId: 42, storageKey: 'fixture/part.pdf', originalName: 'part.pdf', requestorId: 7 }] : []).then(yes, no),
+        then: (yes, no) => Promise.resolve(exists ? [{ id: 5, jobId: 42, storageKey: 'fixture/part.pdf', originalName: 'part.pdf', requestorId }] : []).then(yes, no),
       }
       return query
     },
@@ -21,15 +21,19 @@ function setup({ role = 'machinist', exists = true, storageFails = false } = {})
   }
   async function requireAuth() {
     if (!role) throw new Error('Unauthorized')
-    return { id: '7', role }
+    return { id: userId, role }
   }
   const mocks = {
     '@/lib/db': { db },
-    '@/lib/auth': { requireAuth, requireMachinist: async () => {
-      const user = await requireAuth()
-      if (!['machinist', 'admin'].includes(user.role)) throw new Error('Forbidden: machinist role required')
-      return user
-    } },
+    '@/lib/auth': {
+      requireAuth,
+      requireMachinist: async () => {
+        const user = await requireAuth()
+        if (!['machinist', 'admin'].includes(user.role)) throw new Error('Forbidden: machinist role required')
+        return user
+      },
+      isJobOwnerOrElevated: (user, job) => user.role !== 'requestor' || job.requestorId === parseInt(user.id, 10),
+    },
     '@/lib/s3': {
       uploadAttachment: async (...args) => { calls.uploads.push(args); if (storageFails) throw new Error('Storage unavailable') },
       deleteAttachment: async key => { calls.deletes.push(key); if (storageFails) throw new Error('Storage unavailable') },
@@ -61,6 +65,17 @@ test('supported attachments save bytes and metadata for the authenticated upload
   assert.equal(h.calls.inserts[0].jobId, 42)
   assert.equal(h.calls.inserts[0].uploadedById, 7)
   assert.equal(h.calls.inserts[0].originalName, 'part.pdf')
+})
+
+test('a requestor cannot upload to or download another requestor\'s job', async () => {
+  const h = setup({ role: 'requestor', userId: '99', requestorId: 7 })
+  const uploadResponse = await h.upload(new File(['%PDF-drawing'], 'part.pdf', { type: 'application/pdf' }))
+  assert.equal(uploadResponse.status, 403)
+  assert.equal(h.calls.uploads.length, 0)
+  assert.equal(h.calls.inserts.length, 0)
+
+  const downloadResponse = await h.download()
+  assert.equal(downloadResponse.status, 403)
 })
 
 test('missing, unsupported, and oversized attachments never reach storage', async () => {
