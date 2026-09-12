@@ -9,9 +9,9 @@ interface WeekPoint {
 }
 
 const DATA_COLOR = '#BF5700'
-const AXIS_COLOR = '#c3c2b7'
-const GRID_COLOR = '#e1e0d9'
-const MUTED_TEXT = '#898781'
+const AXIS_COLOR = 'var(--chart-axis)'
+const GRID_COLOR = 'var(--chart-grid)'
+const MUTED_TEXT = 'var(--chart-muted)'
 
 function niceMax(max: number) {
   if (max <= 0) return 4
@@ -86,14 +86,14 @@ export function TurnaroundChart({ data }: { data: WeekPoint[] }) {
               cy={yFor(d.avgDays)}
               r={4}
               fill={DATA_COLOR}
-              stroke="#fcfcfb"
+              stroke="var(--surface)"
               strokeWidth={2}
             />
           ) : null
         )}
 
         {/* end label */}
-        <text x={xFor(lastKnownIdx) + 8} y={yFor(known[known.length - 1].avgDays) + 3} fontSize={10} fill="#0b0b0b" fontWeight={600}>
+        <text x={xFor(lastKnownIdx) + 8} y={yFor(known[known.length - 1].avgDays) + 3} fontSize={10} fill="var(--fg-900)" fontWeight={600}>
           {known[known.length - 1].avgDays}d
         </text>
 
@@ -127,15 +127,15 @@ export function TurnaroundChart({ data }: { data: WeekPoint[] }) {
             <line x1={xFor(hovered)} x2={xFor(hovered)} y1={padT} y2={padT + plotH} stroke={AXIS_COLOR} strokeWidth={1} />
             {(() => {
               const d = data[hovered]
-              const boxW = 100
+              const boxW = 124
               const boxX = Math.min(Math.max(xFor(hovered) - boxW / 2, padL), width - padR - boxW)
               return (
                 <g transform={`translate(${boxX}, ${padT})`}>
-                  <rect width={boxW} height={34} rx={4} fill="#0b0b0b" opacity={0.9} />
-                  <text x={8} y={14} fontSize={10} fill="#ffffff" fontWeight={600}>
+                  <rect width={boxW} height={42} rx={5} fill="var(--tooltip-bg)" opacity={0.96} />
+                  <text x={10} y={18} fontSize={12} fill="var(--tooltip-fg)" fontWeight={600}>
                     {d.avgDays !== null ? `${d.avgDays} days avg` : 'No completions'}
                   </text>
-                  <text x={8} y={26} fontSize={9} fill="#c3c2b7">
+                  <text x={10} y={32} fontSize={11} fill="var(--tooltip-fg-muted)">
                     Week of {format(new Date(d.weekStart), 'MMM d')}
                   </text>
                 </g>

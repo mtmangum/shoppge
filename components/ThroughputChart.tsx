@@ -9,9 +9,9 @@ interface WeekPoint {
 }
 
 const DATA_COLOR = '#BF5700'
-const AXIS_COLOR = '#c3c2b7'
-const GRID_COLOR = '#e1e0d9'
-const MUTED_TEXT = '#898781'
+const AXIS_COLOR = 'var(--chart-axis)'
+const GRID_COLOR = 'var(--chart-grid)'
+const MUTED_TEXT = 'var(--chart-muted)'
 
 function niceMax(max: number) {
   if (max <= 0) return 4
@@ -87,7 +87,7 @@ export function ThroughputChart({ data }: { data: WeekPoint[] }) {
                 opacity={isHovered ? 0.85 : 1}
               />
               {isPeak && (
-                <text x={x + barW / 2} y={y - 6} textAnchor="middle" fontSize={10} fontWeight={600} fill="#0b0b0b">
+                <text x={x + barW / 2} y={y - 6} textAnchor="middle" fontSize={10} fontWeight={600} fill="var(--fg-900)">
                   {d.count}
                 </text>
               )}
@@ -117,15 +117,15 @@ export function ThroughputChart({ data }: { data: WeekPoint[] }) {
             {(() => {
               const d = data[hovered]
               const cx = padL + hovered * bandW + bandW / 2
-              const boxW = 84
+              const boxW = 104
               const boxX = Math.min(Math.max(cx - boxW / 2, padL), width - padR - boxW)
               return (
                 <g transform={`translate(${boxX}, ${padT})`}>
-                  <rect width={boxW} height={34} rx={4} fill="#0b0b0b" opacity={0.9} />
-                  <text x={8} y={14} fontSize={10} fill="#ffffff" fontWeight={600}>
+                  <rect width={boxW} height={42} rx={5} fill="var(--tooltip-bg)" opacity={0.96} />
+                  <text x={10} y={18} fontSize={12} fill="var(--tooltip-fg)" fontWeight={600}>
                     {d.count} completed
                   </text>
-                  <text x={8} y={26} fontSize={9} fill="#c3c2b7">
+                  <text x={10} y={32} fontSize={11} fill="var(--tooltip-fg-muted)">
                     Week of {format(new Date(d.weekStart), 'MMM d')}
                   </text>
                 </g>

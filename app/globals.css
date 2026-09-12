@@ -5,14 +5,176 @@
 @layer base {
   :root {
     --ut-orange: #BF5700;
+    color-scheme: light;
+    --canvas: #f9fafb;
+    --surface: #ffffff;
+    --subtle: #f3f4f6;
+    --border: #e5e7eb;
+    --field-border: #d1d5db;
+    --fg-900: #111827;
+    --fg-800: #1f2937;
+    --fg-700: #374151;
+    --fg-600: #4b5563;
+    --fg-500: #6b7280;
+    --fg-400: #9ca3af;
+    --link: #BF5700;
+    --blue-50: #eff6ff;
+    --blue-100: #dbeafe;
+    --blue-600: #2563eb;
+    --blue-800: #1e40af;
+    --green-100: #dcfce7;
+    --green-600: #16a34a;
+    --green-800: #166534;
+    --yellow-50: #fefce8;
+    --yellow-100: #fef9c3;
+    --yellow-600: #ca8a04;
+    --yellow-800: #854d0e;
+    --amber-100: #fef3c7;
+    --amber-800: #92400e;
+    --red-50: #fef2f2;
+    --red-100: #fee2e2;
+    --red-500: #ef4444;
+    --red-600: #dc2626;
+    --red-700: #b91c1c;
+    --red-800: #991b1b;
+    --red-border: #fca5a5;
+    --chart-axis: #c3c2b7;
+    --chart-grid: #e1e0d9;
+    --chart-muted: #898781;
+    /* Tooltips invert relative to the surface instead of tracking it, so
+       they always stand out as a floating overlay in either theme. */
+    --tooltip-bg: #0b0b0b;
+    --tooltip-fg: #ffffff;
+    --tooltip-fg-muted: #c3c2b7;
   }
 
-  body {
-    @apply text-gray-900 antialiased;
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --canvas: #0f172a;
+    --surface: #1e293b;
+    --subtle: #334155;
+    --border: #475569;
+    --field-border: #64748b;
+    --fg-900: #f1f5f9;
+    --fg-800: #e2e8f0;
+    --fg-700: #e2e8f0;
+    --fg-600: #cbd5e1;
+    --fg-500: #94a3b8;
+    --fg-400: #94a3b8;
+    --link: #ffb078;
+    --blue-50: #172d49;
+    --blue-100: #1e3a5f;
+    --blue-600: #93c5fd;
+    --blue-800: #bfdbfe;
+    --green-100: #143c30;
+    --green-600: #86efac;
+    --green-800: #bbf7d0;
+    --yellow-50: #302b17;
+    --yellow-100: #423614;
+    --yellow-600: #fcd34d;
+    --yellow-800: #fde68a;
+    --amber-100: #45320f;
+    --amber-800: #fde68a;
+    --red-50: #371f28;
+    --red-100: #4a2228;
+    --red-500: #fca5a5;
+    --red-600: #fca5a5;
+    --red-700: #fecaca;
+    --red-800: #fecaca;
+    --red-border: #b45362;
+    --chart-axis: #64748b;
+    --chart-grid: #475569;
+    --chart-muted: #94a3b8;
+    --tooltip-bg: #f8fafc;
+    --tooltip-fg: #0f172a;
+    --tooltip-fg-muted: #475569;
   }
 
-  /* Consistent focus ring using UT orange */
-  :focus-visible {
-    @apply outline-none ring-2 ring-ut-orange ring-offset-1;
+  /* CSS resolves System before first paint and follows OS changes without JS. */
+  @media (prefers-color-scheme: dark) {
+    :root[data-theme="system"] {
+      color-scheme: dark;
+      --canvas: #0f172a;
+      --surface: #1e293b;
+      --subtle: #334155;
+      --border: #475569;
+      --field-border: #64748b;
+      --fg-900: #f1f5f9;
+      --fg-800: #e2e8f0;
+      --fg-700: #e2e8f0;
+      --fg-600: #cbd5e1;
+      --fg-500: #94a3b8;
+      --fg-400: #94a3b8;
+      --link: #ffb078;
+      --blue-50: #172d49;
+      --blue-100: #1e3a5f;
+      --blue-600: #93c5fd;
+      --blue-800: #bfdbfe;
+      --green-100: #143c30;
+      --green-600: #86efac;
+      --green-800: #bbf7d0;
+      --yellow-50: #302b17;
+      --yellow-100: #423614;
+      --yellow-600: #fcd34d;
+      --yellow-800: #fde68a;
+      --amber-100: #45320f;
+      --amber-800: #fde68a;
+      --red-50: #371f28;
+      --red-100: #4a2228;
+      --red-500: #fca5a5;
+      --red-600: #fca5a5;
+      --red-700: #fecaca;
+      --red-800: #fecaca;
+      --red-border: #b45362;
+      --chart-axis: #64748b;
+      --chart-grid: #475569;
+      --chart-muted: #94a3b8;
+      --tooltip-bg: #f8fafc;
+      --tooltip-fg: #0f172a;
+      --tooltip-fg-muted: #475569;
+    }
   }
+
+  *, ::before, ::after { border-color: var(--border); }
+  body { background-color: var(--canvas); color: var(--fg-900); @apply antialiased; }
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea { background-color: var(--surface); }
+  input::placeholder, textarea::placeholder { color: var(--fg-400); }
+  :focus-visible { @apply outline-none ring-2 ring-ut-orange ring-offset-1; --tw-ring-offset-color: var(--surface); }
+}
+
+/* Theme the existing shared palette so forms, tables, cards, and badges agree.
+   Brand backgrounds and white-on-brand labels keep the official UT orange. */
+@layer utilities {
+  .bg-white { background-color: var(--surface); }
+  .bg-gray-50, .hover\:bg-gray-50:hover { background-color: var(--canvas); }
+  .bg-gray-100, .hover\:bg-gray-100:hover { background-color: var(--subtle); }
+  .border-gray-200 { border-color: var(--border); }
+  .border-gray-300 { border-color: var(--field-border); }
+  .text-gray-400, .hover\:text-gray-400:hover { color: var(--fg-400); }
+  .text-gray-500, .hover\:text-gray-500:hover { color: var(--fg-500); }
+  .text-gray-600, .hover\:text-gray-600:hover { color: var(--fg-600); }
+  .text-gray-700, .hover\:text-gray-700:hover { color: var(--fg-700); }
+  .text-gray-800, .hover\:text-gray-800:hover { color: var(--fg-800); }
+  .text-gray-900, .hover\:text-gray-900:hover { color: var(--fg-900); }
+  .text-\[\#BF5700\] { color: var(--link); }
+  .bg-blue-50 { background-color: var(--blue-50); }
+  .bg-blue-100 { background-color: var(--blue-100); }
+  .text-blue-600 { color: var(--blue-600); }
+  .text-blue-800 { color: var(--blue-800); }
+  .bg-green-100 { background-color: var(--green-100); }
+  .text-green-600 { color: var(--green-600); }
+  .text-green-800 { color: var(--green-800); }
+  .bg-yellow-50 { background-color: var(--yellow-50); }
+  .bg-yellow-100 { background-color: var(--yellow-100); }
+  .text-yellow-600 { color: var(--yellow-600); }
+  .text-yellow-800 { color: var(--yellow-800); }
+  .bg-amber-100 { background-color: var(--amber-100); }
+  .text-amber-800 { color: var(--amber-800); }
+  .bg-red-50 { background-color: var(--red-50); }
+  .bg-red-100 { background-color: var(--red-100); }
+  .text-red-500 { color: var(--red-500); }
+  .text-red-600 { color: var(--red-600); }
+  .text-red-700 { color: var(--red-700); }
+  .text-red-800 { color: var(--red-800); }
+  .border-red-300 { border-color: var(--red-border); }
 }
