@@ -13,6 +13,7 @@ import { PriorityBadge } from './PriorityBadge'
 import { QueueAgeBadge } from './QueueAgeBadge'
 import type { JobListItem, JobStatus, JobPriority } from '@/lib/types'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 import clsx from 'clsx'
 import type { StatsFilterKey } from './StatsCards'
@@ -50,6 +51,8 @@ function matchesHighlight(job: JobListItem, highlightFilter?: StatsFilterKey | n
 }
 
 export function JobsTable({ jobs, highlightFilter, page, totalPages, search, status, priority, mine, assigned, sort, dir }: JobsTableProps) {
+  const router = useRouter()
+
   function buildHref(overrides: Record<string, string>) {
     const params = new URLSearchParams()
     if (search) params.set('search', search)
@@ -79,7 +82,11 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
       size: 80,
       meta: { sortKey: 'id' },
       cell: ({ row }) => (
-        <Link href={`/jobs/${row.original.id}`} className="font-mono font-semibold text-[#BF5700] hover:underline">
+        <Link
+          href={`/jobs/${row.original.id}`}
+          onClick={e => e.stopPropagation()}
+          className="font-mono font-semibold text-[#BF5700] hover:underline"
+        >
           {row.original.id}
         </Link>
       ),
@@ -186,8 +193,9 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
               return (
                 <tr
                   key={row.id}
+                  onClick={() => router.push(`/jobs/${row.original.id}`)}
                   className={clsx(
-                    'transition-colors',
+                    'cursor-pointer transition-colors hover:bg-gray-100',
                     style ? style.bg : i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                   )}
                 >

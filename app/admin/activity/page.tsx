@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react'
 import { StatusBadge } from '@/components/StatusBadge'
 import { QueueAgeBadge } from '@/components/QueueAgeBadge'
+import { ActivityRow } from '@/components/ActivityRow'
 import type { JobStatus } from '@/lib/types'
 
 const FIELD_CLASS = 'block h-10 w-full min-w-0 appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 text-sm leading-5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#BF5700]'
@@ -199,9 +200,12 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
               <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">No activity matches these filters.</td></tr>
             )}
             {entries.map((entry, i) => (
-              <tr key={entry.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+              <ActivityRow key={entry.id} jobId={entry.jobId} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                 <td className="px-4 py-3">
-                  <Link href={`/jobs/${entry.jobId}`} className="font-mono font-semibold text-[#BF5700] hover:underline">
+                  <Link
+                    href={`/jobs/${entry.jobId}`}
+                    className="font-mono font-semibold text-[#BF5700] hover:underline"
+                  >
                     #{entry.jobId}
                   </Link>
                 </td>
@@ -214,7 +218,7 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
                 <td className="px-4 py-3 whitespace-nowrap">{entry.changedByName ?? 'System'}</td>
                 <td className="px-4 py-3 whitespace-nowrap"><QueueAgeBadge days={entry.daysElapsed} status={entry.jobStatus} /></td>
                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{format(new Date(entry.changedAt), 'MMM d, yyyy h:mm a')}</td>
-              </tr>
+              </ActivityRow>
             ))}
           </tbody>
         </table>
