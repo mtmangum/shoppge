@@ -119,8 +119,8 @@ export function ThroughputChart({ data }: { data: WeekPoint[] }) {
               const cx = padL + hovered * bandW + bandW / 2
               const boxW = 128
               const boxH = 52
-              const gapV = 8
-              const gapH = 10
+              const gapV = 16
+              const gapH = 18
               const barH = (d.count / max) * plotH
               const barTopY = padT + plotH - barH
               const halfBar = barW / 2
@@ -139,7 +139,7 @@ export function ThroughputChart({ data }: { data: WeekPoint[] }) {
                   : Math.max(cx - halfBar - gapH - boxW, padL)
               }
               return (
-                <g transform={`translate(${boxX}, ${boxY})`} style={{ transition: 'transform 150ms ease-out' }}>
+                <g style={{ transform: `translate(${boxX}px, ${boxY}px)`, transition: 'transform 150ms ease-out' }}>
                   <rect width={boxW} height={boxH} rx={6} fill="var(--tooltip-bg)" opacity={0.96} />
                   <text x={12} y={22} fontSize={14} fill="var(--tooltip-fg)" fontWeight={600}>
                     {d.count} completed

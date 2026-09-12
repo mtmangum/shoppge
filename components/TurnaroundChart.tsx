@@ -129,8 +129,8 @@ export function TurnaroundChart({ data }: { data: WeekPoint[] }) {
               const d = data[hovered]
               const boxW = 148
               const boxH = 52
-              const gapV = 12
-              const gapH = 10
+              const gapV = 18
+              const gapH = 18
               const pointX = xFor(hovered)
               const pointY = d.avgDays !== null ? yFor(d.avgDays) : padT + plotH
               const halfPoint = 6
@@ -149,7 +149,7 @@ export function TurnaroundChart({ data }: { data: WeekPoint[] }) {
                   : Math.max(pointX - halfPoint - gapH - boxW, padL)
               }
               return (
-                <g transform={`translate(${boxX}, ${boxY})`} style={{ transition: 'transform 150ms ease-out' }}>
+                <g style={{ transform: `translate(${boxX}px, ${boxY}px)`, transition: 'transform 150ms ease-out' }}>
                   <rect width={boxW} height={boxH} rx={6} fill="var(--tooltip-bg)" opacity={0.96} />
                   <text x={12} y={22} fontSize={14} fill="var(--tooltip-fg)" fontWeight={600}>
                     {d.avgDays !== null ? `${d.avgDays} days avg` : 'No completions'}
