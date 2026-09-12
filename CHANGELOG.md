@@ -7,6 +7,14 @@ Dates are in `YYYY-MM-DD`.
 
 ## [Unreleased]
 
+### Added
+- Account Settings (`/settings`, linked from the navbar's account menu):
+  edit your own name/department/phone/room, change your password (requires
+  the current password, guarded against a concurrent-change race), and
+  choose a light/dark/system appearance. Theme preference is stored in a
+  cookie and applied server-side on every page load (`data-theme` on
+  `<html>`), so there's no flash of the wrong theme.
+
 ### Changed
 - Removed dead scaffold types from `lib/types.ts` (13 hand-written interfaces
   superseded long ago by Drizzle-inferred types and the Zod schemas that are

@@ -3,9 +3,11 @@ import { Inter } from 'next/font/google'
 import { Cog } from 'lucide-react'
 import { Suspense } from 'react'
 import './globals.css'
-import { Navbar } from '@/components/Navbar'
+import { Navbar } from '@/components/layout/Navbar'
 import { Toaster } from '@/components/ui/Toaster'
 import { auth } from '@/lib/auth'
+import { cookies } from 'next/headers'
+import { parseTheme, THEME_COOKIE } from '@/lib/account-settings'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -22,7 +24,7 @@ export default async function RootLayout({
   const session = await auth()
 
   return (
-    <html lang="en">
+    <html lang="en" data-theme={parseTheme(cookies().get(THEME_COOKIE)?.value)}>
       <body className={inter.className}>
         <div className="min-h-screen bg-gray-50 overflow-x-hidden">
           <header className="bg-[#BF5700] text-white">

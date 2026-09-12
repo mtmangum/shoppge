@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import type { UserRole } from '@/lib/types'
 import clsx from 'clsx'
+import { Settings } from 'lucide-react'
 
 interface NavbarProps {
   user: { name?: string | null; email?: string | null; role?: string | null }
@@ -36,6 +37,7 @@ export function Navbar({ user }: NavbarProps) {
             <Link
               key={link.href}
               href={link.href}
+              aria-current={link.active ? 'page' : undefined}
               className={clsx(
                 'px-3 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap shrink-0',
                 link.active
@@ -48,7 +50,15 @@ export function Navbar({ user }: NavbarProps) {
           ))}
         </div>
         <div className="flex items-center gap-3 text-sm text-gray-600 shrink-0">
-          <span>{user.name}</span>
+          <Link
+            href="/settings"
+            aria-label={`${user.name || 'Your account'}: account settings`}
+            aria-current={pathname === '/settings' ? 'page' : undefined}
+            className={clsx('inline-flex items-center gap-1.5 rounded px-2 py-1.5 hover:bg-gray-100', pathname === '/settings' && 'bg-gray-100 font-medium')}
+          >
+            <span className="max-w-[12rem] truncate">{user.name || 'Account Settings'}</span>
+            <Settings className="h-4 w-4 shrink-0" aria-hidden="true" />
+          </Link>
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
             className="text-gray-500 hover:text-gray-800"
