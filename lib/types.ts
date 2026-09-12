@@ -6,78 +6,6 @@ export type JobStatus = 'pending' | 'inprogress' | 'completed' | 'cancelled'
 export type JobPriority = 'normal' | 'urgent'
 export type UserRole = 'requestor' | 'machinist' | 'admin'
 
-export interface User {
-  id: number
-  email: string
-  name: string
-  role: UserRole
-  department?: string
-  phone?: string
-  room?: string
-  isActive: boolean
-  createdAt: Date
-}
-
-export interface JobItem {
-  id: number
-  jobId: number
-  itemNumber: number
-  partNumber?: string
-  quantity?: string
-  description?: string
-}
-
-export interface JobAttachment {
-  id: number
-  jobId: number
-  originalName: string
-  storageKey: string
-  fileSizeBytes?: number
-  mimeType: string
-  uploadedById?: number
-  uploadedAt: Date
-}
-
-export interface JobStatusHistory {
-  id: number
-  jobId: number
-  fromStatus?: JobStatus
-  toStatus: JobStatus
-  changedById?: number
-  changedByName?: string
-  note?: string
-  changedAt: Date
-}
-
-export interface Job {
-  id: number
-  entryDate: string            // ISO date string
-  dateRequired: string         // ISO date string
-  description: string
-  requestorId: number
-  requestorName?: string
-  machinistId?: number
-  machinistName?: string
-  status: JobStatus
-  priority: JobPriority
-  materialsRequired: boolean
-  materialsOrdered: boolean
-  dateCompleted?: string
-  accountNumber?: string
-  accountTitle?: string
-  bookkeeperName?: string
-  bookkeeperAddress?: string
-  sponsorOrg?: string
-  sponsorSignature?: string
-  machinistNotes?: string
-  daysElapsed?: number
-  items?: JobItem[]
-  attachments?: JobAttachment[]
-  statusHistory?: JobStatusHistory[]
-  createdAt: Date
-  updatedAt: Date
-}
-
 // ============================================================
 // API request/response types
 // ============================================================
@@ -92,45 +20,6 @@ export interface JobListItem {
   status: JobStatus
   priority: JobPriority
   daysElapsed: number
-}
-
-export interface JobsResponse {
-  jobs: JobListItem[]
-  total: number
-  page: number
-  pageSize: number
-}
-
-export interface JobFilters {
-  status?: JobStatus | 'all'
-  priority?: JobPriority | 'all'
-  machinistId?: number | 'all'
-  search?: string
-  page?: number
-  pageSize?: number
-}
-
-export interface CreateJobInput {
-  dateRequired: string
-  description: string
-  materialsRequired: boolean
-  materialsOrdered: boolean
-  items: Array<{
-    partNumber?: string
-    quantity?: string
-    description?: string
-  }>
-  accountNumber?: string
-  accountTitle?: string
-  bookkeeperName?: string
-  bookkeeperAddress?: string
-  sponsorOrg?: string
-  sponsorSignature?: string
-}
-
-export interface UpdateJobStatusInput {
-  status: JobStatus
-  note?: string
 }
 
 // ============================================================
@@ -171,8 +60,6 @@ export const updateJobSchema = z.object({
   priority: z.enum(['normal', 'urgent']).optional(),
 })
 
-export type UpdateJobInput = z.infer<typeof updateJobSchema>
-
 export const createUserSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Must be a valid email'),
@@ -182,8 +69,6 @@ export const createUserSchema = z.object({
   room: z.string().optional(),
   password: z.string().min(8, 'Password must be at least 8 characters').optional(),
 })
-
-export type CreateUserInput = z.infer<typeof createUserSchema>
 
 export const updateUserSchema = z.object({
   name: z.string().min(1).optional(),
@@ -196,10 +81,6 @@ export const updateUserSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters').optional(),
 })
 
-export type UpdateUserInput = z.infer<typeof updateUserSchema>
-
-export type AccessRequestStatus = 'pending' | 'approved' | 'rejected'
-
 export const createAccessRequestSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Must be a valid email'),
@@ -208,13 +89,9 @@ export const createAccessRequestSchema = z.object({
   reason: z.string().max(2000).optional(),
 })
 
-export type CreateAccessRequestInput = z.infer<typeof createAccessRequestSchema>
-
 export const reviewAccessRequestSchema = z.object({
   decision: z.enum(['approved', 'rejected']),
   role: z.enum(['requestor', 'machinist', 'admin']).optional(),
   password: z.string().min(8, 'Password must be at least 8 characters').optional(),
   reviewNote: z.string().optional(),
 })
-
-export type ReviewAccessRequestInput = z.infer<typeof reviewAccessRequestSchema>

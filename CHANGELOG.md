@@ -7,6 +7,14 @@ Dates are in `YYYY-MM-DD`.
 
 ## [Unreleased]
 
+### Changed
+- Removed dead scaffold types from `lib/types.ts` (13 hand-written interfaces
+  superseded long ago by Drizzle-inferred types and the Zod schemas that are
+  actually used for validation) and an unused `DB` type alias from
+  `lib/db.ts`. Removed five unused npm dependencies (`tailwind-merge`,
+  `@radix-ui/react-dialog`/`react-select`/`react-label`/`react-tabs`) and the
+  empty `app/api/reports/` directory.
+
 ## [0.2.0-beta.3] - 2026-09-12
 
 ### Added
