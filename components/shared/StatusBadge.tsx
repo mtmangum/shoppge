@@ -1,3 +1,4 @@
+import { Pill } from '../ui/Pill'
 import type { JobStatus } from '@/lib/types'
 
 const config: Record<JobStatus, { label: string; className: string }> = {
@@ -9,9 +10,5 @@ const config: Record<JobStatus, { label: string; className: string }> = {
 
 export function StatusBadge({ status }: { status: JobStatus }) {
   const { label, className } = config[status] ?? config.pending
-  return (
-    <span className={`inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-medium ${className}`}>
-      {label}
-    </span>
-  )
+  return <Pill className={className} nowrap>{label}</Pill>
 }
