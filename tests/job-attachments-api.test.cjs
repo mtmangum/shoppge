@@ -9,7 +9,7 @@ function setup({ role = 'machinist', exists = true, storageFails = false } = {})
       calls.reads++
       const query = {
         from: () => query, where: () => query, limit: () => query,
-        then: (yes, no) => Promise.resolve(exists ? [{ id: 5, storageKey: 'fixture/part.pdf' }] : []).then(yes, no),
+        then: (yes, no) => Promise.resolve(exists ? [{ id: 5, jobId: 42, storageKey: 'fixture/part.pdf', originalName: 'part.pdf', requestorId: 7 }] : []).then(yes, no),
       }
       return query
     },
@@ -52,9 +52,11 @@ function setup({ role = 'machinist', exists = true, storageFails = false } = {})
 
 test('supported attachments save bytes and metadata for the authenticated uploader', async () => {
   const h = setup({ role: 'requestor' })
-  const response = await h.upload(new File(['drawing'], 'part.pdf', { type: 'application/pdf' }))
+  // Content must start with the real PDF magic bytes: file type is now
+  // verified server-side against actual content, not the claimed MIME type.
+  const response = await h.upload(new File(['%PDF-drawing'], 'part.pdf', { type: 'application/pdf' }))
   assert.equal(response.status, 201)
-  assert.equal(h.calls.uploads[0][1].toString(), 'drawing')
+  assert.equal(h.calls.uploads[0][1].toString(), '%PDF-drawing')
   assert.equal(h.calls.uploads[0][2], 'application/pdf')
   assert.equal(h.calls.inserts[0].jobId, 42)
   assert.equal(h.calls.inserts[0].uploadedById, 7)

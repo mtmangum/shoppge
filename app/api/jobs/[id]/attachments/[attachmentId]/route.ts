@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { jobAttachments } from '@/lib/schema'
+import { jobAttachments, jobs } from '@/lib/schema'
 import { requireAuth, requireMachinist } from '@/lib/auth'
 import { getAttachmentDownloadUrl, deleteAttachment } from '@/lib/s3'
 import { and, eq } from 'drizzle-orm'
@@ -10,7 +10,7 @@ export async function GET(
   { params }: { params: { id: string; attachmentId: string } }
 ) {
   try {
-    await requireAuth()
+    const user = await requireAuth()
     const [attachment] = await db
       .select()
       .from(jobAttachments)
@@ -22,10 +22,18 @@ export async function GET(
 
     if (!attachment) return NextResponse.json({ error: 'Attachment not found' }, { status: 404 })
 
-    const url = await getAttachmentDownloadUrl(attachment.storageKey)
+    if (user.role === 'requestor') {
+      const [job] = await db.select({ requestorId: jobs.requestorId }).from(jobs).where(eq(jobs.id, attachment.jobId)).limit(1)
+      if (job?.requestorId !== parseInt(user.id as string)) {
+        return NextResponse.json({ error: 'Forbidden: not your job' }, { status: 403 })
+      }
+    }
+
+    const url = await getAttachmentDownloadUrl(attachment.storageKey, attachment.originalName)
     return NextResponse.redirect(url)
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 401 })
+    const status = e.message === 'Unauthorized' ? 401 : e.message?.startsWith('Forbidden') ? 403 : 400
+    return NextResponse.json({ error: e.message }, { status })
   }
 }
 

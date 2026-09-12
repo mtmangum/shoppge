@@ -41,6 +41,12 @@ export default async function JobDetailPage({ params }: { params: { id: string }
 
   const role = session.user.role as UserRole
   const canManage = role === 'machinist' || role === 'admin'
+  const currentUserId = parseInt(session.user.id as string)
+
+  // Requestors can only see their own jobs — job detail includes billing/
+  // sponsor account info that shouldn't be visible shop-wide. Machinists and
+  // admins keep full access since they need to browse and pick up any job.
+  if (role === 'requestor' && job.requestorId !== currentUserId) notFound()
 
   const machinists = canManage
     ? await db
@@ -203,7 +209,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
               jobId={job.id}
               status={job.status}
               machinistId={job.machinistId}
-              currentUserId={parseInt(session.user.id as string)}
+              currentUserId={currentUserId}
               materialsRequired={job.materialsRequired}
               materialsOrdered={job.materialsOrdered}
               machinistNotes={job.machinistNotes ?? ''}

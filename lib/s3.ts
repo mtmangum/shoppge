@@ -22,8 +22,15 @@ export async function uploadAttachment(key: string, body: Buffer, contentType: s
   }))
 }
 
-export async function getAttachmentDownloadUrl(key: string, expiresIn = 300) {
-  return getSignedUrl(s3, new GetObjectCommand({ Bucket: S3_BUCKET, Key: key }), { expiresIn })
+export async function getAttachmentDownloadUrl(key: string, filename: string, expiresIn = 300) {
+  return getSignedUrl(s3, new GetObjectCommand({
+    Bucket: S3_BUCKET,
+    Key: key,
+    // Force a download instead of inline rendering, regardless of the
+    // object's stored content-type (which originates from an upload-time
+    // MIME sniff, not raw client input, but this is cheap defense in depth).
+    ResponseContentDisposition: `attachment; filename="${filename.replace(/"/g, '')}"`,
+  }), { expiresIn })
 }
 
 export async function deleteAttachment(key: string) {
