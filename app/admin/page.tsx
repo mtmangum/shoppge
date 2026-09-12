@@ -173,25 +173,25 @@ export default async function AdminDashboardPage() {
           ) : (
             <ul className="divide-y">
               {overdueOrUrgent.map(job => (
-                <li key={job.id} className="px-6 py-3 text-sm">
-                  <div className="flex items-center flex-wrap justify-between gap-2">
-                    <Link href={`/jobs/${job.id}`} className="font-mono font-semibold text-[#BF5700] hover:underline">
-                      #{job.id}
-                    </Link>
-                    <div className="flex items-center flex-wrap gap-2">
-                      <PriorityBadge priority={job.priority} />
-                      <StatusBadge status={job.status} />
-                      {job.daysOverdue > 0 ? (
-                        <span className="text-red-600 font-semibold">{job.daysOverdue}d overdue</span>
-                      ) : (
-                        <span className="text-gray-500">{job.daysInQueue}d in queue</span>
-                      )}
+                <li key={job.id}>
+                  <Link href={`/jobs/${job.id}`} className="block px-6 py-3 text-sm hover:bg-gray-50 focus-visible:ring-inset">
+                    <div className="flex items-center flex-wrap justify-between gap-2">
+                      <span className="font-mono font-semibold text-[#BF5700]">#{job.id}</span>
+                      <div className="flex items-center flex-wrap gap-2">
+                        <PriorityBadge priority={job.priority} />
+                        <StatusBadge status={job.status} />
+                        {job.daysOverdue > 0 ? (
+                          <span className="text-red-600 font-semibold">{job.daysOverdue}d overdue</span>
+                        ) : (
+                          <span className="text-gray-500">{job.daysInQueue}d in queue</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <p className="text-gray-700 line-clamp-1 mt-1">{job.description}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {job.requestorName} · {job.machinistName ?? 'unassigned'}
-                  </p>
+                    <p className="text-gray-700 line-clamp-1 mt-1">{job.description}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {job.requestorName} · {job.machinistName ?? 'unassigned'}
+                    </p>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -213,25 +213,25 @@ export default async function AdminDashboardPage() {
                 const deletedAuthor = entry.note?.match(/^\[Original author: (.*?) </)?.[1]
                 const actor = entry.changedByName ?? (deletedAuthor ? `${deletedAuthor} (deleted)` : 'System')
                 return (
-                  <li key={entry.id} className="px-5 py-2.5">
-                    <div className="flex items-start justify-between gap-3 text-sm">
-                      <div className="flex min-w-0 items-center flex-wrap gap-2">
-                        <Link href={`/jobs/${entry.jobId}`} className="font-mono font-semibold text-[#BF5700] hover:underline">
-                          #{entry.jobId}
-                        </Link>
-                        <StatusBadge status={entry.toStatus} />
+                  <li key={entry.id}>
+                    <Link href={`/jobs/${entry.jobId}`} className="block px-5 py-2.5 hover:bg-gray-50 focus-visible:ring-inset">
+                      <div className="flex items-start justify-between gap-3 text-sm">
+                        <div className="flex min-w-0 items-center flex-wrap gap-2">
+                          <span className="font-mono font-semibold text-[#BF5700]">#{entry.jobId}</span>
+                          <StatusBadge status={entry.toStatus} />
+                        </div>
+                        <time
+                          dateTime={new Date(entry.changedAt).toISOString()}
+                          title={format(new Date(entry.changedAt), 'MMM d, yyyy h:mm a')}
+                          className="shrink-0 text-right text-xs leading-5 text-gray-500"
+                        >
+                          {format(new Date(entry.changedAt), 'MMM d, h:mm a')}
+                        </time>
                       </div>
-                      <time
-                        dateTime={new Date(entry.changedAt).toISOString()}
-                        title={format(new Date(entry.changedAt), 'MMM d, yyyy h:mm a')}
-                        className="shrink-0 text-right text-xs leading-5 text-gray-500"
-                      >
-                        {format(new Date(entry.changedAt), 'MMM d, h:mm a')}
-                      </time>
-                    </div>
-                    <p className="mt-1 truncate text-xs text-gray-500" title={`${actor} · ${entry.jobDescription ?? ''}`}>
-                      {actor}{entry.jobDescription && <> · {entry.jobDescription}</>}
-                    </p>
+                      <p className="mt-1 truncate text-xs text-gray-500" title={`${actor} · ${entry.jobDescription ?? ''}`}>
+                        {actor}{entry.jobDescription && <> · {entry.jobDescription}</>}
+                      </p>
+                    </Link>
                   </li>
                 )
               })}
