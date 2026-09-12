@@ -42,6 +42,14 @@ Dates are in `YYYY-MM-DD`.
   pattern already used by the Jobs table's pagination, via the new shared
   `Pagination` component both now render through.
 
+### Docs
+- `docs/SECURITY-REVIEW.md`: marked findings #3 (job/attachment access) and
+  #4 (upload verification) resolved, pointing at this release.
+- Added `docs/HANDOFF.md`: in-progress uncommitted work, still-open security
+  items, why the Next.js 14→15/16 upgrade is a real migration rather than a
+  version bump, a known failure mode of the CHANGELOG pre-push hook, and a
+  map of the new shared modules from this release's refactor.
+
 ## [0.2.0-beta.3] - 2026-09-12
 
 ### Added

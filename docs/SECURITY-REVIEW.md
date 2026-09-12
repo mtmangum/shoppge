@@ -27,6 +27,8 @@ Findings are ordered by severity. Each includes what was checked, why it matters
 
 ### 3. Any authenticated user can view (and attach files to) any job, including billing/PII fields
 
+**Status: Resolved in `0.2.0-beta.3`.** Requestors are now restricted to jobs they submitted (`isJobOwnerOrElevated` in `lib/auth.ts`, applied to the detail page and both attachment routes); machinists/admins keep full access. See the CHANGELOG's Security section for that release.
+
 **Finding:** `app/jobs/[id]/page.tsx` only checks `if (!session?.user) redirect('/login')` — there's no check that the viewer is the job's requestor, the assigned machinist, or an admin. The same is true of the attachment upload route (`app/api/jobs/[id]/attachments/route.ts`, only `requireAuth()`). Job IDs are small sequential integers, so any logged-in user can enumerate `/jobs/1`, `/jobs/2`, … and see every job's full detail — including the Billing/Sponsor section (account number, account title, bookkeeper name and address) — and can upload a file into any job's attachment list, not just their own.
 
 **Why it matters:** This may be an intentional design choice — the `/jobs` list itself already shows every open job from every requestor to any authenticated user, so "everyone in the shop can see all shop work" already appears to be the app's model for job metadata. But the **billing/sponsor fields are a different sensitivity level** than "what part is being machined" — account numbers and bookkeeper contact info probably shouldn't be visible department-wide by default. Worth an explicit decision rather than an implicit one.
@@ -34,6 +36,8 @@ Findings are ordered by severity. Each includes what was checked, why it matters
 **Fix:** If open visibility is intentional for job status/description (consistent with the existing `/jobs` list), at minimum gate the Billing/Sponsor section to the job's own requestor, the assigned machinist, and admins. If full job-detail access should be restricted too, add an ownership check (`job.requestorId === currentUserId || job.machinistId === currentUserId || isAdmin`) to both the detail page and the attachment upload route, matching the pattern already used correctly for attachment *deletion* (fixed in `ed92d88` this cycle, now `requireMachinist()`).
 
 ### 4. Uploaded file type is trusted from the client and never verified server-side
+
+**Status: Resolved in `0.2.0-beta.3`.** Uploaded content is now verified against magic bytes (`lib/file-type.ts`) instead of the client-supplied MIME type, and downloads always force `Content-Disposition: attachment` regardless of stored type. See the CHANGELOG's Security section for that release.
 
 **Finding:** `app/api/jobs/[id]/attachments/route.ts` checks `ALLOWED_TYPES.has(file.type)` — `file.type` is the MIME type the *browser* reported for the upload, which is trivially spoofable (a raw HTTP client can set `Content-Type` to anything in the multipart body). The actual file bytes are never inspected. That client-supplied type is then stored as the S3 object's `ContentType` (`lib/s3.ts: uploadAttachment`), and the download route (`GET .../attachments/[attachmentId]`) redirects straight to a presigned S3 URL with no `ResponseContentDisposition` override — so whatever content-type was claimed at upload is what gets served back, inline, with no forced download.
 
@@ -90,7 +94,10 @@ Worth stating plainly so this doesn't read as all-bad:
 
 ## Suggested priority order
 
-1. TLS (#1) — nothing else matters much if traffic is sniffable.
-2. Login rate limiting (#2) and the job/attachment ownership check (#3), since both are directly reachable by any authenticated user today.
-3. File upload content verification + forced download disposition (#4).
-4. The infrastructure items (#5–#8) — rotate the exposed token, decide on the self-hosted runner's trust boundary, and confirm the branch-protection bypass is intentional.
+Still open, in order:
+
+1. TLS (#1) — nothing else matters much if traffic is sniffable. Blocked on getting a domain name for this deployment.
+2. Login rate limiting (#2), still directly reachable by anyone today.
+3. The infrastructure items (#5–#8) — rotate the exposed token, decide on the self-hosted runner's trust boundary, and confirm the branch-protection bypass is intentional.
+
+\#3 (job/attachment ownership) and #4 (file upload verification) are resolved — see their status notes above.
