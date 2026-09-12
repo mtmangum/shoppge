@@ -10,6 +10,7 @@ import { formatTimestamp } from '@/lib/dates'
 import { daysInQueueSql, resolveSortKey, resolveSortDir, sortOrderFn } from '@/lib/query-helpers'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { QueueAgeBadge } from '@/components/shared/QueueAgeBadge'
+import { Pagination } from '@/components/shared/Pagination'
 import { ActivityRow } from '@/components/jobs/ActivityRow'
 import type { JobStatus } from '@/lib/types'
 
@@ -223,23 +224,7 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
         </table>
       </div>
 
-      <div className="flex items-center justify-between text-sm text-gray-600">
-        <span>Page {page} of {totalPages} · {count} total</span>
-        <div className="flex gap-2">
-          <Link
-            href={buildPageUrl(page - 1)}
-            className={`px-3 py-1 border rounded ${page <= 1 ? 'opacity-40 pointer-events-none' : 'hover:bg-gray-50'}`}
-          >
-            Previous
-          </Link>
-          <Link
-            href={buildPageUrl(page + 1)}
-            className={`px-3 py-1 border rounded ${page >= totalPages ? 'opacity-40 pointer-events-none' : 'hover:bg-gray-50'}`}
-          >
-            Next
-          </Link>
-        </div>
-      </div>
+      <Pagination page={page} totalPages={totalPages} total={count} getHref={p => buildPageUrl(p)} />
     </div>
   )
 }

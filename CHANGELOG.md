@@ -19,6 +19,18 @@ Dates are in `YYYY-MM-DD`.
   `admin/charts/`, `auth/`. No behavior change. `Navbar.tsx` and the
   in-progress `AccountSettings.tsx` are deliberately left in place pending
   other work landing.
+- Extracted `components/ui/Pill.tsx` (shared rounded-pill shell for
+  `StatusBadge`/`PriorityBadge`/`QueueAgeBadge`, each keeping its own
+  color/label logic) and `components/shared/Pagination.tsx` (shared
+  Prev/Next pager).
+
+### Fixed
+- Activity log pagination: disabled Prev/Next (page 1's Previous, the last
+  page's Next) rendered as a `<Link>` with `opacity-40 pointer-events-none`,
+  which stays keyboard-focusable and gets announced as an active link by
+  screen readers despite looking disabled. Now uses the same inert-`<span>`
+  pattern already used by the Jobs table's pagination, via the new shared
+  `Pagination` component both now render through.
 
 ## [0.2.0-beta.3] - 2026-09-12
 
