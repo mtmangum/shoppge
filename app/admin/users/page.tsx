@@ -3,9 +3,9 @@ import { redirect } from 'next/navigation'
 import { db } from '@/lib/db'
 import { users, accessRequests } from '@/lib/schema'
 import { asc, desc, eq } from 'drizzle-orm'
-import { UsersManager } from '@/components/UsersManager'
-import { UsersHeader } from '@/components/UsersHeader'
-import { AccessRequestsQueue } from '@/components/AccessRequestsQueue'
+import { UsersManager } from '@/components/admin/users/UsersManager'
+import { UsersHeader } from '@/components/admin/users/UsersHeader'
+import { AccessRequestsQueue } from '@/components/admin/users/AccessRequestsQueue'
 
 export default async function AdminUsersPage() {
   const session = await auth()
