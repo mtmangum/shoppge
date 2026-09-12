@@ -2,13 +2,14 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { db } from '@/lib/db'
 import { jobs, users, jobStatusHistory } from '@/lib/schema'
-import { eq, ne, and, inArray, desc, sql } from 'drizzle-orm'
+import { eq, ne, and, inArray, isNull, asc, desc, sql } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { StatsCards } from '@/components/StatsCards'
 import { StatusBadge } from '@/components/StatusBadge'
 import { PriorityBadge } from '@/components/PriorityBadge'
+import { QueueAgeBadge } from '@/components/QueueAgeBadge'
 import { ThroughputChart } from '@/components/ThroughputChart'
 import { TurnaroundChart } from '@/components/TurnaroundChart'
 
@@ -80,20 +81,40 @@ export default async function AdminDashboardPage() {
   `)
   const weekly = weeklyRows as { week_start: string; completed_count: number; avg_turnaround_days: number | null }[]
 
-  const activity = await db
-    .select({
-      id: jobStatusHistory.id,
-      jobId: jobStatusHistory.jobId,
-      fromStatus: jobStatusHistory.fromStatus,
-      toStatus: jobStatusHistory.toStatus,
-      note: jobStatusHistory.note,
-      changedAt: jobStatusHistory.changedAt,
-      changedByName: changedByUsers.name,
-    })
-    .from(jobStatusHistory)
-    .leftJoin(changedByUsers, eq(jobStatusHistory.changedById, changedByUsers.id))
-    .orderBy(desc(jobStatusHistory.changedAt))
-    .limit(10)
+  const needsAssignment = and(isNull(jobs.machinistId), inArray(jobs.status, ['pending', 'inprogress']))
+  const [activity, [assignmentStats], unassignedJobs] = await Promise.all([
+    db
+      .select({
+        id: jobStatusHistory.id,
+        jobId: jobStatusHistory.jobId,
+        toStatus: jobStatusHistory.toStatus,
+        note: jobStatusHistory.note,
+        changedAt: jobStatusHistory.changedAt,
+        changedByName: changedByUsers.name,
+      })
+      .from(jobStatusHistory)
+      .leftJoin(changedByUsers, eq(jobStatusHistory.changedById, changedByUsers.id))
+      .orderBy(desc(jobStatusHistory.changedAt), desc(jobStatusHistory.id))
+      .limit(8),
+    db
+      .select({
+        openCount: sql<number>`COUNT(*)::int`,
+        urgentCount: sql<number>`COUNT(*) FILTER (WHERE ${jobs.priority} = 'urgent')::int`,
+      })
+      .from(jobs)
+      .where(needsAssignment),
+    db
+      .select({
+        id: jobs.id,
+        description: jobs.description,
+        priority: jobs.priority,
+        daysInQueue: sql<number>`CURRENT_DATE - ${jobs.entryDate}`,
+      })
+      .from(jobs)
+      .where(needsAssignment)
+      .orderBy(asc(jobs.entryDate), asc(jobs.id))
+      .limit(5),
+  ])
 
   return (
     <div className="space-y-6">
@@ -176,34 +197,89 @@ export default async function AdminDashboardPage() {
         </section>
       </div>
 
-      <section className="bg-white rounded-lg border shadow-sm">
-        <div className="flex items-center justify-between px-6 pt-4 pb-2 border-b">
-          <h3 className="font-semibold text-gray-700">Recent Activity</h3>
-          <Link href="/admin/activity" className="text-sm text-[#BF5700] hover:underline">View full log →</Link>
-        </div>
-        {activity.length === 0 ? (
-          <p className="text-sm text-gray-500 italic px-6 py-4">No status changes yet.</p>
-        ) : (
-          <ul className="divide-y">
-            {activity.map(entry => (
-              <li key={entry.id} className="px-6 py-2.5 text-sm flex items-center flex-wrap justify-between gap-3">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Link href={`/jobs/${entry.jobId}`} className="font-mono font-semibold text-[#BF5700] hover:underline">
-                    #{entry.jobId}
-                  </Link>
-                  <span className="text-gray-500">
-                    {entry.fromStatus ?? 'created'} → <StatusBadge status={entry.toStatus} />
-                  </span>
-                  {entry.note && <span className="text-gray-500 italic">&quot;{entry.note}&quot;</span>}
-                </div>
-                <div className="text-xs text-gray-500 shrink-0">
-                  {entry.changedByName ?? 'System'} · {format(new Date(entry.changedAt), 'MMM d, h:mm a')}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section aria-labelledby="recent-activity-heading" className="min-w-0 bg-white rounded-lg border shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-4 border-b">
+            <h3 id="recent-activity-heading" className="font-semibold text-gray-700">Recent Activity</h3>
+            <Link href="/admin/activity" className="text-sm text-[#BF5700] hover:underline">View full log →</Link>
+          </div>
+          {activity.length === 0 ? (
+            <p className="text-sm text-gray-500 italic px-5 py-4">No status changes yet.</p>
+          ) : (
+            <ul className="divide-y">
+              {activity.map(entry => {
+                const deletedAuthor = entry.note?.match(/^\[Original author: (.*?) </)?.[1]
+                const actor = entry.changedByName ?? (deletedAuthor ? `${deletedAuthor} (deleted)` : 'System')
+                return (
+                  <li key={entry.id} className="px-5 py-2.5">
+                    <div className="flex items-start justify-between gap-3 text-sm">
+                      <div className="flex min-w-0 items-center flex-wrap gap-2">
+                        <Link href={`/jobs/${entry.jobId}`} className="font-mono font-semibold text-[#BF5700] hover:underline">
+                          #{entry.jobId}
+                        </Link>
+                        <StatusBadge status={entry.toStatus} />
+                      </div>
+                      <time
+                        dateTime={new Date(entry.changedAt).toISOString()}
+                        title={format(new Date(entry.changedAt), 'MMM d, yyyy h:mm a')}
+                        className="shrink-0 text-right text-xs leading-5 text-gray-500"
+                      >
+                        {format(new Date(entry.changedAt), 'MMM d, h:mm a')}
+                      </time>
+                    </div>
+                    <p className="mt-1 truncate text-xs text-gray-500" title={actor}>{actor}</p>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </section>
+
+        <section aria-labelledby="needs-assignment-heading" className="min-w-0 bg-white rounded-lg border shadow-sm">
+          <div className="px-5 py-4 border-b">
+            <h3 id="needs-assignment-heading" className="font-semibold text-gray-700">Needs Assignment</h3>
+            <p className="mt-1 text-xs text-gray-500">Open jobs without a machinist</p>
+          </div>
+          <dl className="grid grid-cols-2 gap-4 px-5 py-4 border-b">
+            <div>
+              <dt className="text-xs font-medium text-gray-500">Unassigned open jobs</dt>
+              <dd className="mt-1 text-3xl font-bold tabular-nums text-[#BF5700]">{assignmentStats.openCount}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium text-gray-500">Urgent among these</dt>
+              <dd className={`mt-1 text-3xl font-bold tabular-nums ${assignmentStats.urgentCount > 0 ? 'text-red-600' : 'text-gray-700'}`}>
+                {assignmentStats.urgentCount}
+              </dd>
+            </div>
+          </dl>
+          {unassignedJobs.length === 0 ? (
+            <p className="px-5 py-4 text-sm text-gray-500">All open jobs are assigned.</p>
+          ) : (
+            <>
+              <p className="px-5 pt-4 pb-2 text-xs font-medium text-gray-500">Oldest unassigned jobs · select a job to assign it</p>
+              <ul className="divide-y">
+                {unassignedJobs.map(job => (
+                  <li key={job.id}>
+                    <Link href={`/jobs/${job.id}`} className="block px-5 py-3 hover:bg-gray-50 focus-visible:ring-inset">
+                      <div className="flex items-center justify-between gap-3 text-sm">
+                        <div className="flex min-w-0 items-center flex-wrap gap-2">
+                          <span className="font-mono font-semibold text-[#BF5700]">#{job.id}</span>
+                          {job.priority === 'urgent' && <PriorityBadge priority={job.priority} />}
+                        </div>
+                        <span className="flex shrink-0 items-center gap-1 text-right text-xs text-gray-500">
+                          <QueueAgeBadge days={job.daysInQueue} showUnit />
+                          <span>in queue</span>
+                        </span>
+                      </div>
+                      <p className="mt-1 line-clamp-1 text-sm text-gray-700">{job.description}</p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
+      </div>
     </div>
   )
 }

@@ -8,6 +8,7 @@ import { format } from 'date-fns'
 import Link from 'next/link'
 import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react'
 import { StatusBadge } from '@/components/StatusBadge'
+import { QueueAgeBadge } from '@/components/QueueAgeBadge'
 import type { JobStatus } from '@/lib/types'
 
 const FIELD_CLASS = 'block h-10 w-full min-w-0 appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 text-sm leading-5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#BF5700]'
@@ -18,7 +19,14 @@ const changedByUsers = alias(users, 'changed_by_users')
 
 const PAGE_SIZE = 50
 const daysInQueue = sql<number>`CURRENT_DATE - ${jobs.entryDate}`
-const SORT_COLUMNS = { changedAt: jobStatusHistory.changedAt, daysElapsed: daysInQueue } as const
+const SORT_COLUMNS = {
+  jobId: jobStatusHistory.jobId,
+  toStatus: sql<string>`${jobStatusHistory.toStatus}::text`,
+  note: sql<string>`lower(coalesce(${jobStatusHistory.note}, ''))`,
+  changedBy: sql<string>`lower(coalesce(${changedByUsers.name}, 'System'))`,
+  changedAt: jobStatusHistory.changedAt,
+  daysElapsed: daysInQueue,
+} as const
 type SortKey = keyof typeof SORT_COLUMNS
 
 interface SearchParams {
@@ -64,6 +72,7 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
       note: jobStatusHistory.note,
       changedAt: jobStatusHistory.changedAt,
       daysElapsed: daysInQueue,
+      jobStatus: jobs.status,
       changedByName: changedByUsers.name,
     })
     .from(jobStatusHistory)
@@ -91,16 +100,16 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
     return `/admin/activity?${params.toString()}`
   }
 
-  function sortHeader(key: SortKey, label: string) {
+  function sortHeader(key: SortKey, label: string, mobileHidden = false) {
     const active = key === sortKey
     const nextDir = active && dir === 'asc' ? 'desc' : 'asc'
     return (
       <th
         scope="col"
         aria-sort={active ? dir === 'asc' ? 'ascending' : 'descending' : 'none'}
-        className="px-4 py-3 text-left font-medium whitespace-nowrap"
+        className={`px-4 py-3 text-left font-medium whitespace-nowrap${mobileHidden ? ' hidden md:table-cell' : ''}`}
       >
-        <Link href={buildPageUrl(1, key, nextDir)} className="flex items-center gap-1">
+        <Link href={buildPageUrl(1, key, nextDir)} aria-label={`${label}: sort ${nextDir === 'asc' ? 'ascending' : 'descending'}${key === 'toStatus' ? ' by new status' : ''}`} className="flex items-center gap-1">
           {label}
           {active
             ? dir === 'asc'
@@ -177,10 +186,10 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
         <table className="w-full text-sm">
           <thead className="bg-gray-700 text-white">
             <tr>
-              <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Job</th>
-              <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Change</th>
-              <th className="px-4 py-3 text-left font-medium whitespace-nowrap hidden md:table-cell">Note</th>
-              <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Changed By</th>
+              {sortHeader('jobId', 'Job')}
+              {sortHeader('toStatus', 'Change')}
+              {sortHeader('note', 'Note', true)}
+              {sortHeader('changedBy', 'Changed By')}
               {sortHeader('daysElapsed', 'Days in Queue')}
               {sortHeader('changedAt', 'When')}
             </tr>
@@ -203,7 +212,7 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
                 </td>
                 <td className="px-4 py-3 text-gray-600 max-w-xs truncate hidden md:table-cell">{entry.note || '—'}</td>
                 <td className="px-4 py-3 whitespace-nowrap">{entry.changedByName ?? 'System'}</td>
-                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{entry.daysElapsed}</td>
+                <td className="px-4 py-3 whitespace-nowrap"><QueueAgeBadge days={entry.daysElapsed} status={entry.jobStatus} /></td>
                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{format(new Date(entry.changedAt), 'MMM d, yyyy h:mm a')}</td>
               </tr>
             ))}

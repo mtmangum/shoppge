@@ -10,6 +10,7 @@ import {
 import { format, parseISO } from 'date-fns'
 import { StatusBadge } from './StatusBadge'
 import { PriorityBadge } from './PriorityBadge'
+import { QueueAgeBadge } from './QueueAgeBadge'
 import type { JobListItem, JobStatus, JobPriority } from '@/lib/types'
 import Link from 'next/link'
 import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
@@ -130,14 +131,7 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
       accessorKey: 'daysElapsed',
       header: 'Days in Queue',
       meta: { sortKey: 'daysElapsed' },
-      cell: ({ getValue }) => {
-        const days = getValue() as number
-        return (
-          <span className={days > 14 ? 'text-red-600 font-semibold' : ''}>
-            {days}
-          </span>
-        )
-      },
+      cell: ({ row }) => <QueueAgeBadge days={row.original.daysElapsed} status={row.original.status} />,
     },
   ], [])
 
@@ -244,11 +238,9 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
                 <span className="min-w-0 break-words">
                   {job.machinistName || <span className="text-gray-500 italic">unassigned</span>}
                 </span>
-                <span className={clsx(
-                  'shrink-0 text-right text-xs tabular-nums',
-                  job.daysElapsed > 14 && 'text-red-600 font-semibold'
-                )}>
-                  {job.daysElapsed} {job.daysElapsed === 1 ? 'day' : 'days'} in queue
+                <span className="flex shrink-0 items-center gap-1 text-right text-xs">
+                  <QueueAgeBadge days={job.daysElapsed} status={job.status} showUnit />
+                  <span>in queue</span>
                 </span>
               </div>
               <p className="text-sm text-gray-800 line-clamp-2">{job.description}</p>
