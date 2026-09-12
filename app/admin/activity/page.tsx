@@ -1,12 +1,12 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { db } from '@/lib/db'
-import { jobStatusHistory, users } from '@/lib/schema'
-import { eq, and, gte, lte, desc, sql } from 'drizzle-orm'
+import { jobStatusHistory, jobs, users } from '@/lib/schema'
+import { eq, and, gte, lte, asc, desc, sql } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import { format } from 'date-fns'
 import Link from 'next/link'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react'
 import { StatusBadge } from '@/components/StatusBadge'
 import type { JobStatus } from '@/lib/types'
 
@@ -17,6 +17,9 @@ const DATE_CLASS = `${FIELD_CLASS} [&::-webkit-date-and-time-value]:min-h-5 [&::
 const changedByUsers = alias(users, 'changed_by_users')
 
 const PAGE_SIZE = 50
+const daysInQueue = sql<number>`CURRENT_DATE - ${jobs.entryDate}`
+const SORT_COLUMNS = { changedAt: jobStatusHistory.changedAt, daysElapsed: daysInQueue } as const
+type SortKey = keyof typeof SORT_COLUMNS
 
 interface SearchParams {
   jobId?: string
@@ -25,6 +28,8 @@ interface SearchParams {
   from?: string
   to?: string
   page?: string
+  sort?: string
+  dir?: string
 }
 
 export default async function ActivityLogPage({ searchParams }: { searchParams: SearchParams }) {
@@ -33,6 +38,10 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
   if (session.user.role !== 'admin') redirect('/jobs')
 
   const page = Math.max(1, parseInt(searchParams.page ?? '1') || 1)
+  const sortKey: SortKey = searchParams.sort && Object.prototype.hasOwnProperty.call(SORT_COLUMNS, searchParams.sort)
+    ? searchParams.sort as SortKey : 'changedAt'
+  const dir = searchParams.dir === 'asc' ? 'asc' : 'desc'
+  const orderFn = dir === 'asc' ? asc : desc
 
   const conditions = []
   if (searchParams.jobId) conditions.push(eq(jobStatusHistory.jobId, parseInt(searchParams.jobId)))
@@ -54,12 +63,14 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
       toStatus: jobStatusHistory.toStatus,
       note: jobStatusHistory.note,
       changedAt: jobStatusHistory.changedAt,
+      daysElapsed: daysInQueue,
       changedByName: changedByUsers.name,
     })
     .from(jobStatusHistory)
     .leftJoin(changedByUsers, eq(jobStatusHistory.changedById, changedByUsers.id))
+    .innerJoin(jobs, eq(jobStatusHistory.jobId, jobs.id))
     .where(where)
-    .orderBy(desc(jobStatusHistory.changedAt))
+    .orderBy(orderFn(SORT_COLUMNS[sortKey]), desc(jobStatusHistory.id))
     .limit(PAGE_SIZE)
     .offset((page - 1) * PAGE_SIZE)
 
@@ -67,7 +78,7 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
 
   const hasFilters = Boolean(searchParams.jobId || searchParams.changedById || searchParams.status || searchParams.from || searchParams.to)
 
-  function buildPageUrl(targetPage: number) {
+  function buildPageUrl(targetPage: number, key: SortKey = sortKey, direction: 'asc' | 'desc' = dir) {
     const params = new URLSearchParams()
     if (searchParams.jobId) params.set('jobId', searchParams.jobId)
     if (searchParams.changedById) params.set('changedById', searchParams.changedById)
@@ -75,7 +86,30 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
     if (searchParams.from) params.set('from', searchParams.from)
     if (searchParams.to) params.set('to', searchParams.to)
     params.set('page', String(targetPage))
+    params.set('sort', key)
+    params.set('dir', direction)
     return `/admin/activity?${params.toString()}`
+  }
+
+  function sortHeader(key: SortKey, label: string) {
+    const active = key === sortKey
+    const nextDir = active && dir === 'asc' ? 'desc' : 'asc'
+    return (
+      <th
+        scope="col"
+        aria-sort={active ? dir === 'asc' ? 'ascending' : 'descending' : 'none'}
+        className="px-4 py-3 text-left font-medium whitespace-nowrap"
+      >
+        <Link href={buildPageUrl(1, key, nextDir)} className="flex items-center gap-1">
+          {label}
+          {active
+            ? dir === 'asc'
+              ? <ChevronUp aria-hidden="true" className="h-3 w-3" />
+              : <ChevronDown aria-hidden="true" className="h-3 w-3" />
+            : <ChevronsUpDown aria-hidden="true" className="h-3 w-3 opacity-60" />}
+        </Link>
+      </th>
+    )
   }
 
   return (
@@ -86,6 +120,8 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
       </div>
 
       <form method="get" className="grid grid-cols-1 items-end gap-3 rounded-lg border bg-white p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[6rem_minmax(10rem,1fr)_9rem_10rem_10rem_auto]">
+        <input type="hidden" name="sort" value={sortKey} />
+        <input type="hidden" name="dir" value={dir} />
         <div>
           <label htmlFor="activity-job-id" className={LABEL_CLASS}>Job #</label>
           <input
@@ -145,12 +181,13 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
               <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Change</th>
               <th className="px-4 py-3 text-left font-medium whitespace-nowrap hidden md:table-cell">Note</th>
               <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Changed By</th>
-              <th className="px-4 py-3 text-left font-medium whitespace-nowrap">When</th>
+              {sortHeader('daysElapsed', 'Days in Queue')}
+              {sortHeader('changedAt', 'When')}
             </tr>
           </thead>
           <tbody className="divide-y">
             {entries.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">No activity matches these filters.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">No activity matches these filters.</td></tr>
             )}
             {entries.map((entry, i) => (
               <tr key={entry.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
@@ -166,6 +203,7 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
                 </td>
                 <td className="px-4 py-3 text-gray-600 max-w-xs truncate hidden md:table-cell">{entry.note || '—'}</td>
                 <td className="px-4 py-3 whitespace-nowrap">{entry.changedByName ?? 'System'}</td>
+                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{entry.daysElapsed}</td>
                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{format(new Date(entry.changedAt), 'MMM d, yyyy h:mm a')}</td>
               </tr>
             ))}

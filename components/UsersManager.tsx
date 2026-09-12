@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { UserRole } from '@/lib/types'
-import { Pencil, Trash2, ChevronDown } from 'lucide-react'
+import { Pencil, Trash2, ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react'
 
 interface ManagedUser {
   id: number
@@ -18,23 +18,67 @@ interface ManagedUser {
 }
 
 const ROLES: UserRole[] = ['requestor', 'machinist', 'admin']
+type SortKey = 'name' | 'email' | 'role' | 'department' | 'isActive'
+const SORT_COLUMNS: { key: SortKey; label: string; mobileHidden?: boolean }[] = [
+  { key: 'name', label: 'Name' },
+  { key: 'email', label: 'Email', mobileHidden: true },
+  { key: 'role', label: 'Role' },
+  { key: 'department', label: 'Department', mobileHidden: true },
+  { key: 'isActive', label: 'Status' },
+]
+const collator = new Intl.Collator('en', { sensitivity: 'base', numeric: true })
 
 export function UsersManager({ users, currentUserId }: { users: ManagedUser[]; currentUserId: number }) {
+  const [sort, setSort] = useState<{ key: SortKey; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' })
+  const valueFor = (user: ManagedUser) => sort.key === 'isActive'
+    ? user.isActive ? 'Active' : 'Inactive'
+    : user[sort.key]?.trim() ?? ''
+  const sortedUsers = [...users].sort((a, b) => {
+    const left = valueFor(a)
+    const right = valueFor(b)
+    // Missing departments stay at the end in either direction.
+    if (!left && right) return 1
+    if (left && !right) return -1
+    const comparison = collator.compare(left, right)
+    return comparison === 0 ? a.id - b.id : sort.direction === 'asc' ? comparison : -comparison
+  })
+
   return (
     <div className="rounded-lg border bg-white shadow-sm overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="bg-gray-700 text-white">
           <tr>
-            <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Name</th>
-            <th className="px-4 py-3 text-left font-medium whitespace-nowrap hidden md:table-cell">Email</th>
-            <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Role</th>
-            <th className="px-4 py-3 text-left font-medium whitespace-nowrap hidden md:table-cell">Department</th>
-            <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Status</th>
-            <th className="px-4 py-3 text-left font-medium whitespace-nowrap">Actions</th>
+            {SORT_COLUMNS.map(column => {
+              const active = sort.key === column.key
+              const nextDirection = active && sort.direction === 'asc' ? 'desc' : 'asc'
+              return (
+                <th
+                  key={column.key}
+                  scope="col"
+                  aria-sort={active ? sort.direction === 'asc' ? 'ascending' : 'descending' : 'none'}
+                  className={`px-4 py-3 text-left font-medium whitespace-nowrap${column.mobileHidden ? ' hidden md:table-cell' : ''}`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setSort({ key: column.key, direction: nextDirection })}
+                    aria-label={`${column.label}: sort ${nextDirection === 'asc' ? 'ascending' : 'descending'}`}
+                    className="flex items-center gap-1 rounded hover:underline"
+                  >
+                    {column.label}
+                    {active
+                      ? sort.direction === 'asc'
+                        ? <ChevronUp aria-hidden="true" className="h-3 w-3" />
+                        : <ChevronDown aria-hidden="true" className="h-3 w-3" />
+                      : <ChevronsUpDown aria-hidden="true" className="h-3 w-3 opacity-60" />}
+                  </button>
+                </th>
+              )
+            })}
+            <th scope="col" className="px-4 py-3 text-left font-medium whitespace-nowrap">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y">
-          {users.map((u, i) => (
+          {sortedUsers.map((u, i) => (
             <UserRow key={u.id} user={u} isSelf={u.id === currentUserId} rowBg={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'} />
           ))}
         </tbody>

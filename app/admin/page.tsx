@@ -93,7 +93,7 @@ export default async function AdminDashboardPage() {
     .from(jobStatusHistory)
     .leftJoin(changedByUsers, eq(jobStatusHistory.changedById, changedByUsers.id))
     .orderBy(desc(jobStatusHistory.changedAt))
-    .limit(20)
+    .limit(10)
 
   return (
     <div className="space-y-6">

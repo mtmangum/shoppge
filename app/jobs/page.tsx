@@ -17,6 +17,7 @@ const PG_INT4_MAX = 2147483647
 const machinists = alias(users, 'machinists')
 
 const PAGE_SIZE = 10
+const daysInQueue = sql<number>`CURRENT_DATE - ${jobs.entryDate}`
 
 const SORT_COLUMNS = {
   id:            jobs.id,
@@ -27,6 +28,7 @@ const SORT_COLUMNS = {
   machinistName: machinists.name,
   status:        jobs.status,
   priority:      jobs.priority,
+  daysElapsed:   daysInQueue,
 } as const
 
 type SortKey = keyof typeof SORT_COLUMNS
@@ -91,7 +93,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
         priority:      jobs.priority,
         requestorName: users.name,
         machinistName: machinists.name,
-        daysElapsed:   sql<number>`CURRENT_DATE - ${jobs.entryDate}`,
+        daysElapsed:   daysInQueue,
       })
       .from(jobs)
       .leftJoin(users, eq(jobs.requestorId, users.id))

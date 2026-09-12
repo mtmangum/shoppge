@@ -129,6 +129,7 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
     {
       accessorKey: 'daysElapsed',
       header: 'Days in Queue',
+      meta: { sortKey: 'daysElapsed' },
       cell: ({ getValue }) => {
         const days = getValue() as number
         return (
@@ -159,6 +160,8 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
                   return (
                     <th
                       key={header.id}
+                      scope="col"
+                      aria-sort={sortKey ? sort === sortKey ? dir === 'asc' ? 'ascending' : 'descending' : 'none' : undefined}
                       className="px-4 py-3 text-left font-medium select-none whitespace-nowrap"
                     >
                       {sortKey ? (
@@ -237,8 +240,16 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
                 <span>Due {format(parseISO(job.dateRequired), 'MMM d, yyyy')}</span>
                 <PriorityBadge priority={job.priority} />
               </div>
-              <div className="text-sm text-gray-600">
-                {job.machinistName || <span className="text-gray-500 italic">unassigned</span>}
+              <div className="flex items-start justify-between gap-3 text-sm text-gray-600">
+                <span className="min-w-0 break-words">
+                  {job.machinistName || <span className="text-gray-500 italic">unassigned</span>}
+                </span>
+                <span className={clsx(
+                  'shrink-0 text-right text-xs tabular-nums',
+                  job.daysElapsed > 14 && 'text-red-600 font-semibold'
+                )}>
+                  {job.daysElapsed} {job.daysElapsed === 1 ? 'day' : 'days'} in queue
+                </span>
               </div>
               <p className="text-sm text-gray-800 line-clamp-2">{job.description}</p>
             </Link>
