@@ -11,7 +11,14 @@ import { InlineLoginForm } from '@/components/auth/InlineLoginForm'
 
 export default async function RootPage() {
   const session = await auth()
-  if (session?.user) redirect('/jobs')
+  if (session?.user) {
+    // Route admins to dashboard, others to jobs list
+    const role = session.user.role as string
+    if (role === 'admin') {
+      redirect('/admin')
+    }
+    redirect('/jobs')
+  }
 
   const recentJobs = await db
     .select({
