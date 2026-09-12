@@ -117,15 +117,34 @@ export function ThroughputChart({ data }: { data: WeekPoint[] }) {
             {(() => {
               const d = data[hovered]
               const cx = padL + hovered * bandW + bandW / 2
-              const boxW = 104
-              const boxX = Math.min(Math.max(cx - boxW / 2, padL), width - padR - boxW)
+              const boxW = 128
+              const boxH = 52
+              const gapV = 8
+              const gapH = 10
+              const barH = (d.count / max) * plotH
+              const barTopY = padT + plotH - barH
+              const halfBar = barW / 2
+              let boxX: number
+              let boxY: number
+              const preferredY = barTopY - boxH - gapV
+              if (preferredY >= padT) {
+                boxY = preferredY
+                boxX = Math.min(Math.max(cx - boxW / 2, padL), width - padR - boxW)
+              } else {
+                boxY = padT
+                const spaceRight = width - padR - (cx + halfBar + gapH)
+                const spaceLeft = cx - halfBar - gapH - padL
+                boxX = spaceRight >= boxW || spaceRight >= spaceLeft
+                  ? Math.min(cx + halfBar + gapH, width - padR - boxW)
+                  : Math.max(cx - halfBar - gapH - boxW, padL)
+              }
               return (
-                <g transform={`translate(${boxX}, ${padT})`}>
-                  <rect width={boxW} height={42} rx={5} fill="var(--tooltip-bg)" opacity={0.96} />
-                  <text x={10} y={18} fontSize={12} fill="var(--tooltip-fg)" fontWeight={600}>
+                <g transform={`translate(${boxX}, ${boxY})`} style={{ transition: 'transform 150ms ease-out' }}>
+                  <rect width={boxW} height={boxH} rx={6} fill="var(--tooltip-bg)" opacity={0.96} />
+                  <text x={12} y={22} fontSize={14} fill="var(--tooltip-fg)" fontWeight={600}>
                     {d.count} completed
                   </text>
-                  <text x={10} y={32} fontSize={11} fill="var(--tooltip-fg-muted)">
+                  <text x={12} y={39} fontSize={13} fill="var(--tooltip-fg-muted)">
                     Week of {format(new Date(d.weekStart), 'MMM d')}
                   </text>
                 </g>

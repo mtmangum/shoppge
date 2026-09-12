@@ -127,15 +127,34 @@ export function TurnaroundChart({ data }: { data: WeekPoint[] }) {
             <line x1={xFor(hovered)} x2={xFor(hovered)} y1={padT} y2={padT + plotH} stroke={AXIS_COLOR} strokeWidth={1} />
             {(() => {
               const d = data[hovered]
-              const boxW = 124
-              const boxX = Math.min(Math.max(xFor(hovered) - boxW / 2, padL), width - padR - boxW)
+              const boxW = 148
+              const boxH = 52
+              const gapV = 12
+              const gapH = 10
+              const pointX = xFor(hovered)
+              const pointY = d.avgDays !== null ? yFor(d.avgDays) : padT + plotH
+              const halfPoint = 6
+              let boxX: number
+              let boxY: number
+              const preferredY = pointY - boxH - gapV
+              if (preferredY >= padT) {
+                boxY = preferredY
+                boxX = Math.min(Math.max(pointX - boxW / 2, padL), width - padR - boxW)
+              } else {
+                boxY = padT
+                const spaceRight = width - padR - (pointX + halfPoint + gapH)
+                const spaceLeft = pointX - halfPoint - gapH - padL
+                boxX = spaceRight >= boxW || spaceRight >= spaceLeft
+                  ? Math.min(pointX + halfPoint + gapH, width - padR - boxW)
+                  : Math.max(pointX - halfPoint - gapH - boxW, padL)
+              }
               return (
-                <g transform={`translate(${boxX}, ${padT})`}>
-                  <rect width={boxW} height={42} rx={5} fill="var(--tooltip-bg)" opacity={0.96} />
-                  <text x={10} y={18} fontSize={12} fill="var(--tooltip-fg)" fontWeight={600}>
+                <g transform={`translate(${boxX}, ${boxY})`} style={{ transition: 'transform 150ms ease-out' }}>
+                  <rect width={boxW} height={boxH} rx={6} fill="var(--tooltip-bg)" opacity={0.96} />
+                  <text x={12} y={22} fontSize={14} fill="var(--tooltip-fg)" fontWeight={600}>
                     {d.avgDays !== null ? `${d.avgDays} days avg` : 'No completions'}
                   </text>
-                  <text x={10} y={32} fontSize={11} fill="var(--tooltip-fg-muted)">
+                  <text x={12} y={39} fontSize={13} fill="var(--tooltip-fg-muted)">
                     Week of {format(new Date(d.weekStart), 'MMM d')}
                   </text>
                 </g>
