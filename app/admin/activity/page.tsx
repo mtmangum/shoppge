@@ -10,7 +10,9 @@ import { ChevronDown } from 'lucide-react'
 import { StatusBadge } from '@/components/StatusBadge'
 import type { JobStatus } from '@/lib/types'
 
-const FIELD_CLASS = 'border border-gray-300 rounded-md px-2 py-1.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#BF5700]'
+const FIELD_CLASS = 'block h-10 w-full min-w-0 appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 text-sm leading-5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#BF5700]'
+const LABEL_CLASS = 'mb-1 block text-xs font-medium leading-4 text-gray-600'
+const DATE_CLASS = `${FIELD_CLASS} [&::-webkit-date-and-time-value]:min-h-5 [&::-webkit-date-and-time-value]:text-left`
 
 const changedByUsers = alias(users, 'changed_by_users')
 
@@ -83,54 +85,56 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
         <Link href="/admin" className="text-sm text-[#BF5700] hover:underline">← Back to Dashboard</Link>
       </div>
 
-      <form method="get" className="bg-white rounded-lg border p-4 flex flex-wrap items-end gap-3">
+      <form method="get" className="grid grid-cols-1 items-end gap-3 rounded-lg border bg-white p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[6rem_minmax(10rem,1fr)_9rem_10rem_10rem_auto]">
         <div>
-          <label htmlFor="activity-job-id" className="block text-xs text-gray-500 mb-1">Job #</label>
+          <label htmlFor="activity-job-id" className={LABEL_CLASS}>Job #</label>
           <input
             id="activity-job-id"
             type="number"
             name="jobId"
             defaultValue={searchParams.jobId}
-            className={`${FIELD_CLASS} w-24 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+            className={`${FIELD_CLASS} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
           />
         </div>
         <div>
-          <label htmlFor="activity-changed-by" className="block text-xs text-gray-500 mb-1">Changed By</label>
+          <label htmlFor="activity-changed-by" className={LABEL_CLASS}>Changed By</label>
           <div className="relative">
-            <select id="activity-changed-by" name="changedById" defaultValue={searchParams.changedById ?? ''} className={`${FIELD_CLASS} appearance-none pr-8`}>
+            <select id="activity-changed-by" name="changedById" defaultValue={searchParams.changedById ?? ''} className={`${FIELD_CLASS} pr-8`}>
               <option value="">Anyone</option>
               {allUsers.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
             </select>
-            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
           </div>
         </div>
         <div>
-          <label htmlFor="activity-new-status" className="block text-xs text-gray-500 mb-1">New Status</label>
+          <label htmlFor="activity-new-status" className={LABEL_CLASS}>New Status</label>
           <div className="relative">
-            <select id="activity-new-status" name="status" defaultValue={searchParams.status ?? ''} className={`${FIELD_CLASS} appearance-none pr-8`}>
+            <select id="activity-new-status" name="status" defaultValue={searchParams.status ?? ''} className={`${FIELD_CLASS} pr-8`}>
               <option value="">Any</option>
               <option value="pending">Pending</option>
               <option value="inprogress">In Progress</option>
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
-            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
           </div>
         </div>
         <div>
-          <label htmlFor="activity-from" className="block text-xs text-gray-500 mb-1">From</label>
-          <input id="activity-from" type="date" name="from" defaultValue={searchParams.from} className={FIELD_CLASS} />
+          <label htmlFor="activity-from" className={LABEL_CLASS}>From</label>
+          <input id="activity-from" type="date" name="from" defaultValue={searchParams.from} className={DATE_CLASS} />
         </div>
         <div>
-          <label htmlFor="activity-to" className="block text-xs text-gray-500 mb-1">To</label>
-          <input id="activity-to" type="date" name="to" defaultValue={searchParams.to} className={FIELD_CLASS} />
+          <label htmlFor="activity-to" className={LABEL_CLASS}>To</label>
+          <input id="activity-to" type="date" name="to" defaultValue={searchParams.to} className={DATE_CLASS} />
         </div>
-        <button type="submit" className="bg-[#BF5700] text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-[#a34800] transition-colors">
-          Filter
-        </button>
-        {hasFilters && (
-          <Link href="/admin/activity" className="text-sm text-gray-500 hover:underline">Clear</Link>
-        )}
+        <div className="flex h-10 items-center gap-3">
+          <button type="submit" className="h-10 rounded-md bg-[#BF5700] px-4 py-2 text-sm font-medium leading-5 text-white transition-colors hover:bg-[#a34800]">
+            Filter
+          </button>
+          {hasFilters && (
+            <Link href="/admin/activity" className="inline-flex h-10 items-center text-sm text-gray-600 hover:underline">Clear</Link>
+          )}
+        </div>
       </form>
 
       <div className="rounded-lg border bg-white shadow-sm overflow-x-auto">

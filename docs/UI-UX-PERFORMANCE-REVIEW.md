@@ -2,7 +2,7 @@
 
 Review date: September 11, 2026
 
-Latest implementation: Real-time job filtering is implemented locally and is not yet deployed. See the implementation section below.
+Latest implementation: Real-time job filtering was committed and pushed as `e00a44d`; deployment verification is still pending. The local activity-page asset failure is fixed by separating development and production build output. See the implementation sections below.
 
 Follow-up status: The reviewed UI/workflow fixes are implemented and live, including the numeric-search boundary correction and error associations/announcements. The latest independent checks passed on both the jobs page and API. Performance recommendations and remaining visual/assistive-technology verification are still outstanding.
 
@@ -37,10 +37,22 @@ Local implementation and deployed evidence are tracked separately. A completed s
 | 11 | Deployment | Personal-view, ID-search, overdue, accessible-name, error-association, and numeric-search-crash changes are all now served. | **Confirmed deployed** end-to-end via CI/CD (`gh run view`) and direct bundle inspection. Build/production resource contention remains unverified. | Verification |
 | 12 | Measurement | Initial live HTTP timings collected (prior pass). | Partial: sampled responses were fast, but rendering, LCP, INP, CLS, mobile conditions, and concurrency remain unmeasured. | Medium |
 | 13 | Real-time filtering | Implemented locally: 300 ms search debounce; immediate status/priority/Clear; personal scope and sort preserved; page reset; visible pending status; persistent labels. | Ten focused component tests passed. Deployment and browser interaction verification remain outstanding. | Deployment / verification |
+| 14 | Local development assets | Fixed: development uses `.next-dev`, while production build/start retain `.next`, preventing build output collisions. | Local activity HTML returned 200, but CSS and most JavaScript returned 404 before the fix. After the server restarted, the authenticated page and all referenced CSS/JavaScript returned 200. Browser visual verification remains pending. | Complete locally |
+| 15 | Activity filter consistency | Implemented locally: uniform 40 px controls and button, aligned labels, consistent padding, and responsive grid. | Local markup and generated CSS verified; visual browser verification pending. | Complete locally |
 
 Latest local validation at `8b4046f`: typechecking passed; lint passed with the existing `<img>` warning in `app/layout.tsx`.
 
-## Real-time filtering implementation (local, not deployed)
+## Activity filter styling
+
+The activity filters now share a 40 px height, border, corner radius, font size, horizontal padding, and label styling. Native date controls have an explicit height and normalized WebKit date-value alignment. The Filter button matches the fields, and the responsive grid stacks fields on small screens before forming a single row on wide screens. The official university burnt orange is preserved. Source/type checks and local HTTP/CSS verification cover the change; visual browser verification remains pending.
+
+## Local activity-page repair
+
+The running development server shared `.next` with a production validation build. Its activity-page HTML and database queries succeeded, but its referenced stylesheet and most JavaScript chunks returned 404, leaving the page unstyled and unable to hydrate. Development output now uses `.next-dev`; production output remains `.next` for the existing Docker deployment. The development directory is ignored by Git and its generated route types are included in TypeScript checks. The config change restarted the local server automatically.
+
+Verification uses authenticated HTTP requests and asset responses; no connected browser was available for visual testing. This is a local development fix, not evidence of a production activity-page defect.
+
+## Real-time filtering implementation (pushed, deployment unverified)
 
 - Replaced the manual Filter button with a 300 ms search debounce and immediate status/priority changes. Enter still applies search immediately; clearing search or using Clear applies immediately.
 - URL query parameters retain personal-view scope and sorting; filter changes reset pagination to page 1. Client-side replacement avoids adding a history entry for every search and preserves scroll position.
