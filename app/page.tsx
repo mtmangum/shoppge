@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation'
-import { format, parseISO } from 'date-fns'
 import { desc, sql } from 'drizzle-orm'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { jobs } from '@/lib/schema'
+import { formatDateOnly } from '@/lib/dates'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { PriorityBadge } from '@/components/shared/PriorityBadge'
 import { InlineLoginForm } from '@/components/auth/InlineLoginForm'
@@ -67,7 +67,7 @@ export default async function RootPage() {
               {recentJobs.map((job, i) => (
                 <tr key={job.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                   <td className="px-4 py-3 font-mono font-semibold text-[#BF5700]">{job.id}</td>
-                  <td className="px-4 py-3 whitespace-nowrap hidden md:table-cell">{format(parseISO(job.entryDate), 'MMM d, yyyy')}</td>
+                  <td className="px-4 py-3 whitespace-nowrap hidden md:table-cell">{formatDateOnly(job.entryDate)}</td>
                   <td className="px-4 py-3">
                     <span className="line-clamp-1 max-w-md block">{job.description}</span>
                   </td>

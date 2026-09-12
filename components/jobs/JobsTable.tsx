@@ -7,7 +7,7 @@ import {
   flexRender,
   type ColumnDef,
 } from '@tanstack/react-table'
-import { format, parseISO } from 'date-fns'
+import { formatDateOnly } from '@/lib/dates'
 import { StatusBadge } from '../shared/StatusBadge'
 import { PriorityBadge } from '../shared/PriorityBadge'
 import { QueueAgeBadge } from '../shared/QueueAgeBadge'
@@ -94,13 +94,13 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
     {
       accessorKey: 'entryDate',
       header: 'Entry Date',
-      cell: ({ getValue }) => format(parseISO(getValue() as string), 'MMM d, yyyy'),
+      cell: ({ getValue }) => formatDateOnly(getValue() as string),
       meta: { sortKey: 'entryDate' },
     },
     {
       accessorKey: 'dateRequired',
       header: 'Date Required',
-      cell: ({ getValue }) => format(parseISO(getValue() as string), 'MMM d, yyyy'),
+      cell: ({ getValue }) => formatDateOnly(getValue() as string),
       meta: { sortKey: 'dateRequired' },
     },
     {
@@ -239,7 +239,7 @@ export function JobsTable({ jobs, highlightFilter, page, totalPages, search, sta
                 <StatusBadge status={job.status} />
               </div>
               <div className="flex items-center justify-between gap-2 text-sm text-gray-600">
-                <span>Due {format(parseISO(job.dateRequired), 'MMM d, yyyy')}</span>
+                <span>Due {formatDateOnly(job.dateRequired)}</span>
                 <PriorityBadge priority={job.priority} />
               </div>
               <div className="flex items-start justify-between gap-3 text-sm text-gray-600">

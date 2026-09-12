@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import { formatTimestamp } from '@/lib/dates'
 import { StatusBadge } from '../shared/StatusBadge'
 import type { JobStatus } from '@/lib/types'
 
@@ -23,7 +23,7 @@ export function StatusHistoryTimeline({ history }: { history: HistoryEntry[] }) 
           <div className="flex items-center gap-2 flex-wrap">
             <StatusBadge status={entry.toStatus} />
             <span className="text-xs text-gray-500">
-              {format(new Date(entry.changedAt), 'MMM d, yyyy h:mm a')}
+              {formatTimestamp(entry.changedAt)}
             </span>
           </div>
           <p className="text-xs text-gray-500 mt-0.5">

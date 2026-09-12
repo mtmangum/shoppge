@@ -6,6 +6,7 @@ import { eq, ne, and, inArray, isNull, asc, desc, sql } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import { format } from 'date-fns'
 import Link from 'next/link'
+import { formatTimestamp } from '@/lib/dates'
 import { StatsCards } from '@/components/jobs/StatsCards'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { PriorityBadge } from '@/components/shared/PriorityBadge'
@@ -222,7 +223,7 @@ export default async function AdminDashboardPage() {
                         </div>
                         <time
                           dateTime={new Date(entry.changedAt).toISOString()}
-                          title={format(new Date(entry.changedAt), 'MMM d, yyyy h:mm a')}
+                          title={formatTimestamp(entry.changedAt)}
                           className="shrink-0 text-right text-xs leading-5 text-gray-500"
                         >
                           {format(new Date(entry.changedAt), 'MMM d, h:mm a')}

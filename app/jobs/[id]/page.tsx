@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { db } from '@/lib/db'
 import { jobs, users } from '@/lib/schema'
 import { eq, and, inArray, asc } from 'drizzle-orm'
-import { format, parseISO, differenceInCalendarDays } from 'date-fns'
+import { parseISO, differenceInCalendarDays } from 'date-fns'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { StatusBadge } from '@/components/shared/StatusBadge'
@@ -11,12 +11,8 @@ import { PriorityBadge } from '@/components/shared/PriorityBadge'
 import { JobActions } from '@/components/jobs/JobActions'
 import { AttachmentsPanel } from '@/components/jobs/AttachmentsPanel'
 import { StatusHistoryTimeline } from '@/components/jobs/StatusHistoryTimeline'
+import { formatDateOnly } from '@/lib/dates'
 import type { UserRole } from '@/lib/types'
-
-function formatDate(value?: string | null) {
-  if (!value) return '—'
-  return format(parseISO(value), 'MMM d, yyyy')
-}
 
 export default async function JobDetailPage({ params }: { params: { id: string } }) {
   const session = await auth()
@@ -172,11 +168,11 @@ export default async function JobDetailPage({ params }: { params: { id: string }
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Entry Date</span>
-              <span>{formatDate(job.entryDate)}</span>
+              <span>{formatDateOnly(job.entryDate)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Date Required</span>
-              <span>{formatDate(job.dateRequired)}</span>
+              <span>{formatDateOnly(job.dateRequired)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Days in Queue</span>
@@ -186,7 +182,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
               <>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Date Completed</span>
-                  <span>{formatDate(job.dateCompleted)}</span>
+                  <span>{formatDateOnly(job.dateCompleted)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Completed By</span>

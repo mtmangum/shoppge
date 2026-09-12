@@ -4,9 +4,9 @@ import { db } from '@/lib/db'
 import { jobStatusHistory, jobs, users } from '@/lib/schema'
 import { eq, and, gte, lte, asc, desc, sql } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
-import { format } from 'date-fns'
 import Link from 'next/link'
 import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react'
+import { formatTimestamp } from '@/lib/dates'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { QueueAgeBadge } from '@/components/shared/QueueAgeBadge'
 import { ActivityRow } from '@/components/jobs/ActivityRow'
@@ -217,7 +217,7 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
                 <td className="px-4 py-3 text-gray-600 max-w-xs truncate hidden md:table-cell">{entry.note || '—'}</td>
                 <td className="px-4 py-3 whitespace-nowrap">{entry.changedByName ?? 'System'}</td>
                 <td className="px-4 py-3 whitespace-nowrap"><QueueAgeBadge days={entry.daysElapsed} status={entry.jobStatus} /></td>
-                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{format(new Date(entry.changedAt), 'MMM d, yyyy h:mm a')}</td>
+                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatTimestamp(entry.changedAt)}</td>
               </ActivityRow>
             ))}
           </tbody>
