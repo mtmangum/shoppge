@@ -23,7 +23,7 @@ export default function LoginPage() {
       setError('Invalid email or password.')
       return
     }
-    router.push(searchParams.get('callbackUrl') || '/jobs')
+    router.push(searchParams.get('callbackUrl') || '/')
     router.refresh()
   }
 
