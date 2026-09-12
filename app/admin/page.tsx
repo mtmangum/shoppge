@@ -10,8 +10,8 @@ import { StatsCards } from '@/components/jobs/StatsCards'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { PriorityBadge } from '@/components/shared/PriorityBadge'
 import { QueueAgeBadge } from '@/components/shared/QueueAgeBadge'
-import { ThroughputChart } from '@/components/ThroughputChart'
-import { TurnaroundChart } from '@/components/TurnaroundChart'
+import { ThroughputChart } from '@/components/admin/charts/ThroughputChart'
+import { TurnaroundChart } from '@/components/admin/charts/TurnaroundChart'
 
 const machinists = alias(users, 'machinists')
 const changedByUsers = alias(users, 'changed_by_users')
