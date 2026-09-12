@@ -24,7 +24,6 @@ export function Navbar({ user }: NavbarProps) {
     { href: '/jobs',       label: 'Open Jobs',      roles: ['requestor', 'machinist', 'admin'], active: onJobs && !mine && !assigned },
     { href: '/jobs?mine=1', label: 'My Jobs',        roles: ['requestor'], active: mine },
     { href: '/jobs?assigned=1', label: 'Assigned to Me', roles: ['machinist', 'admin'], active: assigned },
-    { href: '/jobs/new',   label: 'Submit Job',      roles: ['requestor', 'machinist', 'admin'], active: pathname === '/jobs/new' },
     { href: '/admin/users', label: 'Users',          roles: ['admin'], active: pathname === '/admin/users' },
     { href: '/admin/activity', label: 'Activity',    roles: ['admin'], active: pathname === '/admin/activity' },
   ].filter(l => l.roles.includes(role))

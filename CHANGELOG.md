@@ -7,6 +7,12 @@ Dates are in `YYYY-MM-DD`.
 
 ## [Unreleased]
 
+### Changed
+- Removed the "Submit Job" navbar link, which duplicated the "+ New Job"
+  button already on the Open Jobs page under a different label. Every role
+  that had it still reaches `/jobs/new` via that page-level button, since
+  "Open Jobs"/"My Jobs"/"Assigned to Me" already route through `/jobs`.
+
 ## [0.2.0-beta.4] - 2026-09-12
 
 ### Added
