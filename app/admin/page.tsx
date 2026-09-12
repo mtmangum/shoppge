@@ -7,6 +7,7 @@ import { alias } from 'drizzle-orm/pg-core'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { formatTimestamp } from '@/lib/dates'
+import { daysInQueueSql, daysOverdueSql } from '@/lib/query-helpers'
 import { StatsCards } from '@/components/jobs/StatsCards'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { PriorityBadge } from '@/components/shared/PriorityBadge'
@@ -49,8 +50,8 @@ export default async function AdminDashboardPage() {
       // Queue age (time since the job was entered) and lateness (time past
       // its requested due date) are different things — a job entered
       // 20 days ago but not due for another month isn't overdue.
-      daysInQueue: sql<number>`CURRENT_DATE - ${jobs.entryDate}`,
-      daysOverdue: sql<number>`CURRENT_DATE - ${jobs.dateRequired}`,
+      daysInQueue: daysInQueueSql,
+      daysOverdue: daysOverdueSql,
     })
     .from(jobs)
     .leftJoin(users, eq(jobs.requestorId, users.id))
@@ -111,7 +112,7 @@ export default async function AdminDashboardPage() {
         id: jobs.id,
         description: jobs.description,
         priority: jobs.priority,
-        daysInQueue: sql<number>`CURRENT_DATE - ${jobs.entryDate}`,
+        daysInQueue: daysInQueueSql,
       })
       .from(jobs)
       .where(needsAssignment)

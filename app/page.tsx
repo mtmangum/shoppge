@@ -1,9 +1,10 @@
 import { redirect } from 'next/navigation'
-import { desc, sql } from 'drizzle-orm'
+import { desc } from 'drizzle-orm'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { jobs } from '@/lib/schema'
 import { formatDateOnly } from '@/lib/dates'
+import { daysInQueueSql } from '@/lib/query-helpers'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { PriorityBadge } from '@/components/shared/PriorityBadge'
 import { InlineLoginForm } from '@/components/auth/InlineLoginForm'
@@ -19,7 +20,7 @@ export default async function RootPage() {
       description:  jobs.description,
       status:       jobs.status,
       priority:     jobs.priority,
-      daysElapsed:  sql<number>`CURRENT_DATE - ${jobs.entryDate}`,
+      daysElapsed:  daysInQueueSql,
     })
     .from(jobs)
     .orderBy(desc(jobs.id))

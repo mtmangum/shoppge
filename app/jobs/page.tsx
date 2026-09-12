@@ -2,11 +2,12 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { db } from '@/lib/db'
 import { jobs, users } from '@/lib/schema'
-import { eq, ne, and, or, ilike, sql, asc, desc, count } from 'drizzle-orm'
+import { eq, ne, and, or, ilike, sql, count } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import { OpenJobsView } from '@/components/jobs/OpenJobsView'
 import Link from 'next/link'
 import { JobFilters } from '@/components/jobs/JobFilters'
+import { daysInQueueSql, resolveSortKey, resolveSortDir, sortOrderFn } from '@/lib/query-helpers'
 import type { JobStatus, JobPriority } from '@/lib/types'
 
 // jobs.id is a Postgres `integer` column; a longer digit string (e.g. an
@@ -17,7 +18,6 @@ const PG_INT4_MAX = 2147483647
 const machinists = alias(users, 'machinists')
 
 const PAGE_SIZE = 10
-const daysInQueue = sql<number>`CURRENT_DATE - ${jobs.entryDate}`
 
 const SORT_COLUMNS = {
   id:            jobs.id,
@@ -28,7 +28,7 @@ const SORT_COLUMNS = {
   machinistName: machinists.name,
   status:        jobs.status,
   priority:      jobs.priority,
-  daysElapsed:   daysInQueue,
+  daysElapsed:   daysInQueueSql,
 } as const
 
 type SortKey = keyof typeof SORT_COLUMNS
@@ -55,11 +55,9 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
   const priority = (searchParams.priority ?? 'all') as JobPriority | 'all'
   const mine     = searchParams.mine === '1'
   const assigned = searchParams.assigned === '1'
-  const sortKey: SortKey = searchParams.sort && searchParams.sort in SORT_COLUMNS
-    ? searchParams.sort as SortKey
-    : 'id'
-  const dir = searchParams.dir === 'asc' ? 'asc' : 'desc'
-  const orderFn = dir === 'asc' ? asc : desc
+  const sortKey: SortKey = resolveSortKey(SORT_COLUMNS, searchParams.sort, 'id')
+  const dir = resolveSortDir(searchParams.dir)
+  const orderFn = sortOrderFn(dir)
 
   // With no status filter, this page shows only open (non-completed,
   // non-cancelled) jobs. An explicit status filter overrides that default
@@ -93,7 +91,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
         priority:      jobs.priority,
         requestorName: users.name,
         machinistName: machinists.name,
-        daysElapsed:   daysInQueue,
+        daysElapsed:   daysInQueueSql,
       })
       .from(jobs)
       .leftJoin(users, eq(jobs.requestorId, users.id))

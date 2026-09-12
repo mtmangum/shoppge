@@ -2,11 +2,12 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { db } from '@/lib/db'
 import { jobStatusHistory, jobs, users } from '@/lib/schema'
-import { eq, and, gte, lte, asc, desc, sql } from 'drizzle-orm'
+import { eq, and, gte, lte, desc, sql } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import Link from 'next/link'
 import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react'
 import { formatTimestamp } from '@/lib/dates'
+import { daysInQueueSql, resolveSortKey, resolveSortDir, sortOrderFn } from '@/lib/query-helpers'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { QueueAgeBadge } from '@/components/shared/QueueAgeBadge'
 import { ActivityRow } from '@/components/jobs/ActivityRow'
@@ -19,14 +20,13 @@ const DATE_CLASS = `${FIELD_CLASS} [&::-webkit-date-and-time-value]:min-h-5 [&::
 const changedByUsers = alias(users, 'changed_by_users')
 
 const PAGE_SIZE = 50
-const daysInQueue = sql<number>`CURRENT_DATE - ${jobs.entryDate}`
 const SORT_COLUMNS = {
   jobId: jobStatusHistory.jobId,
   toStatus: sql<string>`${jobStatusHistory.toStatus}::text`,
   note: sql<string>`lower(coalesce(${jobStatusHistory.note}, ''))`,
   changedBy: sql<string>`lower(coalesce(${changedByUsers.name}, 'System'))`,
   changedAt: jobStatusHistory.changedAt,
-  daysElapsed: daysInQueue,
+  daysElapsed: daysInQueueSql,
 } as const
 type SortKey = keyof typeof SORT_COLUMNS
 
@@ -47,10 +47,9 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
   if (session.user.role !== 'admin') redirect('/jobs')
 
   const page = Math.max(1, parseInt(searchParams.page ?? '1') || 1)
-  const sortKey: SortKey = searchParams.sort && Object.prototype.hasOwnProperty.call(SORT_COLUMNS, searchParams.sort)
-    ? searchParams.sort as SortKey : 'changedAt'
-  const dir = searchParams.dir === 'asc' ? 'asc' : 'desc'
-  const orderFn = dir === 'asc' ? asc : desc
+  const sortKey: SortKey = resolveSortKey(SORT_COLUMNS, searchParams.sort, 'changedAt')
+  const dir = resolveSortDir(searchParams.dir)
+  const orderFn = sortOrderFn(dir)
 
   const conditions = []
   if (searchParams.jobId) conditions.push(eq(jobStatusHistory.jobId, parseInt(searchParams.jobId)))
@@ -72,7 +71,7 @@ export default async function ActivityLogPage({ searchParams }: { searchParams: 
       toStatus: jobStatusHistory.toStatus,
       note: jobStatusHistory.note,
       changedAt: jobStatusHistory.changedAt,
-      daysElapsed: daysInQueue,
+      daysElapsed: daysInQueueSql,
       jobStatus: jobs.status,
       changedByName: changedByUsers.name,
     })
