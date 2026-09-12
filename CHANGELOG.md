@@ -7,6 +7,114 @@ Dates are in `YYYY-MM-DD`.
 
 ## [Unreleased]
 
+## [0.2.0-beta.3] - 2026-09-12
+
+### Added
+- My Jobs / Assigned to Me views: requestors get a "My Jobs" nav link (their
+  own submitted jobs), machinists/admins get "Assigned to Me". Implemented
+  as `?mine=1`/`?assigned=1` on the existing `/jobs` route, threaded through
+  search/sort/pagination so the view persists across those interactions.
+- Job-number search: the jobs search box now also matches by job id (a bare
+  or `#`-prefixed number), not just description text.
+- Automatic, debounced job filtering on `/jobs` — filters apply as you type
+  instead of requiring an explicit submit.
+- Queue-age badges and refined sorting on jobs and the activity log
+  (sortable by days-in-queue/days-overdue, not just by date), plus general
+  dashboard card refinements.
+- Overdue now means "past `date_required`," not "queue age over 14 days" —
+  a job entered 20 days ago but not due for another month isn't overdue.
+  The dashboard's "Overdue / Urgent Jobs" list shows distinct "Xd overdue"
+  (red) vs "Xd in queue" (neutral, urgent-but-not-yet-due) and sorts
+  most-overdue first.
+- Job description now shown next to the actor in the dashboard's Recent
+  Activity feed, truncated to one line.
+- The whole row is now clickable (not just the "#id" cell) on the Jobs
+  table, Activity Log, and the dashboard's Recent Activity and
+  Overdue/Urgent Jobs lists, matching the existing Needs Assignment
+  pattern. Keyboard nav and middle-click/new-tab on the "#id" link still
+  work as before.
+- `scripts/seed-dummy-data.ts` (`npm run db:seed`) expanded significantly:
+  30 templated jobs across a realistic status distribution, backdated
+  entry dates, a lighter historical segment back to June so the dashboard's
+  12-week trend charts have data in every bucket, tightened counts so only
+  a handful of jobs show as overdue, and one obvious test login per role
+  (`requestor@utexas.edu` / `machinist@utexas.edu` / `admin@utexas.edu`,
+  password `password123`).
+- Automated test suite (Node's built-in test runner, `npm test`) covering
+  job-action API routes and status integrity, wired into CI between lint
+  and build.
+- `docs/UI-UX-PERFORMANCE-REVIEW.md` and `docs/SECURITY-REVIEW.md`: written
+  reviews of the app's UI/UX/accessibility and security posture, most of
+  whose findings are addressed by the fixes in this release (remaining
+  open items — TLS pending a domain name, login rate limiting — are noted
+  in the security doc).
+
+### Security
+- Job detail page and attachment upload/download are now restricted to the
+  job's own requestor (or any machinist/admin) instead of being reachable
+  by any authenticated user who knows/guesses a job ID — closes exposure
+  of billing/sponsor account numbers and arbitrary attachment access.
+- Uploaded attachments are now verified against actual file content (magic
+  bytes for PDF/PNG/JPEG via new `lib/file-type.ts`) instead of trusting
+  the client-supplied MIME type, and downloads always force
+  `Content-Disposition: attachment` regardless of stored type.
+
+### Changed
+- Shop Trends tooltips (dashboard charts): bigger box/text, theme-aware
+  colors (invert light/dark so they always read as a floating overlay
+  instead of blending into a dark surface), positioned above the hovered
+  bar/point and shifted sideways instead of covering it when there's no
+  room above, and animated into position on move. The position animation
+  now uses an inline `style.transform` rather than the SVG `transform`
+  attribute, since Safari doesn't reliably transition the latter.
+- Native `<select>`/date/number field styling normalized (jobs filter bar,
+  activity log filters, access request role picker, job actions, users
+  page) so they render consistently with text inputs instead of picking up
+  inconsistent native OS chrome.
+- `/jobs` summary cards (Pending, In Progress, Urgent Open) are now real
+  links to the filtered view instead of hover-only highlighting, so
+  they're reachable by keyboard and usable on touch.
+- Mobile layout: the jobs list becomes tappable cards below `md` instead of
+  a table with hidden columns (due date/priority/assignee are now always
+  visible); the new-job form's line-item row stacks to one field per line
+  on narrow screens.
+- CI/CD deploy now targets `docker-compose.yml`, the compose file actually
+  running on the box, instead of the stale `docker-compose.aws.yml` (whose
+  port mapping collides with nginx and was leaving the app container dead).
+- Dev and production build output are now separated (`.next-dev` vs
+  `.next`), so running `next dev` alongside `next build`/CI no longer
+  corrupts a shared build directory.
+
+### Fixed
+- Open Jobs filter: selecting "Completed" returned nothing (the base query
+  always ANDed `status != 'completed'`), and Cancelled jobs leaked into the
+  default Open view. An explicit status filter now replaces the default
+  condition instead of ANDing with it.
+- Calendar dates (entry date, date required, date completed) rendered one
+  day early in negative-UTC timezones (e.g. `America/Chicago`) — switched
+  from `new Date(dateOnlyString)` to date-fns `parseISO`.
+- Days in Queue undercounted by one for jobs spanning a DST transition —
+  switched to date-fns `differenceInCalendarDays`, which isn't affected by
+  real elapsed time.
+- Duplicate job creation when retrying a failed attachment upload after
+  the job itself had already been created; a retry now reuses the existing
+  job id and locks the rest of the form.
+- Optimistic UI updates for materials checkboxes and machinist assignment
+  no longer silently look successful on a failed save — both now roll back
+  to the prior value and surface an error.
+- Crash (`500`) on a job-number search value out of Postgres `int4` range;
+  now capped before being passed to the query.
+- Two rounds of accessibility fixes: form labels not associated with their
+  inputs, icon-only buttons with no accessible name, disabled pagination
+  links still focusable/activatable via keyboard, contrast failures found
+  by an axe-core audit, and validation/action-result errors not announced
+  to screen readers (missing `aria-describedby`/`aria-invalid`/`role="alert"`).
+- `nginx.conf` (required by `docker-compose.yml`) was missing from the
+  repo, breaking the nginx sidecar on a fresh clone; restored.
+- `package-lock.json`'s embedded version had drifted from `package.json`.
+
+## [0.2.0-beta.2] - 2026-07-24
+
 ### Added
 - **Email notifications on new job submission** (`lib/mail.ts`): when a
   requestor submits a new job via `POST /api/jobs`, all active `admin` and

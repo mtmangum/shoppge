@@ -20,8 +20,15 @@ Shop job tracker, replacing the existing Drupal 7 site at `shop.pge.utexas.edu`.
 | Job detail page (view, status changes, machinist assignment, materials, notes, status history) | Done |
 | File uploads to S3/MinIO (upload, presigned download, delete) | Done |
 | Email notifications | Done |
-| Admin dashboard (analytics, user management) | Done |
+| Admin dashboard (analytics, shop trend charts, user management) | Done |
 | Self-service access requests (`/request-access` + admin approval queue) | Done |
+| Global activity log (`/admin/activity`), filterable and sortable | Done |
+| My Jobs / Assigned to Me views, job-number search | Done |
+| Access control scoped to job owner/assignee; verified file-upload content | Done |
+| Automated test suite (`npm test`, Node's built-in test runner) | Done |
+| Shibboleth/SSO | Not started (phase 2) |
+| TLS | Not started (pending a domain name) |
+| Login rate limiting | Not started |
 
 ## Getting started
 
@@ -73,10 +80,15 @@ credentials-based user with a bcrypt `password_hash` to log in — seed one dire
 ```
 npm run typecheck        # tsc --noEmit
 npm run lint             # next lint
+npm test                 # node --test tests/*.test.cjs
 npm run build            # production build
 npm run db:studio        # Drizzle Studio
+npm run db:seed          # populate a fresh DB with realistic dev data (scripts/seed-dummy-data.ts)
 npm run migrate:from-drupal   # one-time Drupal 7 MySQL -> Postgres migration (see script header)
 ```
+
+`npm run db:seed` also creates one obvious login per role for manual testing:
+`requestor@utexas.edu` / `machinist@utexas.edu` / `admin@utexas.edu`, all with password `password123`.
 
 ## Docker
 
@@ -95,7 +107,7 @@ CI or a manual deploy at it unless you're also removing the nginx/storage contai
 This GHE instance is self-hosted (GitHub Enterprise Server) and doesn't provide GitHub-hosted
 runners, so the EC2 box itself is registered as a self-hosted Actions runner (systemd service
 `actions.runner._services.pge-shop-ec2`, installed under `~/actions-runner` for the `ubuntu`
-user). `.github/workflows/ci-cd.yml` runs typecheck/lint/build on every push and PR to `main`
+user). `.github/workflows/ci-cd.yml` runs typecheck/lint/test/build on every push and PR to `main`
 on that runner, and on push to `main` (after those checks pass) deploys automatically: since the
 runner *is* the deploy target, the `deploy` job just checks out the repo into its own workspace,
 copies the persistent production `.env` in from `/home/ubuntu/pge-shop/.env` (the checkout itself
@@ -113,20 +125,22 @@ Manual deploys still work the same way, from your own machine, if you'd rather n
 ### One-time host setup
 
 1. EC2 instance with Docker and the Docker Compose plugin installed, security group allowing
-   inbound `:80` (and `:22` for your own SSH access).
+   inbound `:80`/`:443` (and `:22` for your own SSH access).
 2. Copy the repo onto the box (`rsync` from a local checkout, or `scp`/manual upload — the box
-   does not need to be a git clone; only the built Docker image and `docker-compose.aws.yml` are
-   required at runtime).
+   does not need to be a git clone; only the built Docker image and `docker-compose.yml` are
+   required at runtime). Also needs `nginx.conf` and a `./certs` directory (can be empty pending
+   TLS — see the Security section below).
 3. Create a `.env` file in the app directory on the host (not committed) with production values:
    - `NEXTAUTH_URL` — the public URL/IP of the deployment
    - `NEXTAUTH_SECRET` — `openssl rand -base64 32`
    - `DB_PASSWORD` — a strong password for the `db` service
-   - `S3_BUCKET` / `S3_REGION` / `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` — real AWS IAM
-     credentials scoped to the attachments bucket. Leave `S3_ENDPOINT` **unset** so `lib/s3.ts`
-     talks to real S3 instead of path-style MinIO.
+   - `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` — credentials for the bundled MinIO container,
+     which is what actually stores attachments on this box (`docker-compose.yml` sets
+     `S3_ENDPOINT` internally to point the app at it — real AWS S3 is only used by the
+     `docker-compose.aws.yml` alternative, which this box does not run; see above).
 4. Bring the stack up:
    ```
-   docker compose -f docker-compose.aws.yml up -d --build
+   docker compose -f docker-compose.yml up -d --build
    ```
    `schema.sql` is mounted into the `db` service's init directory, so the schema (and seed admin
    user — change its password immediately) is created automatically on first boot.
@@ -155,14 +169,31 @@ git checkout <previous-tag-or-commit>
 docker compose -f docker-compose.yml up -d --build
 ```
 
+## Security
+
+See `docs/SECURITY-REVIEW.md` for the full review. Two items remain open and are worth knowing
+about before a real production launch:
+- **TLS**: not yet configured (`nginx.conf` currently serves plain `:80`; `./certs` is an empty
+  mount point). Blocked on getting a domain name for this deployment — once there's one, this is
+  the next thing to set up.
+- **Login rate limiting**: not implemented. The credentials login endpoint has no throttling
+  against repeated attempts.
+
+Everything else the review flagged (job/attachment access scoped to owner or assigned staff,
+upload content-type verification, forced-download `Content-Disposition`) is fixed as of
+`0.2.0-beta.3` — see the CHANGELOG.
+
 ## Project layout
 
 ```
 app/
   jobs/              job list, new-job form, job detail page
   api/jobs/          job CRUD, status updates, attachments
-  admin/             admin dashboard (not yet implemented)
-components/          shared UI (tables, badges, job detail panels)
+  admin/             admin dashboard, user management, activity log
+  request-access/    self-service access request form
+components/          shared UI (tables, badges, charts, job detail panels)
 lib/                 db client, Drizzle schema, auth config, S3 helpers, shared types
-scripts/             one-off/maintenance scripts (Drupal migration, etc.)
+scripts/             one-off/maintenance scripts (Drupal migration, dev data seed, etc.)
+tests/               node --test suite (API routes, filter component)
+docs/                UI/UX and security review docs
 ```
