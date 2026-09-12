@@ -8,7 +8,7 @@ function setup(t, canDelete = true) {
   const requests = []
   let refreshes = 0
   const input = { files: [], value: '' }
-  const { AttachmentsPanel } = loadTs('components/AttachmentsPanel.tsx', {
+  const { AttachmentsPanel } = loadTs('components/jobs/AttachmentsPanel.tsx', {
     'next/navigation': { useRouter: () => ({ refresh: () => refreshes++ }) },
   }, {
     fetch: (url, options) => new Promise(resolve => requests.push({ url, ...options, resolve })),

@@ -9,7 +9,7 @@ const { create, act } = require('react-test-renderer')
 
 // Exercise the real component/hooks. Only the Next router and debounce clock
 // are controlled here, so response commits can arrive between keystrokes.
-const source = fs.readFileSync(path.join(__dirname, '../components/JobFilters.tsx'), 'utf8')
+const source = fs.readFileSync(path.join(__dirname, '../components/jobs/JobFilters.tsx'), 'utf8')
 const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2020 },
 }).outputText

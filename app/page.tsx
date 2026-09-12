@@ -4,8 +4,8 @@ import { desc, sql } from 'drizzle-orm'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { jobs } from '@/lib/schema'
-import { StatusBadge } from '@/components/StatusBadge'
-import { PriorityBadge } from '@/components/PriorityBadge'
+import { StatusBadge } from '@/components/shared/StatusBadge'
+import { PriorityBadge } from '@/components/shared/PriorityBadge'
 import { InlineLoginForm } from '@/components/InlineLoginForm'
 
 export default async function RootPage() {

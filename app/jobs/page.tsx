@@ -4,9 +4,9 @@ import { db } from '@/lib/db'
 import { jobs, users } from '@/lib/schema'
 import { eq, ne, and, or, ilike, sql, asc, desc, count } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
-import { OpenJobsView } from '@/components/OpenJobsView'
+import { OpenJobsView } from '@/components/jobs/OpenJobsView'
 import Link from 'next/link'
-import { JobFilters } from '@/components/JobFilters'
+import { JobFilters } from '@/components/jobs/JobFilters'
 import type { JobStatus, JobPriority } from '@/lib/types'
 
 // jobs.id is a Postgres `integer` column; a longer digit string (e.g. an

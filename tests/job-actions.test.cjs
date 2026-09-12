@@ -7,7 +7,7 @@ const ts = require('typescript')
 const React = require('react')
 const { create, act } = require('react-test-renderer')
 
-const source = fs.readFileSync(path.join(__dirname, '../components/JobActions.tsx'), 'utf8')
+const source = fs.readFileSync(path.join(__dirname, '../components/jobs/JobActions.tsx'), 'utf8')
 const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2020 },
 }).outputText

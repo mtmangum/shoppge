@@ -8,9 +8,9 @@ import {
   type ColumnDef,
 } from '@tanstack/react-table'
 import { format, parseISO } from 'date-fns'
-import { StatusBadge } from './StatusBadge'
-import { PriorityBadge } from './PriorityBadge'
-import { QueueAgeBadge } from './QueueAgeBadge'
+import { StatusBadge } from '../shared/StatusBadge'
+import { PriorityBadge } from '../shared/PriorityBadge'
+import { QueueAgeBadge } from '../shared/QueueAgeBadge'
 import type { JobListItem, JobStatus, JobPriority } from '@/lib/types'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'

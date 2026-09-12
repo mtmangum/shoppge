@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import { StatusBadge } from './StatusBadge'
+import { StatusBadge } from '../shared/StatusBadge'
 import type { JobStatus } from '@/lib/types'
 
 interface HistoryEntry {
