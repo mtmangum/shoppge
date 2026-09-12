@@ -91,9 +91,11 @@ export default async function AdminDashboardPage() {
         note: jobStatusHistory.note,
         changedAt: jobStatusHistory.changedAt,
         changedByName: changedByUsers.name,
+        jobDescription: jobs.description,
       })
       .from(jobStatusHistory)
       .leftJoin(changedByUsers, eq(jobStatusHistory.changedById, changedByUsers.id))
+      .leftJoin(jobs, eq(jobStatusHistory.jobId, jobs.id))
       .orderBy(desc(jobStatusHistory.changedAt), desc(jobStatusHistory.id))
       .limit(8),
     db
@@ -227,7 +229,9 @@ export default async function AdminDashboardPage() {
                         {format(new Date(entry.changedAt), 'MMM d, h:mm a')}
                       </time>
                     </div>
-                    <p className="mt-1 truncate text-xs text-gray-500" title={actor}>{actor}</p>
+                    <p className="mt-1 truncate text-xs text-gray-500" title={`${actor} · ${entry.jobDescription ?? ''}`}>
+                      {actor}{entry.jobDescription && <> · {entry.jobDescription}</>}
+                    </p>
                   </li>
                 )
               })}
