@@ -41,6 +41,29 @@ services:
       timeout: 5s
       retries: 5
 
+  # One-off: creates the first admin (schema.sql seeds no users). Not started
+  # by `up`; run it with the ADMIN_* variables set in your shell:
+  #   ADMIN_EMAIL=... ADMIN_NAME=... ADMIN_PASSWORD=... \
+  #     docker compose --profile tools run --build --rm create-admin
+  create-admin:
+    profiles: ["tools"]
+    build:
+      context: .
+      target: deps
+    command: npm run db:create-admin
+    volumes:
+      - ./scripts:/app/scripts:ro
+      - ./lib:/app/lib:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+    environment:
+      DATABASE_URL: postgresql://pgeshop:${DB_PASSWORD}@db:5432/pge_shop
+      ADMIN_EMAIL:
+      ADMIN_NAME:
+      ADMIN_PASSWORD:
+    depends_on:
+      db:
+        condition: service_healthy
+
   storage:
     image: minio/minio:latest
     restart: unless-stopped

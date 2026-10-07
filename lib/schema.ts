@@ -48,6 +48,20 @@ export const accessRequests = pgTable('access_requests', {
   createdAt:     timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
+// ============================================================
+// Password reset / set-password links (only a SHA-256 of the token is stored)
+// ============================================================
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id:        serial('id').primaryKey(),
+  userId:    integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: varchar('token_hash', { length: 64 }).notNull().unique(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt:    timestamp('used_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, t => ({
+  userIdx: index('idx_password_reset_tokens_user').on(t.userId),
+}))
+
 export const accessRequestsRelations = relations(accessRequests, ({ one }) => ({
   reviewedBy: one(users, { fields: [accessRequests.reviewedById], references: [users.id] }),
 }))

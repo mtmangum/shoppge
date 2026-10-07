@@ -8,6 +8,22 @@ Dates are in `YYYY-MM-DD`.
 ## [Unreleased]
 
 ### Added
+- **Password reset and set-password links.** `/forgot-password` emails a
+  single-use link to `/reset-password` (valid 1 hour). Only a SHA-256 of the
+  token is stored, in the new `password_reset_tokens` table. Requests are
+  limited to 3 per email and 10 per IP per hour, and the endpoint answers
+  identically whether or not the address has an account.
+- **Invitations.** Approving an access request, or creating a user in the
+  admin panel, without typing a password now emails the person a 7-day
+  set-password link. The admin is warned if the email could not be sent.
+- **Sign-in throttling.** 5 failed attempts per email and 30 per IP within 15
+  minutes are blocked (in memory, per container; resets on restart).
+- **Security headers** on every response: HSTS, `X-Content-Type-Options`,
+  `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`. No
+  Content-Security-Policy yet.
+- `npm run db:create-admin` and a `create-admin` compose service to create the
+  first admin account.
+- `migrations/` for changes to existing databases (see Upgrade notes).
 - HTTPS for the on-demand AWS test app and Mailpit using Caddy and trusted
   Let's Encrypt IP certificates, automatic renewal, and HTTP-to-HTTPS redirects.
   The start script updates the certificate address when the public IP changes.
@@ -18,6 +34,26 @@ Dates are in `YYYY-MM-DD`.
   `docs/AWS-TEST.md`.
 - `.dockerignore` excludes local environment files, dependencies, and build output
   from Docker build contexts.
+
+### Security
+- `schema.sql` no longer seeds `admin@pge.utexas.edu` with the password
+  `changeme`.
+- Passwords must be at least 12 characters (was 8) and at most 72 bytes, for
+  account changes, admin-set passwords and reset links. Existing passwords
+  keep working.
+- The public access-request form no longer reveals whether an email already
+  has an account or a pending request.
+- Sign-in takes the same time for unknown, inactive and wrong-password
+  attempts, so response time no longer reveals which emails have accounts.
+
+### Upgrade notes
+- **Existing databases** must create the reset-token table before deploying:
+  `docker compose exec -T db psql -U pgeshop -d pge_shop < migrations/001-password-reset-tokens.sql`
+  (safe to run twice). Until then the forgot-password and invitation emails
+  fail; sign-in is unaffected.
+- **Databases created before this release still contain the default admin**
+  (`admin@pge.utexas.edu` / `changeme`). Change its password or deactivate it.
+- Password reset and invitations send email, so `SMTP_*` must be configured.
 
 ### Changed
 - CI/CD now targets the AWS test instance. The `test` and `deploy` jobs run on a

@@ -5,6 +5,20 @@ import { db } from './db'
 import { users } from './schema'
 import { eq } from 'drizzle-orm'
 import type { UserRole } from './types'
+import {
+  clientIp,
+  isLoginBlocked,
+  recordLoginFailure,
+  recordLoginSuccess,
+} from './login-throttle'
+
+// Compared against when no usable account exists, so a wrong email takes as
+// long to reject as a wrong password and response time doesn't reveal which
+// emails have accounts.
+let dummyHash: string | undefined
+function getDummyHash() {
+  return (dummyHash ??= bcrypt.hashSync('timing-pad-not-a-password', 12))
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -13,24 +27,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email:    { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         if (!credentials?.email || !credentials?.password) return null
+
+        const email = credentials.email as string
+        const ip = clientIp(request?.headers)
+
+        // Blocked callers get the same generic failure as a bad password.
+        if (isLoginBlocked(email, ip)) return null
 
         const [user] = await db
           .select()
           .from(users)
-          .where(eq(users.email, credentials.email as string))
+          .where(eq(users.email, email))
           .limit(1)
 
-        if (!user || !user.passwordHash) return null
-        if (!user.isActive) return null
-
+        const usable = !!user && !!user.passwordHash && user.isActive
         const valid = await bcrypt.compare(
           credentials.password as string,
-          user.passwordHash
+          usable ? user.passwordHash! : getDummyHash()
         )
-        if (!valid) return null
+        if (!usable || !valid) {
+          recordLoginFailure(email, ip)
+          return null
+        }
 
+        recordLoginSuccess(email)
         return {
           id:    String(user.id),
           email: user.email,

@@ -26,9 +26,10 @@ Shop job tracker, replacing the existing Drupal 7 site at `shop.pge.utexas.edu`.
 | My Jobs / Assigned to Me views, job-number search | Done |
 | Access control scoped to job owner/assignee; verified file-upload content | Done |
 | Automated test suite (`npm test`, Node's built-in test runner) | Done |
-| Shibboleth/SSO | Not started (phase 2) |
+| Password reset, invitation emails, 12-character password minimum | Done |
+| Login throttling and security headers | Done |
+| Shibboleth/SSO | Not started (planned for v2) |
 | TLS | Not started (pending a domain name) |
-| Login rate limiting | Not started |
 
 ## Getting started
 
@@ -71,9 +72,9 @@ npm run db:push
 npm run dev
 ```
 
-The app expects a `job_stats_view` SQL view (used by the open-jobs dashboard) and a NextAuth
-credentials-based user with a bcrypt `password_hash` to log in — seed one directly via
-`npm run db:studio` or a one-off script.
+The app expects a `job_stats_view` SQL view (used by the open-jobs dashboard). To sign in you
+need a user: run `npm run db:seed` for a set of dummy accounts, or create a real first admin
+with `npm run db:create-admin` (see [Accounts and passwords](#accounts-and-passwords)).
 
 ### Other scripts
 
@@ -84,11 +85,54 @@ npm test                 # node --test tests/*.test.cjs
 npm run build            # production build
 npm run db:studio        # Drizzle Studio
 npm run db:seed          # populate a fresh DB with realistic dev data (scripts/seed-dummy-data.ts)
+npm run db:create-admin   # create the first admin from ADMIN_EMAIL / ADMIN_NAME / ADMIN_PASSWORD
 npm run migrate:from-drupal   # one-time Drupal 7 MySQL -> Postgres migration (see script header)
 ```
 
 `npm run db:seed` also creates one obvious login per role for manual testing:
 `requestor@utexas.edu` / `machinist@utexas.edu` / `admin@utexas.edu`, all with password `password123`.
+
+## Accounts and passwords
+
+Sign-in is by email and password (UT Shibboleth SSO is planned for v2). `schema.sql` creates no
+users, so the first admin has to be created explicitly:
+
+```
+ADMIN_EMAIL=you@utexas.edu ADMIN_NAME="Your Name" ADMIN_PASSWORD='at-least-12-chars' npm run db:create-admin
+```
+
+On a Docker host use `docker compose --profile tools run --build --rm create-admin` with the same
+variables set (see [One-time host setup](#one-time-host-setup)). The script refuses to touch an
+account that already exists.
+
+**How people get accounts**
+1. Someone submits `/request-access`. The form answers the same whether or not the email already
+   has an account or a pending request, so it can't be used to discover accounts.
+2. An admin approves it in the admin panel (Users). Leave the password blank: the person is
+   emailed a link, valid for 7 days, to choose their own. They can only sign in once they have
+   used it, which also confirms they own the address. Typing a password instead skips the email.
+   Creating a user directly in the admin panel works the same way.
+
+**Forgotten passwords.** `/forgot-password` emails a reset link, valid for 1 hour. Links work once,
+a newer link voids older ones, and only a SHA-256 of the token is stored (`password_reset_tokens`).
+The page gives the same answer for unknown addresses. Requests are limited to 3 per email and 10
+per IP per hour. Both flows need working `SMTP_*` settings. Setting a password through a link also
+lifts any sign-in lockout on that account. Existing signed-in sessions are not ended (see below).
+
+**Password rules.** At least 12 characters and at most 72 bytes (bcrypt ignores anything longer).
+This applies to password changes, admin-set passwords and reset links. Older, shorter passwords
+keep working until they are changed.
+
+**Sign-in throttling.** 5 failed attempts per email and 30 per IP within 15 minutes are blocked
+(15-minute window, same generic "invalid email or password" message). Wrong-email and
+wrong-password attempts take the same time. Limits are held in memory, so they reset when the app
+restarts and are per container. Anyone can also lock a real user out for 15 minutes by guessing
+their address; a password reset clears that. Move the counters to the database or Redis before
+running more than one app container.
+
+**Known gaps.** There is no Content-Security-Policy yet, sessions are 8-hour JWTs that a password
+reset does not revoke (deactivating a user does take effect immediately), and there is no MFA.
+See `docs/SECURITY-REVIEW.md`.
 
 ## Docker
 
@@ -141,8 +185,32 @@ nginx/storage containers, since their `ports` mappings collide.
    ```
    docker compose -f docker-compose.yml up -d --build
    ```
-   `schema.sql` is mounted into the `db` service's init directory, so the schema (and seed admin
-   user — change its password immediately) is created automatically on first boot.
+   `schema.sql` is mounted into the `db` service's init directory, so the schema is created
+   automatically on first boot. It seeds no users.
+5. Create the first admin (12+ character password; run once, from the app directory):
+   ```
+   ADMIN_EMAIL=you@utexas.edu ADMIN_NAME="Your Name" ADMIN_PASSWORD='...' \
+     docker compose --profile tools run --build --rm create-admin
+   ```
+   Databases created before this change still contain the old default
+   `admin@pge.utexas.edu` account with the password `changeme`. On any such
+   database, sign in and change that password, or deactivate the account.
+
+Failed sign-ins are throttled in memory (5 per email and 30 per IP per 15 minutes), so the
+limit resets when the app restarts and applies per container.
+
+### Upgrading an existing database
+
+`schema.sql` only runs when the database is first created. After pulling a release that adds
+files to `migrations/`, apply them once, in order (each is safe to run twice):
+
+```
+docker compose -f docker-compose.yml exec -T db psql -U pgeshop -d pge_shop < migrations/001-password-reset-tokens.sql
+```
+
+Do this before deploying the release that needs them. Databases created before the default admin
+was removed still contain `admin@pge.utexas.edu` with the password `changeme`: change it or
+deactivate the account.
 
 ### Deploying an update manually
 
@@ -170,13 +238,14 @@ docker compose -f docker-compose.yml up -d --build
 
 ## Security
 
-See `docs/SECURITY-REVIEW.md` for the full review. Two items remain open and are worth knowing
-about before a real production launch:
+See `docs/SECURITY-REVIEW.md` for the full review and its status updates. One item remains open
+and is worth knowing about before a real production launch:
 - **TLS**: not yet configured (`nginx.conf` currently serves plain `:80`; `./certs` is an empty
   mount point). Blocked on getting a domain name for this deployment — once there's one, this is
   the next thing to set up.
-- **Login rate limiting**: not implemented. The credentials login endpoint has no throttling
-  against repeated attempts.
+
+Login throttling, password reset, the 12-character minimum, the removal of the default admin and
+the security headers are described under [Accounts and passwords](#accounts-and-passwords).
 
 Everything else the review flagged (job/attachment access scoped to owner or assigned staff,
 upload content-type verification, forced-download `Content-Disposition`) is fixed as of
@@ -190,9 +259,14 @@ app/
   api/jobs/          job CRUD, status updates, attachments
   admin/             admin dashboard, user management, activity log
   request-access/    self-service access request form
+  forgot-password/   request a password reset email
+  reset-password/    set a password from an emailed link
+  api/password-reset/  request and confirm endpoints for the two pages above
 components/          shared UI (tables, badges, charts, job detail panels)
-lib/                 db client, Drizzle schema, auth config, S3 helpers, shared types
-scripts/             one-off/maintenance scripts (Drupal migration, dev data seed, etc.)
+lib/                 db client, Drizzle schema, auth config, S3 helpers, shared types,
+                     login throttle, password policy and reset-token logic
+migrations/          SQL to apply to existing databases (schema.sql covers fresh ones)
+scripts/             one-off/maintenance scripts (Drupal migration, dev data seed, create-admin, etc.)
 tests/               node --test suite (API routes, filter component)
 docs/                UI/UX and security review docs
 ```

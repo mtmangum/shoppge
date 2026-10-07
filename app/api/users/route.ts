@@ -5,6 +5,8 @@ import { requireAdmin } from '@/lib/auth'
 import { createUserSchema } from '@/lib/types'
 import { asc } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
+import { sendPasswordLinkEmail } from '@/lib/mail'
+import { INVITE_TTL_MS, issuePasswordToken } from '@/lib/password-reset'
 
 const SAFE_COLUMNS = {
   id: users.id,
@@ -46,7 +48,20 @@ export async function POST(req: NextRequest) {
       passwordHash,
     }).returning(SAFE_COLUMNS)
 
-    return NextResponse.json({ user }, { status: 201 })
+    // No password given: email the new user a link to set their own.
+    let inviteSent: boolean | undefined
+    if (!passwordHash) {
+      try {
+        const token = await issuePasswordToken(user.id, INVITE_TTL_MS)
+        await sendPasswordLinkEmail({ to: user.email, name: user.name, token, kind: 'invite' })
+        inviteSent = true
+      } catch (err) {
+        console.error('Set-password email failed:', err instanceof Error ? err.message : 'unknown error')
+        inviteSent = false
+      }
+    }
+
+    return NextResponse.json({ user, inviteSent }, { status: 201 })
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 400 })
   }

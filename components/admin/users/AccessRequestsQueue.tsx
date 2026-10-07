@@ -55,6 +55,10 @@ function RequestRow({ request }: { request: AccessRequest }) {
         const { error } = await res.json().catch(() => ({ error: 'Request failed' }))
         throw new Error(error ?? 'Request failed')
       }
+      const body = await res.json().catch(() => ({}))
+      if (body.inviteSent === false) {
+        window.alert(`Approved, but the set-password email could not be sent. Ask them to use “Forgot password?” on the sign-in page.`)
+      }
       router.refresh()
     } catch (e: any) {
       setError(e.message)
@@ -111,13 +115,13 @@ function RequestRow({ request }: { request: AccessRequest }) {
             </div>
           </div>
           <div>
-            <label htmlFor={`access-password-${request.id}`} className={LABEL_CLASS}>Password (optional)</label>
+            <label htmlFor={`access-password-${request.id}`} className={LABEL_CLASS}>Password (optional, 12+ characters)</label>
             <input
               id={`access-password-${request.id}`}
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder="leave blank for SSO-only"
+              placeholder="blank = email a set-password link"
               className="border rounded-md px-2 py-1.5 text-sm"
             />
           </div>

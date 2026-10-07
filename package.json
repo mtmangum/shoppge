@@ -13,6 +13,7 @@
     "db:studio": "drizzle-kit studio",
     "migrate:from-drupal": "tsx scripts/migrate-from-drupal.ts",
     "db:seed": "tsx scripts/seed-dummy-data.ts",
+    "db:create-admin": "tsx scripts/create-admin.ts",
     "test": "node --test tests/*.test.cjs"
   },
   "dependencies": {

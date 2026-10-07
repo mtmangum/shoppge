@@ -1,0 +1,18 @@
+const { test } = require('node:test')
+const assert = require('node:assert/strict')
+const path = require('node:path')
+const { pathToFileURL } = require('node:url')
+
+test('next.config applies the security headers to every route in production builds', async () => {
+  const mod = await import(pathToFileURL(path.resolve(__dirname, '../next.config.mjs')).href)
+  const config = mod.default('phase-production-build')
+  const rules = await config.headers()
+  assert.equal(rules.length, 1)
+  assert.equal(rules[0].source, '/:path*')
+  const headers = Object.fromEntries(rules[0].headers.map(h => [h.key, h.value]))
+  assert.match(headers['Strict-Transport-Security'], /^max-age=\d{7,}/)
+  assert.equal(headers['X-Content-Type-Options'], 'nosniff')
+  assert.equal(headers['X-Frame-Options'], 'DENY')
+  assert.equal(headers['Referrer-Policy'], 'strict-origin-when-cross-origin')
+  assert.match(headers['Permissions-Policy'], /camera=\(\)/)
+})

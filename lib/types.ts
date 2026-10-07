@@ -26,6 +26,7 @@ export interface JobListItem {
 // Zod schemas (validation)
 // ============================================================
 import { z } from 'zod'
+import { newPasswordSchema } from '@/lib/password-policy'
 
 export const createJobSchema = z.object({
   dateRequired: z.string().min(1, 'Date required is required'),
@@ -67,7 +68,7 @@ export const createUserSchema = z.object({
   department: z.string().optional(),
   phone: z.string().optional(),
   room: z.string().optional(),
-  password: z.string().min(8, 'Password must be at least 8 characters').optional(),
+  password: newPasswordSchema.optional(),
 })
 
 export const updateUserSchema = z.object({
@@ -78,7 +79,7 @@ export const updateUserSchema = z.object({
   phone: z.string().optional(),
   room: z.string().optional(),
   isActive: z.boolean().optional(),
-  password: z.string().min(8, 'Password must be at least 8 characters').optional(),
+  password: newPasswordSchema.optional(),
 })
 
 export const createAccessRequestSchema = z.object({
@@ -92,6 +93,6 @@ export const createAccessRequestSchema = z.object({
 export const reviewAccessRequestSchema = z.object({
   decision: z.enum(['approved', 'rejected']),
   role: z.enum(['requestor', 'machinist', 'admin']).optional(),
-  password: z.string().min(8, 'Password must be at least 8 characters').optional(),
+  password: newPasswordSchema.optional(),
   reviewNote: z.string().optional(),
 })

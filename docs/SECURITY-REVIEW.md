@@ -19,6 +19,8 @@ Findings are ordered by severity. Each includes what was checked, why it matters
 
 ### 2. No login rate limiting or lockout
 
+> **Status (2026-10-07): addressed** — see the status update at the end of this document.
+
 **Finding:** `lib/auth.ts`'s `authorize()` does a straight `bcrypt.compare` with no attempt counting, no delay, no lockout, and no CAPTCHA. There is no `middleware.ts` in the repo, so nothing else in the stack throttles requests to `/api/auth/*` either.
 
 **Why it matters:** The login endpoint can be brute-forced without any friction beyond bcrypt's own hashing cost. Given `email`/`password` are the only factors (no SSO enforced yet — see the commented-out Shibboleth provider in `lib/auth.ts`), a scripted credential-stuffing or dictionary attack against known UT email addresses is straightforward.
@@ -78,7 +80,7 @@ Findings are ordered by severity. Each includes what was checked, why it matters
 ## Lower severity / worth confirming
 
 - **Deployment file drift:** `docker-compose.aws.yml` (referenced by the README and by the CI/CD workflow until earlier this session) doesn't match what's actually running (`docker-compose.yml`, with nginx + MinIO). This was already corrected in `.github/workflows/ci-cd.yml` and the README this session, but it's a reminder that stale infra-as-code can lead to accidental misconfiguration (e.g., someone "restoring" the wrong file and reopening the port-80 conflict, or worse, applying different — weaker — settings than what's actually live).
-- **User enumeration via timing:** `authorize()` returns `null` for both "no such user" and "wrong password," which is good, but a nonexistent email skips the `bcrypt.compare` call entirely while a real one doesn't, creating a small timing difference an attacker could use to enumerate valid emails. Low severity given rate limiting (once added, see #2) would make this impractical to exploit at scale.
+- **User enumeration via timing (addressed 2026-10-07):** `authorize()` returns `null` for both "no such user" and "wrong password," which is good, but a nonexistent email skips the `bcrypt.compare` call entirely while a real one doesn't, creating a small timing difference an attacker could use to enumerate valid emails. Low severity given rate limiting (once added, see #2) would make this impractical to exploit at scale.
 - **MinIO console port**: `docker-compose.yml` exposes MinIO's admin console on `9001:9001` directly on the host, with a comment already flagging "restrict to internal access in production." Worth confirming the EC2 security group doesn't actually allow inbound `9001` from the internet (the README only mentions opening `22`/`80`, so this is likely fine, but worth a one-time explicit check rather than relying on that being remembered).
 
 ## What's already solid
@@ -101,3 +103,41 @@ Still open, in order:
 3. The infrastructure items (#5–#8) — rotate the exposed token, decide on the self-hosted runner's trust boundary, and confirm the branch-protection bypass is intentional.
 
 \#3 (job/attachment ownership) and #4 (file upload verification) are resolved — see their status notes above.
+
+## Status update — 2026-10-07 (login hardening for the v1 release)
+
+v1 ships with local email/password sign-in; UT Shibboleth SSO is planned for v2. Changes made
+for that, each with automated tests:
+
+- **#2 Login rate limiting — addressed.** 5 failed attempts per email and 30 per IP in 15
+  minutes (`lib/login-throttle.ts`). The counters are in memory, so they reset on restart and
+  are per container; move them to shared storage before running more than one app container.
+  An attacker can lock a known user out for 15 minutes; a password reset clears the lockout.
+- **Timing enumeration — addressed.** `authorize()` now runs a bcrypt comparison for unknown,
+  inactive and passwordless accounts, so response time does not reveal which emails exist.
+- **Account enumeration via the access-request form — addressed.** It answers identically for
+  new, registered and already-pending addresses. The password-reset request endpoint is also
+  uniform (same answer for unknown addresses, rate limits and mail failures).
+- **Seeded default admin — addressed** (not one of the numbered findings above). `schema.sql` no longer creates
+  `admin@pge.utexas.edu` / `changeme`. The first admin is created with `npm run db:create-admin`.
+  Existing databases keep the old account until someone changes or deactivates it.
+- **Password policy.** Minimum raised from 8 to 12 characters (maximum 72 bytes) everywhere a
+  password is set. New password reset and set-password links use single-use, expiring tokens
+  stored only as SHA-256 hashes. Invitations mean a new account is only usable by someone who
+  controls the mailbox, which verifies the email address.
+- **Security headers.** HSTS, `X-Content-Type-Options`, `X-Frame-Options: DENY`,
+  `Referrer-Policy` and `Permissions-Policy` on every response.
+
+Still open or new:
+
+1. **TLS (#1)** — HSTS is sent but has no effect until the site is served over HTTPS.
+2. **Content-Security-Policy** — not set; a useful policy needs per-request nonces because Next
+   injects inline scripts.
+3. **Sessions are not revoked by a password reset.** They are 8-hour JWTs, though a deactivated
+   user is cut off immediately because the account is re-checked on every request.
+4. **No MFA**, and passwords are the only factor until SSO ships in v2.
+5. **Self-hosted runner trust (#6).** CI jobs, including pull-request builds, run on a
+   self-hosted runner, which can reach whatever host it runs on. Keep it off any host holding
+   production data, or restrict which workflows may use it.
+6. **Existing deployments** still hold the default admin until it is changed or deactivated.
+

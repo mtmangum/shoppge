@@ -135,6 +135,55 @@ export async function sendNewJobNotification(params: NewJobEmailParams) {
   })
 }
 
+export interface PasswordLinkEmailParams {
+  to: string
+  name: string
+  token: string
+  /** 'reset' = forgot-password; 'invite' = new account, set a first password. */
+  kind: 'reset' | 'invite'
+}
+
+/**
+ * Email a link to /reset-password. Throws on transport errors — callers decide
+ * whether that is fatal. Never log the link: it is a credential.
+ */
+export async function sendPasswordLinkEmail({ to, name, token, kind }: PasswordLinkEmailParams) {
+  const baseUrl = (process.env.NEXTAUTH_URL ?? 'http://localhost:3000').replace(/\/$/, '')
+  const url = `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`
+  const invite = kind === 'invite'
+  const expires = invite ? '7 days' : '1 hour'
+
+  const subject = invite ? 'Set your PGE ShopTrack password' : 'Reset your PGE ShopTrack password'
+  const intro = invite
+    ? 'An account has been created for you in PGE ShopTrack. Set a password to sign in:'
+    : 'We received a request to reset your PGE ShopTrack password:'
+
+  const text = [
+    `Hello ${name},`,
+    ``,
+    intro,
+    url,
+    ``,
+    `This link works once and expires in ${expires}.`,
+    invite ? `` : `If you didn't ask for this, you can ignore this email; your password hasn't changed.`,
+  ].join('\n')
+
+  const html = `
+<p>Hello ${escapeHtml(name)},</p>
+<p>${intro}</p>
+<p><a href="${escapeHtml(url)}" style="display:inline-block;padding:8px 16px;background:#bf5700;color:#fff;text-decoration:none;border-radius:4px;">${invite ? 'Set password' : 'Reset password'}</a></p>
+<p style="color:#666;font-size:13px;">This link works once and expires in ${expires}.${invite ? '' : " If you didn't ask for this, you can ignore this email; your password hasn't changed."}</p>
+`.trim()
+
+  await getTransport().sendMail({
+    from: process.env.SMTP_FROM ?? 'pge-shop@utexas.edu',
+    to,
+    subject,
+    text,
+    html,
+  })
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------

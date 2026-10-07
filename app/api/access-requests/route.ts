@@ -33,24 +33,16 @@ export async function POST(req: NextRequest) {
       .from(users)
       .where(eq(users.email, data.email))
       .limit(1)
-    if (existingUser) {
-      return NextResponse.json(
-        { error: 'An account with this email already exists. Try signing in instead.' },
-        { status: 400 }
-      )
-    }
+    // Answer exactly as for a new request so this public form cannot be used
+    // to find out which emails already have accounts or pending requests.
+    if (existingUser) return NextResponse.json({ ok: true }, { status: 201 })
 
     const [existingPending] = await db
       .select({ id: accessRequests.id })
       .from(accessRequests)
       .where(and(eq(accessRequests.email, data.email), eq(accessRequests.status, 'pending')))
       .limit(1)
-    if (existingPending) {
-      return NextResponse.json(
-        { error: 'A request with this email is already pending review.' },
-        { status: 400 }
-      )
-    }
+    if (existingPending) return NextResponse.json({ ok: true }, { status: 201 })
 
     await db.insert(accessRequests).values({
       name: data.name,

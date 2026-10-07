@@ -54,7 +54,11 @@ function CreateUserForm({ onCreated }: { onCreated: () => void }) {
         const { error } = await res.json().catch(() => ({ error: 'Request failed' }))
         throw new Error(error ?? 'Request failed')
       }
+      const body = await res.json().catch(() => ({}))
       onCreated()
+      if (body.inviteSent === false) {
+        setError('User created, but the set-password email could not be sent. Ask them to use “Forgot password?” on the sign-in page.')
+      }
     } catch (e: any) {
       setError(e.message)
     } finally {
@@ -86,8 +90,8 @@ function CreateUserForm({ onCreated }: { onCreated: () => void }) {
         <input id="new-user-department" value={department} onChange={e => setDepartment(e.target.value)} className={FIELD_CLASS} />
       </div>
       <div>
-        <label htmlFor="new-user-password" className={LABEL_CLASS}>Password (optional)</label>
-        <input id="new-user-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="leave blank for SSO-only" className={FIELD_CLASS} />
+        <label htmlFor="new-user-password" className={LABEL_CLASS}>Password (optional, 12+ characters)</label>
+        <input id="new-user-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="blank = email a set-password link" className={FIELD_CLASS} />
       </div>
       <div className="col-span-2 sm:col-span-5 flex items-center gap-3">
         <button type="submit" disabled={submitting} className="bg-[#BF5700] text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-[#a34800] disabled:opacity-50 transition-colors">

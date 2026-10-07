@@ -75,6 +75,21 @@ CREATE TABLE access_requests (
 CREATE INDEX idx_access_requests_status ON access_requests(status);
 
 -- ============================================================
+-- Password reset / set-password links (only a SHA-256 of the token is stored)
+-- Existing databases: apply migrations/001-password-reset-tokens.sql
+-- ============================================================
+CREATE TABLE password_reset_tokens (
+  id          SERIAL PRIMARY KEY,
+  user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash  CHAR(64) NOT NULL UNIQUE,
+  expires_at  TIMESTAMPTZ NOT NULL,
+  used_at     TIMESTAMPTZ,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_password_reset_tokens_user ON password_reset_tokens(user_id);
+
+-- ============================================================
 -- Jobs
 -- ============================================================
 CREATE TABLE jobs (
@@ -216,17 +231,10 @@ $$ LANGUAGE plpgsql;
 --   FOR EACH ROW EXECUTE FUNCTION log_job_status_change();
 
 -- ============================================================
--- Seed: default admin user
--- Password is 'changeme' — CHANGE THIS IMMEDIATELY
--- bcrypt hash generated with 12 rounds
+-- No default users are seeded: a shared default password is a standing
+-- backdoor. Create the first admin after the schema is loaded with
+--   npm run db:create-admin      (see scripts/create-admin.ts)
 -- ============================================================
-INSERT INTO users (email, name, role, password_hash)
-VALUES (
-  'admin@pge.utexas.edu',
-  'Admin',
-  'admin',
-  '$2a$12$dPvz420HfGeT8cuH2G9VLuxU5JQvq0b9Rhs6YqS2h.bjVBLYWKYWS'
-);
 
 -- ============================================================
 -- Useful views

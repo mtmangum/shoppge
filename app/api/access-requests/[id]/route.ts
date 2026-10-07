@@ -5,6 +5,8 @@ import { requireAdmin } from '@/lib/auth'
 import { reviewAccessRequestSchema } from '@/lib/types'
 import { eq } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
+import { sendPasswordLinkEmail } from '@/lib/mail'
+import { INVITE_TTL_MS, issuePasswordToken } from '@/lib/password-reset'
 
 export async function PATCH(
   req: NextRequest,
@@ -22,6 +24,7 @@ export async function PATCH(
       return NextResponse.json({ error: `This request was already ${existing.status}.` }, { status: 400 })
     }
 
+    let inviteSent: boolean | undefined
     if (data.decision === 'approved') {
       const [existingUser] = await db.select({ id: users.id }).from(users).where(eq(users.email, existing.email)).limit(1)
       if (existingUser) {
@@ -30,14 +33,27 @@ export async function PATCH(
 
       const passwordHash = data.password ? await bcrypt.hash(data.password, 12) : null
 
-      await db.insert(users).values({
+      const [created] = await db.insert(users).values({
         name: existing.name,
         email: existing.email,
         role: data.role ?? 'requestor',
         department: existing.department,
         phone: existing.phone,
         passwordHash,
-      })
+      }).returning({ id: users.id })
+
+      // No admin-set password: email a set-password link. The account is only
+      // usable by whoever controls the mailbox, which verifies the address.
+      if (!passwordHash) {
+        try {
+          const token = await issuePasswordToken(created.id, INVITE_TTL_MS)
+          await sendPasswordLinkEmail({ to: existing.email, name: existing.name, token, kind: 'invite' })
+          inviteSent = true
+        } catch (err) {
+          console.error('Set-password email failed:', err instanceof Error ? err.message : 'unknown error')
+          inviteSent = false
+        }
+      }
     }
 
     await db.update(accessRequests).set({
@@ -47,7 +63,7 @@ export async function PATCH(
       reviewNote: data.reviewNote,
     }).where(eq(accessRequests.id, requestId))
 
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true, inviteSent })
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 400 })
   }

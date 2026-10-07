@@ -20,7 +20,7 @@ export default function LoginPage() {
     const res = await signIn('credentials', { email, password, redirect: false })
     setSubmitting(false)
     if (res?.error) {
-      setError('Invalid email or password.')
+      setError('Invalid email or password, or too many attempts. Wait 15 minutes and try again.')
       return
     }
     router.push(searchParams.get('callbackUrl') || '/')
@@ -68,6 +68,12 @@ export default function LoginPage() {
         >
           {submitting ? 'Signing in…' : 'Sign In'}
         </button>
+
+        <p className="text-center text-sm">
+          <Link href="/forgot-password" className="text-[#BF5700] underline">
+            Forgot password?
+          </Link>
+        </p>
 
         <p className="text-center text-sm text-gray-500">
           Need an account?{' '}
