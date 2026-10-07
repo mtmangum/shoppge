@@ -53,8 +53,11 @@ jobs:
         # The runner is the deploy target itself. Sync the checkout into the
         # persistent project directory so the server's real .env (secrets,
         # NEXTAUTH_URL, TEST_PUBLIC_IP) is preserved, as in the manual deploy.
+        # --delete removes files that are no longer in the repo, so a removed
+        # or renamed file can't linger and break the build. The excluded paths
+        # (.env*, node_modules, .next*) are not deleted.
         run: |
-          rsync -a --exclude='.git' --exclude='.env*' --exclude='node_modules' \
+          rsync -a --delete --exclude='.git' --exclude='.env*' --exclude='node_modules' \
             --exclude='.next' --exclude='.next-dev' --exclude='*.tsbuildinfo' \
             "$GITHUB_WORKSPACE/" /home/ubuntu/pge-shop-test/
 

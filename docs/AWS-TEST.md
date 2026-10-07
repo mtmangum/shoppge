@@ -151,7 +151,10 @@ self-hosted runner `pge-shop-test`, which lives on the test instance:
 - **`test`** (pushes and pull requests to `main`): `npm ci`, typecheck, lint,
   tests and a build with dummy environment values.
 - **`deploy`** (pushes to `main` only, after `test` passes): rsyncs the
-  checkout into `/home/ubuntu/pge-shop-test`, keeping the server's `.env`, then
+  checkout into `/home/ubuntu/pge-shop-test` with `--delete`, so files removed
+  from the repo are removed from the server too (a leftover file once broke a
+  build). The server's `.env*`, `node_modules` and `.next*` are excluded and
+  never deleted, so put anything else the instance needs inside the repo. Then it
   runs `docker compose -f docker-compose.test.yml up -d --build`. Volumes
   (database, captured email, Caddy certificates) are kept. There is no
   `production` approval gate.
@@ -178,9 +181,13 @@ the instance's S3 role. That is acceptable while the environment holds only dumm
 data. Before it holds real data, restrict which workflows can use the runner or
 move `test` to an ephemeral runner (see `docs/SECURITY-REVIEW.md`, finding 6).
 
-Verified 2026-10-07: the `test` job passed on this runner for pull request 6
-(typecheck, lint, tests and build). The `deploy` job has not yet run from CI;
-the same steps were run by hand and worked.
+Verified 2026-10-07: the `test` job passed on this runner for pull requests 6
+and 7. The first `deploy` run, after merging 6, failed at the build because
+files from pull request 7 that had been deployed by hand were still on the
+server and no longer matched the code (rsync did not delete them); the old
+container kept serving. The `deploy` run after merging 7 succeeded, and the
+end-to-end checks below passed against it. The `--delete` option above prevents a
+repeat.
 
 ## HTTPS and certificate renewal
 

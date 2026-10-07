@@ -56,6 +56,9 @@ Dates are in `YYYY-MM-DD`.
 - Password reset and invitations send email, so `SMTP_*` must be configured.
 
 ### Changed
+- The CI deploy rsync now uses `--delete`, so files removed from the repo no
+  longer linger on the test instance and break builds. `.env*`, `node_modules`
+  and `.next*` are still excluded and kept.
 - CI/CD now targets the AWS test instance. The `test` and `deploy` jobs run on a
   self-hosted runner (`pge-shop-test`) on that instance, because the GitHub host
   has no GitHub-hosted runners. `deploy` syncs the checkout into
