@@ -1,0 +1,27 @@
+{
+    default_sni {$TEST_PUBLIC_IP}
+}
+
+(public_ip_tls) {
+    tls {
+        issuer acme {
+            dir https://acme-v02.api.letsencrypt.org/directory
+            profile shortlived
+            disable_tlsalpn_challenge
+        }
+    }
+}
+
+http://{$TEST_PUBLIC_IP} {
+    redir https://{$TEST_PUBLIC_IP}{uri} permanent
+}
+
+https://{$TEST_PUBLIC_IP} {
+    import public_ip_tls
+    reverse_proxy app:3000
+}
+
+https://{$TEST_PUBLIC_IP}:8443 {
+    import public_ip_tls
+    reverse_proxy mail:8025
+}

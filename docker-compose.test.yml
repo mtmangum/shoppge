@@ -1,0 +1,86 @@
+name: pge-shop-test
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://pgeshop:${DB_PASSWORD}@db:5432/pge_shop
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      AUTH_TRUST_HOST: "true"
+      S3_BUCKET: ${S3_BUCKET}
+      S3_REGION: us-east-2
+      SMTP_HOST: mail
+      SMTP_PORT: "1025"
+      SMTP_FROM: test@pge-shop.invalid
+    depends_on:
+      db:
+        condition: service_healthy
+      mail:
+        condition: service_started
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pge_shop
+      POSTGRES_USER: pgeshop
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./scripts/test-db-init.sql:/docker-entrypoint-initdb.d/02-test.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pgeshop -d pge_shop"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  mail:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    environment:
+      MP_DATABASE: /data/mailpit.db
+    volumes:
+      - mail_data:/data
+
+  proxy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8443:8443"
+    environment:
+      TEST_PUBLIC_IP: ${TEST_PUBLIC_IP:?Set the test instance public IP}
+    volumes:
+      - ./Caddyfile.test:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+      - mail
+
+  seed:
+    profiles: ["seed"]
+    build:
+      context: .
+      target: deps
+    command: npm run db:seed
+    volumes:
+      - ./scripts:/app/scripts:ro
+      - ./lib:/app/lib:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+    environment:
+      DATABASE_URL: postgresql://pgeshop:${DB_PASSWORD}@db:5432/pge_shop
+      SEED_PASSWORD: ${SEED_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  mail_data:
+  caddy_data:
+  caddy_config:

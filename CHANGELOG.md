@@ -7,7 +7,32 @@ Dates are in `YYYY-MM-DD`.
 
 ## [Unreleased]
 
+### Added
+- HTTPS for the on-demand AWS test app and Mailpit using Caddy and trusted
+  Let's Encrypt IP certificates, automatic renewal, and HTTP-to-HTTPS redirects.
+  The start script updates the certificate address when the public IP changes.
+- Separate on-demand AWS test environment with PostgreSQL, private S3 attachment
+  storage through an EC2 IAM role, captured email in Mailpit, and generated test
+  credentials. Added `docker-compose.test.yml`, a start/stop/status script, and
+  the deployment inventory, operating instructions, and verification record in
+  `docs/AWS-TEST.md`.
+- `.dockerignore` excludes local environment files, dependencies, and build output
+  from Docker build contexts.
+
 ### Changed
+- CI/CD now targets the AWS test instance. The `test` and `deploy` jobs run on a
+  self-hosted runner (`pge-shop-test`) on that instance, because the GitHub host
+  has no GitHub-hosted runners. `deploy` syncs the checkout into
+  `/home/ubuntu/pge-shop-test` and runs `docker-compose.test.yml`; the
+  `production` environment gate was removed. Jobs queue while the instance is
+  stopped. Database migrations are still applied by hand.
+- Retired the old dev deployment in AWS account `645684341804`; its security
+  group, key pair and attachments bucket were deleted and its runner removed.
+  The README and `docs/AWS-TEST.md` describe the new setup.
+- S3 uses the AWS credential provider chain when explicit keys are not configured,
+  allowing the test app to use its EC2 role. Explicit keys still support existing deployments.
+- Bundled the Inter Latin font and its OFL license for builds without Google font downloads.
+- The dummy-data seed script accepts `SEED_PASSWORD` and no longer logs its password.
 - Removed the "Submit Job" navbar link, which duplicated the "+ New Job"
   button already on the Open Jobs page under a different label. Every role
   that had it still reaches `/jobs/new` via that page-level button, since

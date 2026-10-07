@@ -10,7 +10,7 @@ import { db } from '../lib/db'
 import { users, jobs, jobItems, jobStatusHistory } from '../lib/schema'
 import bcrypt from 'bcryptjs'
 
-const SEED_PASSWORD = 'password123'
+const SEED_PASSWORD = process.env.SEED_PASSWORD || 'password123'
 
 async function seedUsers() {
   const passwordHash = await bcrypt.hash(SEED_PASSWORD, 10)
@@ -32,7 +32,7 @@ async function seedUsers() {
   }
 
   const inserted = await db.select({ id: users.id, email: users.email, role: users.role }).from(users)
-  console.log(`  → ${rows.length} test users ensured (password: "${SEED_PASSWORD}")`)
+  console.log(`  → ${rows.length} test users ensured`)
   return inserted
 }
 

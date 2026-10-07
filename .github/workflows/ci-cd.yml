@@ -39,21 +39,26 @@ jobs:
           S3_SECRET_ACCESS_KEY: ci-build-only
 
   deploy:
-    name: Deploy to AWS
+    name: Deploy to AWS test environment
     needs: test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # Self-hosted runner on the pge-shop-test EC2 instance (account
+    # 777439247518); see docs/AWS-TEST.md. The instance is stopped between
+    # uses, so this job waits in the queue until it is started.
     runs-on: self-hosted
-    environment: production
     steps:
       - uses: actions/checkout@v4
 
-      - name: Restore production .env
-        # The runner is the deploy target itself, so checkout lands in a fresh
-        # ephemeral workspace with no .env (it's gitignored). Real secrets
-        # (DB password, S3 keys, etc.) live persistently at the path below,
-        # outside any checkout, and are copied in rather than templated from
-        # secrets here.
-        run: cp /home/ubuntu/pge-shop/.env "$GITHUB_WORKSPACE/.env"
+      - name: Sync into the test project directory
+        # The runner is the deploy target itself. Sync the checkout into the
+        # persistent project directory so the server's real .env (secrets,
+        # NEXTAUTH_URL, TEST_PUBLIC_IP) is preserved, as in the manual deploy.
+        run: |
+          rsync -a --exclude='.git' --exclude='.env*' --exclude='node_modules' \
+            --exclude='.next' --exclude='.next-dev' --exclude='*.tsbuildinfo' \
+            "$GITHUB_WORKSPACE/" /home/ubuntu/pge-shop-test/
 
       - name: Rebuild and restart
-        run: docker compose -f docker-compose.yml up -d --build
+        # Do not remove volumes: caddy_data holds the ACME certificate.
+        working-directory: /home/ubuntu/pge-shop-test
+        run: docker compose -f docker-compose.test.yml up -d --build

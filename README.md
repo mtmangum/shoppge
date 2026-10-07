@@ -97,30 +97,29 @@ see that file for the full service layout and required env vars.
 
 ## Deploying to AWS
 
-Current deployment is a single EC2 instance running `docker-compose.yml` (app + Postgres + MinIO
-for attachment storage + nginx reverse-proxying `:80`/`:443` to the app's internal `:3000`).
-`docker-compose.aws.yml` is a lighter alternative (app + Postgres only, talking to real S3
-directly, app exposed straight on `:80`) that this box does **not** currently use — don't point
-CI or a manual deploy at it unless you're also removing the nginx/storage containers, since their
-`ports` mappings will otherwise collide.
+For the separate, on-demand test environment, see [docs/AWS-TEST.md](docs/AWS-TEST.md).
+
+The old dev deployment (an EC2 host in AWS account `645684341804` running `docker-compose.yml`,
+with the host itself registered as the Actions runner) has been retired, and its `pge-shop-dev`
+resources were deleted in October 2026. The only live deployment is the on-demand test
+environment in the UT Austin AWS account `777439247518`, described in
+[docs/AWS-TEST.md](docs/AWS-TEST.md). It holds dummy data only.
 
 This GHE instance is self-hosted (GitHub Enterprise Server) and doesn't provide GitHub-hosted
-runners, so the EC2 box itself is registered as a self-hosted Actions runner (systemd service
-`actions.runner._services.pge-shop-ec2`, installed under `~/actions-runner` for the `ubuntu`
-user). `.github/workflows/ci-cd.yml` runs typecheck/lint/test/build on every push and PR to `main`
-on that runner, and on push to `main` (after those checks pass) deploys automatically: since the
-runner *is* the deploy target, the `deploy` job just checks out the repo into its own workspace,
-copies the persistent production `.env` in from `/home/ubuntu/pge-shop/.env` (the checkout itself
-never contains `.env` — it's gitignored), and runs `docker compose -f docker-compose.yml up
--d --build` directly. No SSH secrets are needed for this — there's nothing to add in GHE's
-Secrets settings for deploy to work.
+runners, so the test instance is registered as a self-hosted Actions runner (`pge-shop-test`, a
+systemd service under `/home/ubuntu/actions-runner`). `.github/workflows/ci-cd.yml` runs
+typecheck/lint/test/build on every push and PR to `main` on that runner, and on push to `main`
+(after those pass) the `deploy` job syncs the checkout into `/home/ubuntu/pge-shop-test`, keeps the
+server's own `.env`, and runs `docker compose -f docker-compose.test.yml up -d --build`. No SSH
+secrets are needed. The instance is stopped between uses, so jobs wait in the queue until it is
+started. Database migrations in `migrations/` are **not** applied by the deploy job; see
+[Upgrading an existing database](#upgrading-an-existing-database).
 
-Trade-off worth knowing: this box is small (2 vCPU, ~1.9GB RAM) and now runs CI builds *and* the
-production containers side by side. Watch for memory pressure during builds; adding swap or
-moving to a dedicated (self-hosted or hosted) runner are the escape hatches if it becomes a
-problem.
-
-Manual deploys still work the same way, from your own machine, if you'd rather not wait for CI:
+`docker-compose.yml` (app + Postgres + MinIO for attachment storage + nginx on `:80`/`:443`) is kept
+as the template for a future production host, which does not exist yet; the steps below describe
+preparing one, and CI does not deploy to it. `docker-compose.aws.yml` is a lighter variant (app +
+Postgres, real S3, app exposed straight on `:80`) that nothing uses today; don't combine it with the
+nginx/storage containers, since their `ports` mappings collide.
 
 ### One-time host setup
 

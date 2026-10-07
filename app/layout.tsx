@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import localFont from 'next/font/local'
 import { Cog } from 'lucide-react'
 import { Suspense } from 'react'
 import './globals.css'
@@ -9,7 +9,12 @@ import { auth } from '@/lib/auth'
 import { cookies } from 'next/headers'
 import { parseTheme, THEME_COOKIE } from '@/lib/account-settings'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = localFont({
+  src: '../public/fonts/inter-latin.woff2',
+  weight: '100 900',
+  style: 'normal',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'UT ShopTrack | PGE Instrumentation & Machine Shop',
