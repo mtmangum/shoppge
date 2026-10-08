@@ -2,7 +2,10 @@ const { JSDOM } = require("jsdom");
 const fs = require("node:fs");
 const assert = require("node:assert/strict");
 const root = require("node:path").resolve(__dirname, "../dist") + "/";
-const dom = new JSDOM(fs.readFileSync(root + "index.html", "utf8"), {
+const html = fs.readFileSync(root + "index.html", "utf8");
+const scriptFile = html.match(/src="\.\/([^"]+)"/)[1];
+assert.match(scriptFile, /^app\.[a-f0-9]{12}\.js$/);
+const dom = new JSDOM(html, {
   url: "https://mtmangum.github.io/shoppge/",
   runScripts: "outside-only",
   pretendToBeVisual: true,
@@ -46,7 +49,7 @@ const clickText = async (text) => {
   await wait(50);
 };
 (async () => {
-  w.eval(fs.readFileSync(root + "app.js", "utf8"));
+  w.eval(fs.readFileSync(root + scriptFile, "utf8"));
   await wait(80);
   for (const label of [
     "Admin Dashboard",

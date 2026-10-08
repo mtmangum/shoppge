@@ -8,6 +8,8 @@ Dates are in `YYYY-MM-DD`.
 ## [Unreleased]
 
 ### Added
+- Versioned demo scripts and styles prevent cached assets from an earlier
+  deployment being mixed with the updated interface.
 - GitHub Pages demo now reuses the production dashboard, job screens, user
   management, activity log, account settings, header/navigation/footer, charts,
   and theme CSS. A thin top demo bar provides role switching. Browser-local

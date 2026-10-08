@@ -1,4 +1,5 @@
-import { readFile, writeFile, mkdir, cp, rm } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { readFile, writeFile, mkdir, cp, rm, rename } from "node:fs/promises";
 import { build } from "esbuild";
 import ts from "typescript";
 import postcss from "postcss";
@@ -190,4 +191,14 @@ await writeFile(
   `@font-face{font-family:Inter;src:url('./assets/inter-latin.woff2');font-weight:100 900;font-display:swap}body{font-family:Inter,system-ui,sans-serif}\n` +
     css.css,
 );
+let html = await readFile("pages-demo/dist/index.html", "utf8");
+for (const file of ["app.js", "style.css"]) {
+  const content = await readFile("pages-demo/dist/" + file);
+  const hash = createHash("sha256").update(content).digest("hex").slice(0, 12);
+  const [name, ext] = file.split(".");
+  const versioned = `${name}.${hash}.${ext}`;
+  await rename("pages-demo/dist/" + file, "pages-demo/dist/" + versioned);
+  html = html.replace("./" + file, "./" + versioned);
+}
+await writeFile("pages-demo/dist/index.html", html);
 console.log("Demo built from the production page markup and components.");
