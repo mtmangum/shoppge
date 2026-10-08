@@ -8,6 +8,11 @@ Dates are in `YYYY-MM-DD`.
 ## [Unreleased]
 
 ### Added
+- GitHub Pages demo now reuses the production dashboard, job screens, user
+  management, activity log, account settings, header/navigation/footer, charts,
+  and theme CSS. A thin top demo bar provides role switching. Browser-local
+  adapters support job/user operations, validated attachments in IndexedDB,
+  access requests, and simulated notification/invitation/reset emails.
 - GitHub Pages interactive demo with synthetic work orders, role switching,
   filters, job creation and status updates, and browser-local persistence.
 - Public GitHub repository support: CI uses GitHub-hosted runners on github.com;

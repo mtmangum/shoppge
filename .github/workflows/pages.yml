@@ -5,6 +5,14 @@ on:
     branches: [main]
     paths:
       - 'pages-demo/**'
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'public/**'
+      - 'scripts/seed-dummy-data.ts'
+      - 'tailwind.config.ts'
+      - 'tsconfig.json'
+      - 'package*.json'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -26,10 +34,16 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - run: npm run demo:test
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: pages-demo
+          path: pages-demo/dist
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

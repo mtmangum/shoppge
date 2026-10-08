@@ -25,3 +25,7 @@ yarn-error.log*
 # editor
 .vscode/
 .idea/
+
+# Generated browser demo
+pages-demo/dist/
+pages-demo/src/generated/

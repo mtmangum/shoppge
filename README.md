@@ -6,18 +6,32 @@ Shop job tracker, replacing the existing Drupal 7 site at `shop.pge.utexas.edu`.
 ## GitHub
 
 Source is published at [mtmangum/shoppge](https://github.com/mtmangum/shoppge).
-Try the [interactive demo](https://mtmangum.github.io/shoppge/): sample jobs,
-role switching, search and filters, work-order creation, assignments, status
-updates, and activity history. Changes are stored only in the visitor's browser;
-there is no real authentication, database, email, or attachment upload.
-Use **Reset demo** to restore the sample data.
+Try the [interactive demo](https://mtmangum.github.io/shoppge/). It uses the same
+page markup, shared React components, fonts, and theme CSS as the Next.js app,
+with the same synthetic users and job generator as the AWS test seed. A thin
+**DEMO** bar at the top contains **View as**, reset, demo login help, and a
+simulated email inbox. The demo starts on the admin dashboard.
 
-The standalone static demo lives in `pages-demo/`. Preview with
-`python3 -m http.server 8080 --directory pages-demo`, then open
-`http://localhost:8080`. `.github/workflows/pages.yml` publishes it on changes
-to that directory on `main`. GitHub Pages must use **GitHub Actions** as its
-publishing source. The complete Next.js app still requires a server and the
-services described below; it cannot run on GitHub Pages.
+Job submission, line items, assignments, materials, notes, status history,
+filters, sorting, pagination, users, access requests, profile settings, and
+themes operate on browser-local data. Attachments are validated with the app's
+file-type checks and stored in IndexedDB; emails appear only in the demo inbox.
+Demo accounts use `password123`, independently of the AWS environment.
+Do not enter production credentials or data. **Reset** restores the sample data.
+
+Build and preview with:
+
+```sh
+npm run demo:test
+python3 -m http.server 8080 --directory pages-demo/dist
+```
+
+Then open `http://localhost:8080`. `pages-demo/build.mjs` extracts the production
+server-page presentation and bundles the existing client components with local
+routing and data adapters. Generated files and deployment output are ignored by
+git. `.github/workflows/pages.yml` rebuilds, tests, and publishes changes to the
+demo or shared app source. GitHub Pages uses **GitHub Actions** as its publishing
+source. The complete Next.js app still requires the services described below.
 
 On github.com, CI runs on GitHub-hosted runners. AWS test deployment continues
 only from the UT GitHub Enterprise repository; publishing here does not change

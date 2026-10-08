@@ -14,7 +14,10 @@
     "migrate:from-drupal": "tsx scripts/migrate-from-drupal.ts",
     "db:seed": "tsx scripts/seed-dummy-data.ts",
     "db:create-admin": "tsx scripts/create-admin.ts",
-    "test": "node --test tests/*.test.cjs"
+    "test": "node --test tests/*.test.cjs",
+    "demo:build": "node pages-demo/build.mjs",
+    "demo:test": "npm run demo:build && npm run demo:typecheck && node --test pages-demo/tests/*.test.cjs",
+    "demo:typecheck": "tsc --noEmit -p pages-demo/tsconfig.json"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.575.0",
@@ -45,8 +48,11 @@
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.0",
     "drizzle-kit": "^0.21.0",
+    "esbuild": "^0.19.12",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.0",
+    "fake-indexeddb": "^6.2.4",
+    "jsdom": "^26.1.0",
     "postcss": "^8.4.0",
     "react-test-renderer": "18.3.1",
     "tailwindcss": "^3.4.0",
