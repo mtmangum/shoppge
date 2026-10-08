@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Explore UT ShopTrack with sample machine shop work orders. A browser-only interactive demo.">
+<title>UT ShopTrack · Interactive demo</title>
+<link rel="stylesheet" href="./style.css"><script src="./app.js" defer></script>
+</head>
+<body>
+<header><div class="wrap brand"><div><h1>⚙ UT ShopTrack</h1><p>PGE Instrumentation &amp; Machine Shop</p></div><img src="./assets/ut_logo.svg" alt="The University of Texas at Austin"></div></header>
+<div class="demo"><div class="wrap demo-inner"><span><strong>Interactive demo</strong> · Sample data only. Changes are saved in this browser; no accounts, uploads, or email.</span><button id="reset" class="quiet">Reset demo</button></div></div>
+<nav class="wrap navigation" aria-label="Main navigation"><div id="tabs"></div><label>View as <select id="role"><option value="admin">Admin · Alex Morgan</option><option value="machinist">Machinist · Sam Taylor</option><option value="requestor">Requestor · Jordan Lee</option></select></label></nav>
+<main class="wrap">
+<div class="heading"><div><p class="eyebrow">WORK ORDER MANAGEMENT</p><h2 id="title">Shop overview</h2><p class="muted" id="subtitle">From the first drawing to the finished part.</p></div><button id="new-job" class="primary">+ New work order</button></div>
+<section id="stats" class="stats" aria-label="Job statistics"></section>
+<section id="jobs-panel" class="panel"><div class="toolbar"><label class="search">Search jobs<input id="search" type="search" placeholder="Job number, description, or requestor"></label><label>Status<select id="status"><option value="open">Open jobs</option><option value="all">All statuses</option><option value="pending">Pending</option><option value="inprogress">In Progress</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label><label>Priority<select id="priority"><option value="all">All priorities</option><option value="urgent">Urgent</option><option value="normal">Normal</option></select></label><label>Sort by<select id="sort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="due">Required date</option></select></label></div><div class="table-scroll"><table><thead><tr><th>Job #</th><th>Description</th><th>Requestor</th><th>Machinist</th><th>Required by</th><th>Status</th><th>Priority</th></tr></thead><tbody id="rows"></tbody></table></div><p id="count" class="table-footer" aria-live="polite"></p></section>
+<section id="activity-panel" class="panel" hidden><h3>Recent activity</h3><div id="activity"></div></section>
+<p class="hint">Try switching roles, opening a job, or submitting a sample work order.</p>
+</main>
+<footer class="wrap">UT ShopTrack demo · <a href="https://github.com/mtmangum/shoppge">Source &amp; setup instructions</a> · <a href="https://pge.utexas.edu/">Petroleum &amp; Geosystems Engineering</a></footer>
+<dialog id="modal"><div class="dialog-heading"><h2 id="dialog-title"></h2><button id="close" aria-label="Close dialog">✕</button></div><div id="dialog-body"></div></dialog>
+<div id="toast" role="status" hidden></div>
+<noscript><p class="wrap">Enable JavaScript to explore the demo. <a href="https://github.com/mtmangum/shoppge">Read the project documentation.</a></p></noscript>
+</body></html>

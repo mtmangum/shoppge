@@ -8,6 +8,10 @@ Dates are in `YYYY-MM-DD`.
 ## [Unreleased]
 
 ### Added
+- GitHub Pages interactive demo with synthetic work orders, role switching,
+  filters, job creation and status updates, and browser-local persistence.
+- Public GitHub repository support: CI uses GitHub-hosted runners on github.com;
+  AWS deployment remains limited to the UT GitHub Enterprise repository.
 - **Password reset and set-password links.** `/forgot-password` emails a
   single-use link to `/reset-password` (valid 1 hour). Only a SHA-256 of the
   token is stored, in the new `password_reset_tokens` table. Requests are

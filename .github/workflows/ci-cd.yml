@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     name: Typecheck, lint, build
-    runs-on: self-hosted
+    runs-on: ${{ github.server_url == 'https://github.com' && 'ubuntu-latest' || 'self-hosted' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -41,7 +41,7 @@ jobs:
   deploy:
     name: Deploy to AWS test environment
     needs: test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.server_url == 'https://github.austin.utexas.edu' && github.ref == 'refs/heads/main' && github.event_name == 'push'
     # Self-hosted runner on the pge-shop-test EC2 instance (account
     # 777439247518); see docs/AWS-TEST.md. The instance is stopped between
     # uses, so this job waits in the queue until it is started.

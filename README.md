@@ -3,6 +3,26 @@
 Next.js rewrite of the UT Austin PGE (Petroleum & Geosystems Engineering) Instrumentation/Machine
 Shop job tracker, replacing the existing Drupal 7 site at `shop.pge.utexas.edu`.
 
+## GitHub
+
+Source is published at [mtmangum/shoppge](https://github.com/mtmangum/shoppge).
+Try the [interactive demo](https://mtmangum.github.io/shoppge/): sample jobs,
+role switching, search and filters, work-order creation, assignments, status
+updates, and activity history. Changes are stored only in the visitor's browser;
+there is no real authentication, database, email, or attachment upload.
+Use **Reset demo** to restore the sample data.
+
+The standalone static demo lives in `pages-demo/`. Preview with
+`python3 -m http.server 8080 --directory pages-demo`, then open
+`http://localhost:8080`. `.github/workflows/pages.yml` publishes it on changes
+to that directory on `main`. GitHub Pages must use **GitHub Actions** as its
+publishing source. The complete Next.js app still requires a server and the
+services described below; it cannot run on GitHub Pages.
+
+On github.com, CI runs on GitHub-hosted runners. AWS test deployment continues
+only from the UT GitHub Enterprise repository; publishing here does not change
+the running test environment or its access rules.
+
 ## Stack
 
 - **Next.js 14** (App Router) + TypeScript
